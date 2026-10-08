@@ -53,8 +53,9 @@
 
   /* ------------------------------------------------------------ 主题 */
 
-  function applyTheme(theme) {
+  function applyTheme(theme, persist) {
     document.documentElement.setAttribute("data-theme", theme);
+    if (persist === false) return;      // URL 强制指定的主题不写入本地偏好
     try { localStorage.setItem("finagent-theme", theme); } catch (e) {}
   }
 
@@ -63,7 +64,7 @@
     try { saved = localStorage.getItem("finagent-theme"); } catch (e) {}
     /* 允许用 ?theme=light 强制主题：现场演示与截图核对时不必先点一次按钮 */
     var forced = (location.search.match(/[?&]theme=(dark|light)/) || [])[1];
-    applyTheme(forced || saved || "dark");
+    applyTheme(forced || saved || "dark", !forced);
     $("theme-toggle").addEventListener("click", function () {
       applyTheme(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
     });
