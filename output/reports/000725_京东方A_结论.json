@@ -1,0 +1,1542 @@
+{
+  "run_id": "20261008T185719-e7b42cd4",
+  "company": {
+    "code": "000725.SZ",
+    "name": "京东方A",
+    "industry": "显示面板",
+    "secucode": "000725.SZ",
+    "report_family": "G",
+    "report_family_label": "一般工商业",
+    "org_name": "京东方科技集团股份有限公司",
+    "listing_date": "2001-01-12",
+    "province": "北京",
+    "corpus_docs": 12
+  },
+  "findings": [
+    {
+      "rule": "R4",
+      "title": "非经常性损益占归母净利润比重偏高",
+      "level": "中",
+      "category": "异常信号",
+      "period": "2026Q2",
+      "fact": "2026Q2 非经常性损益 2,239,408,221 元，占归母净利润 42.7%。",
+      "inference": "扣非后利润与报表利润差距较大，说明当期业绩对非经常项目的依赖较高。需拆分政府补助、资产处置、公允价值变动等构成，评估可持续性。",
+      "verify_with": "年报「非经常性损益明细表」及「其他收益」附注",
+      "evidence": [
+        {
+          "metric": "nonrecurring_ratio",
+          "label": "非经常性损益占归母净利比重",
+          "value": 0.42674414656069576,
+          "period": "2026Q2",
+          "formula": "(归母净利润 - 扣非归母净利润) / 归母净利润",
+          "source": "本系统计算",
+          "evidence_id": "EM-0006746CBD"
+        }
+      ]
+    },
+    {
+      "rule": "R5",
+      "title": "归母净利润单季度环比剧烈波动",
+      "level": "中",
+      "category": "异常信号",
+      "period": "2026Q2",
+      "fact": "2026Q2 单季度归母净利润 3,540,440,001 元，环比 +107.38%。",
+      "inference": "环比大幅波动需结合季节性因素判断。周期性行业（如生猪养殖）的季节性规律会主导环比变化，此时同比比环比更具解释力。",
+      "verify_with": "季度经营数据公告、行业价格走势",
+      "evidence": [
+        {
+          "metric": "parent_net_profit",
+          "label": "归母净利润",
+          "value": 3540440001.0,
+          "period": "2026Q2",
+          "formula": "累计数差分还原单季度",
+          "source": "本系统计算",
+          "evidence_id": "EM-A696F20448"
+        }
+      ]
+    },
+    {
+      "rule": "R2a",
+      "title": "现金含量虚高系折旧摊销所致（结构性特征，非异常）",
+      "level": "提示",
+      "category": "结构性特征",
+      "period": "2025Q2",
+      "fact": "2025Q2 经营活动现金流量净额 / 净利润 = 7.51 倍；折旧摊销占营业总收入 19.2%；加回折旧摊销与减值后，该比值为 0.96 倍。",
+      "inference": "比值从数倍回落至接近 1，说明差额主要由非付现成本（折旧摊销）构成，属于重资产行业的结构性特征，不构成利润质量异常的证据。若仅凭朴素口径判断，会得出错误结论。",
+      "verify_with": "现金流量表补充资料与固定资产折旧政策附注",
+      "evidence": [
+        {
+          "metric": "cash_conversion_adjusted",
+          "label": "现金含量(调整后)",
+          "value": 0.960011510075151,
+          "period": "2025Q2",
+          "formula": "经营活动现金流量净额 / (净利润 + 折旧摊销 + 减值计提)",
+          "source": "本系统计算",
+          "evidence_id": "EM-08E4F2F3F8"
+        }
+      ]
+    },
+    {
+      "rule": "R3b",
+      "title": "有效税率同比抬升",
+      "level": "提示",
+      "category": "异常信号",
+      "period": "2025Q2",
+      "fact": "2025Q2 有效税率 28.23%，上年同期 22.30%，上升 5.94 个百分点。",
+      "inference": "需区分是盈利结构变化、税收优惠到期，还是不可抵扣项目增加。",
+      "verify_with": "附注「所得税费用」中的税率调节表",
+      "evidence": [
+        {
+          "metric": "effective_tax_rate",
+          "label": "有效税率",
+          "value": 0.28234553121288947,
+          "period": "2025Q2",
+          "formula": "所得税费用 / 利润总额",
+          "source": "本系统计算",
+          "evidence_id": "EM-C1BC9EE048"
+        }
+      ]
+    },
+    {
+      "rule": "R4",
+      "title": "非经常性损益占归母净利润比重偏高",
+      "level": "提示",
+      "category": "异常信号",
+      "period": "2025Q2",
+      "fact": "2025Q2 非经常性损益 964,649,248 元，占归母净利润 29.7%。",
+      "inference": "扣非后利润与报表利润差距较大，说明当期业绩对非经常项目的依赖较高。需拆分政府补助、资产处置、公允价值变动等构成，评估可持续性。",
+      "verify_with": "年报「非经常性损益明细表」及「其他收益」附注",
+      "evidence": [
+        {
+          "metric": "nonrecurring_ratio",
+          "label": "非经常性损益占归母净利比重",
+          "value": 0.2970998407887018,
+          "period": "2025Q2",
+          "formula": "(归母净利润 - 扣非归母净利润) / 归母净利润",
+          "source": "本系统计算",
+          "evidence_id": "EM-08EFFF603B"
+        }
+      ]
+    },
+    {
+      "rule": "R7",
+      "title": "折旧摊销占收入比重高（重资产结构）",
+      "level": "提示",
+      "category": "口径提示",
+      "period": "2025Q2",
+      "fact": "2025Q2 折旧摊销占营业总收入 19.2%，超过 15%。",
+      "inference": "重资产结构下，净利润与经营现金流天然存在大额非付现成本缺口。分析现金含量、自由现金流时须采用调整后口径，直接使用净利润会系统性高估现金转化能力。",
+      "verify_with": "固定资产折旧政策与折旧年限附注；关注折旧年限变更",
+      "evidence": [
+        {
+          "metric": "dep_to_revenue",
+          "label": "折旧摊销占收入比重",
+          "value": 0.19179199223884252,
+          "period": "2025Q2",
+          "formula": "(折旧 + 摊销) / 营业总收入",
+          "source": "本系统计算",
+          "evidence_id": "EM-EF687172D1"
+        }
+      ]
+    },
+    {
+      "rule": "R4",
+      "title": "非经常性损益占归母净利润比重偏高",
+      "level": "提示",
+      "category": "异常信号",
+      "period": "2025Q3",
+      "fact": "2025Q3 非经常性损益 1,422,340,878 元，占归母净利润 30.9%。",
+      "inference": "扣非后利润与报表利润差距较大，说明当期业绩对非经常项目的依赖较高。需拆分政府补助、资产处置、公允价值变动等构成，评估可持续性。",
+      "verify_with": "年报「非经常性损益明细表」及「其他收益」附注",
+      "evidence": [
+        {
+          "metric": "nonrecurring_ratio",
+          "label": "非经常性损益占归母净利比重",
+          "value": 0.3091039392059214,
+          "period": "2025Q3",
+          "formula": "(归母净利润 - 扣非归母净利润) / 归母净利润",
+          "source": "本系统计算",
+          "evidence_id": "EM-3C485C2F9B"
+        }
+      ]
+    },
+    {
+      "rule": "R2a",
+      "title": "现金含量虚高系折旧摊销所致（结构性特征，非异常）",
+      "level": "提示",
+      "category": "结构性特征",
+      "period": "2025Q4",
+      "fact": "2025Q4 经营活动现金流量净额 / 净利润 = 9.71 倍；折旧摊销占营业总收入 18.9%；加回折旧摊销与减值后，该比值为 1.02 倍。",
+      "inference": "比值从数倍回落至接近 1，说明差额主要由非付现成本（折旧摊销）构成，属于重资产行业的结构性特征，不构成利润质量异常的证据。若仅凭朴素口径判断，会得出错误结论。",
+      "verify_with": "现金流量表补充资料与固定资产折旧政策附注",
+      "evidence": [
+        {
+          "metric": "cash_conversion_adjusted",
+          "label": "现金含量(调整后)",
+          "value": 1.0235350511087404,
+          "period": "2025Q4",
+          "formula": "经营活动现金流量净额 / (净利润 + 折旧摊销 + 减值计提)",
+          "source": "本系统计算",
+          "evidence_id": "EM-2E85C20497"
+        }
+      ]
+    },
+    {
+      "rule": "R3b",
+      "title": "有效税率同比抬升",
+      "level": "提示",
+      "category": "异常信号",
+      "period": "2025Q4",
+      "fact": "2025Q4 有效税率 28.53%，上年同期 18.49%，上升 10.04 个百分点。",
+      "inference": "需区分是盈利结构变化、税收优惠到期，还是不可抵扣项目增加。",
+      "verify_with": "附注「所得税费用」中的税率调节表",
+      "evidence": [
+        {
+          "metric": "effective_tax_rate",
+          "label": "有效税率",
+          "value": 0.2852957320826566,
+          "period": "2025Q4",
+          "formula": "所得税费用 / 利润总额",
+          "source": "本系统计算",
+          "evidence_id": "EM-FF588F5396"
+        }
+      ]
+    },
+    {
+      "rule": "R4",
+      "title": "非经常性损益占归母净利润比重偏高",
+      "level": "提示",
+      "category": "异常信号",
+      "period": "2025Q4",
+      "fact": "2025Q4 非经常性损益 1,626,627,229 元，占归母净利润 27.8%。",
+      "inference": "扣非后利润与报表利润差距较大，说明当期业绩对非经常项目的依赖较高。需拆分政府补助、资产处置、公允价值变动等构成，评估可持续性。",
+      "verify_with": "年报「非经常性损益明细表」及「其他收益」附注",
+      "evidence": [
+        {
+          "metric": "nonrecurring_ratio",
+          "label": "非经常性损益占归母净利比重",
+          "value": 0.2777251941696782,
+          "period": "2025Q4",
+          "formula": "(归母净利润 - 扣非归母净利润) / 归母净利润",
+          "source": "本系统计算",
+          "evidence_id": "EM-41DBD4DED0"
+        }
+      ]
+    },
+    {
+      "rule": "R7",
+      "title": "折旧摊销占收入比重高（重资产结构）",
+      "level": "提示",
+      "category": "口径提示",
+      "period": "2025Q4",
+      "fact": "2025Q4 折旧摊销占营业总收入 18.9%，超过 15%。",
+      "inference": "重资产结构下，净利润与经营现金流天然存在大额非付现成本缺口。分析现金含量、自由现金流时须采用调整后口径，直接使用净利润会系统性高估现金转化能力。",
+      "verify_with": "固定资产折旧政策与折旧年限附注；关注折旧年限变更",
+      "evidence": [
+        {
+          "metric": "dep_to_revenue",
+          "label": "折旧摊销占收入比重",
+          "value": 0.1890069518970551,
+          "period": "2025Q4",
+          "formula": "(折旧 + 摊销) / 营业总收入",
+          "source": "本系统计算",
+          "evidence_id": "EM-BBF70EC3DD"
+        }
+      ]
+    },
+    {
+      "rule": "R3b",
+      "title": "有效税率同比抬升",
+      "level": "提示",
+      "category": "异常信号",
+      "period": "2026Q1",
+      "fact": "2026Q1 有效税率 30.65%，上年同期 17.49%，上升 13.16 个百分点。",
+      "inference": "需区分是盈利结构变化、税收优惠到期，还是不可抵扣项目增加。",
+      "verify_with": "附注「所得税费用」中的税率调节表",
+      "evidence": [
+        {
+          "metric": "effective_tax_rate",
+          "label": "有效税率",
+          "value": 0.3065357556648022,
+          "period": "2026Q1",
+          "formula": "所得税费用 / 利润总额",
+          "source": "本系统计算",
+          "evidence_id": "EM-0E4736BC99"
+        }
+      ]
+    },
+    {
+      "rule": "R2a",
+      "title": "现金含量虚高系折旧摊销所致（结构性特征，非异常）",
+      "level": "提示",
+      "category": "结构性特征",
+      "period": "2026Q2",
+      "fact": "2026Q2 经营活动现金流量净额 / 净利润 = 4.52 倍；折旧摊销占营业总收入 17.4%；加回折旧摊销与减值后，该比值为 0.95 倍。",
+      "inference": "比值从数倍回落至接近 1，说明差额主要由非付现成本（折旧摊销）构成，属于重资产行业的结构性特征，不构成利润质量异常的证据。若仅凭朴素口径判断，会得出错误结论。",
+      "verify_with": "现金流量表补充资料与固定资产折旧政策附注",
+      "evidence": [
+        {
+          "metric": "cash_conversion_adjusted",
+          "label": "现金含量(调整后)",
+          "value": 0.9492548873356498,
+          "period": "2026Q2",
+          "formula": "经营活动现金流量净额 / (净利润 + 折旧摊销 + 减值计提)",
+          "source": "本系统计算",
+          "evidence_id": "EM-EBB972CEC2"
+        }
+      ]
+    },
+    {
+      "rule": "R7",
+      "title": "折旧摊销占收入比重高（重资产结构）",
+      "level": "提示",
+      "category": "口径提示",
+      "period": "2026Q2",
+      "fact": "2026Q2 折旧摊销占营业总收入 17.4%，超过 15%。",
+      "inference": "重资产结构下，净利润与经营现金流天然存在大额非付现成本缺口。分析现金含量、自由现金流时须采用调整后口径，直接使用净利润会系统性高估现金转化能力。",
+      "verify_with": "固定资产折旧政策与折旧年限附注；关注折旧年限变更",
+      "evidence": [
+        {
+          "metric": "dep_to_revenue",
+          "label": "折旧摊销占收入比重",
+          "value": 0.17447352166390614,
+          "period": "2026Q2",
+          "formula": "(折旧 + 摊销) / 营业总收入",
+          "source": "本系统计算",
+          "evidence_id": "EM-440BB01DE7"
+        }
+      ]
+    }
+  ],
+  "attribution": {
+    "summary": "京东方A（000725.SZ）共识别 14 条值得关注的结论，其中高优先级 0 条。以下归因由规则引擎依据既定口径生成，未经大模型推理，仅作为事实梳理。",
+    "items": [
+      {
+        "rule": "R4",
+        "period": "2026Q2",
+        "fact": "2026Q2 非经常性损益 2,239,408,221 元，占归母净利润 42.7%。",
+        "inference": "扣非后利润与报表利润差距较大，说明当期业绩对非经常项目的依赖较高。需拆分政府补助、资产处置、公允价值变动等构成，评估可持续性。",
+        "confidence": "低",
+        "verify_with": "年报「非经常性损益明细表」及「其他收益」附注"
+      },
+      {
+        "rule": "R5",
+        "period": "2026Q2",
+        "fact": "2026Q2 单季度归母净利润 3,540,440,001 元，环比 +107.38%。",
+        "inference": "环比大幅波动需结合季节性因素判断。周期性行业（如生猪养殖）的季节性规律会主导环比变化，此时同比比环比更具解释力。",
+        "confidence": "低",
+        "verify_with": "季度经营数据公告、行业价格走势"
+      },
+      {
+        "rule": "R2a",
+        "period": "2025Q2",
+        "fact": "2025Q2 经营活动现金流量净额 / 净利润 = 7.51 倍；折旧摊销占营业总收入 19.2%；加回折旧摊销与减值后，该比值为 0.96 倍。",
+        "inference": "比值从数倍回落至接近 1，说明差额主要由非付现成本（折旧摊销）构成，属于重资产行业的结构性特征，不构成利润质量异常的证据。若仅凭朴素口径判断，会得出错误结论。",
+        "confidence": "低",
+        "verify_with": "现金流量表补充资料与固定资产折旧政策附注"
+      },
+      {
+        "rule": "R3b",
+        "period": "2025Q2",
+        "fact": "2025Q2 有效税率 28.23%，上年同期 22.30%，上升 5.94 个百分点。",
+        "inference": "需区分是盈利结构变化、税收优惠到期，还是不可抵扣项目增加。",
+        "confidence": "低",
+        "verify_with": "附注「所得税费用」中的税率调节表"
+      },
+      {
+        "rule": "R4",
+        "period": "2025Q2",
+        "fact": "2025Q2 非经常性损益 964,649,248 元，占归母净利润 29.7%。",
+        "inference": "扣非后利润与报表利润差距较大，说明当期业绩对非经常项目的依赖较高。需拆分政府补助、资产处置、公允价值变动等构成，评估可持续性。",
+        "confidence": "低",
+        "verify_with": "年报「非经常性损益明细表」及「其他收益」附注"
+      },
+      {
+        "rule": "R7",
+        "period": "2025Q2",
+        "fact": "2025Q2 折旧摊销占营业总收入 19.2%，超过 15%。",
+        "inference": "重资产结构下，净利润与经营现金流天然存在大额非付现成本缺口。分析现金含量、自由现金流时须采用调整后口径，直接使用净利润会系统性高估现金转化能力。",
+        "confidence": "低",
+        "verify_with": "固定资产折旧政策与折旧年限附注；关注折旧年限变更"
+      },
+      {
+        "rule": "R4",
+        "period": "2025Q3",
+        "fact": "2025Q3 非经常性损益 1,422,340,878 元，占归母净利润 30.9%。",
+        "inference": "扣非后利润与报表利润差距较大，说明当期业绩对非经常项目的依赖较高。需拆分政府补助、资产处置、公允价值变动等构成，评估可持续性。",
+        "confidence": "低",
+        "verify_with": "年报「非经常性损益明细表」及「其他收益」附注"
+      },
+      {
+        "rule": "R2a",
+        "period": "2025Q4",
+        "fact": "2025Q4 经营活动现金流量净额 / 净利润 = 9.71 倍；折旧摊销占营业总收入 18.9%；加回折旧摊销与减值后，该比值为 1.02 倍。",
+        "inference": "比值从数倍回落至接近 1，说明差额主要由非付现成本（折旧摊销）构成，属于重资产行业的结构性特征，不构成利润质量异常的证据。若仅凭朴素口径判断，会得出错误结论。",
+        "confidence": "低",
+        "verify_with": "现金流量表补充资料与固定资产折旧政策附注"
+      },
+      {
+        "rule": "R3b",
+        "period": "2025Q4",
+        "fact": "2025Q4 有效税率 28.53%，上年同期 18.49%，上升 10.04 个百分点。",
+        "inference": "需区分是盈利结构变化、税收优惠到期，还是不可抵扣项目增加。",
+        "confidence": "低",
+        "verify_with": "附注「所得税费用」中的税率调节表"
+      },
+      {
+        "rule": "R4",
+        "period": "2025Q4",
+        "fact": "2025Q4 非经常性损益 1,626,627,229 元，占归母净利润 27.8%。",
+        "inference": "扣非后利润与报表利润差距较大，说明当期业绩对非经常项目的依赖较高。需拆分政府补助、资产处置、公允价值变动等构成，评估可持续性。",
+        "confidence": "低",
+        "verify_with": "年报「非经常性损益明细表」及「其他收益」附注"
+      },
+      {
+        "rule": "R7",
+        "period": "2025Q4",
+        "fact": "2025Q4 折旧摊销占营业总收入 18.9%，超过 15%。",
+        "inference": "重资产结构下，净利润与经营现金流天然存在大额非付现成本缺口。分析现金含量、自由现金流时须采用调整后口径，直接使用净利润会系统性高估现金转化能力。",
+        "confidence": "低",
+        "verify_with": "固定资产折旧政策与折旧年限附注；关注折旧年限变更"
+      },
+      {
+        "rule": "R3b",
+        "period": "2026Q1",
+        "fact": "2026Q1 有效税率 30.65%，上年同期 17.49%，上升 13.16 个百分点。",
+        "inference": "需区分是盈利结构变化、税收优惠到期，还是不可抵扣项目增加。",
+        "confidence": "低",
+        "verify_with": "附注「所得税费用」中的税率调节表"
+      },
+      {
+        "rule": "R2a",
+        "period": "2026Q2",
+        "fact": "2026Q2 经营活动现金流量净额 / 净利润 = 4.52 倍；折旧摊销占营业总收入 17.4%；加回折旧摊销与减值后，该比值为 0.95 倍。",
+        "inference": "比值从数倍回落至接近 1，说明差额主要由非付现成本（折旧摊销）构成，属于重资产行业的结构性特征，不构成利润质量异常的证据。若仅凭朴素口径判断，会得出错误结论。",
+        "confidence": "低",
+        "verify_with": "现金流量表补充资料与固定资产折旧政策附注"
+      },
+      {
+        "rule": "R7",
+        "period": "2026Q2",
+        "fact": "2026Q2 折旧摊销占营业总收入 17.4%，超过 15%。",
+        "inference": "重资产结构下，净利润与经营现金流天然存在大额非付现成本缺口。分析现金含量、自由现金流时须采用调整后口径，直接使用净利润会系统性高估现金转化能力。",
+        "confidence": "低",
+        "verify_with": "固定资产折旧政策与折旧年限附注；关注折旧年限变更"
+      }
+    ],
+    "cross_company": "",
+    "limitations": [
+      "离线模式未启用大模型推理，归因深度受限。"
+    ]
+  },
+  "articulation": [
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2011-09-30",
+      "lhs": 64956153690.0,
+      "rhs": 64956153690.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-E341AF9546"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2011-12-31",
+      "lhs": 68769415646.0,
+      "rhs": 68769415646.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-5887BF13D0"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2012-03-31",
+      "lhs": 66199967494.0,
+      "rhs": 66199967494.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-7A22A40354"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2012-06-30",
+      "lhs": 67316247128.0,
+      "rhs": 67316247128.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-6F0AD2CE0A"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2012-09-30",
+      "lhs": 68100966776.0,
+      "rhs": 68100966776.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-5FD00AA75F"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2012-12-31",
+      "lhs": 67105360865.0,
+      "rhs": 67105360865.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-DF2C6C1AF5"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2013-03-31",
+      "lhs": 68953054160.0,
+      "rhs": 68953054160.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-2E31C358FC"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2013-06-30",
+      "lhs": 88374577534.0,
+      "rhs": 88374577534.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-D81286D214"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2013-09-30",
+      "lhs": 90614581894.0,
+      "rhs": 90614581894.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-3437F0C9BC"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2013-12-31",
+      "lhs": 92538451492.0,
+      "rhs": 92538451492.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-0F8E5FD1B5"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2014-03-31",
+      "lhs": 126419929502.0,
+      "rhs": 126419929502.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-F337866739"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2014-06-30",
+      "lhs": 127935205029.0,
+      "rhs": 127935205029.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-D8AC7DA5E7"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2014-09-30",
+      "lhs": 129374066105.0,
+      "rhs": 129374066105.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-89FF2F9F8D"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2014-12-31",
+      "lhs": 136240283477.0,
+      "rhs": 136240283477.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-A5844E0F86"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2015-03-31",
+      "lhs": 136648954978.0,
+      "rhs": 136648954978.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-336AD10108"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2015-06-30",
+      "lhs": 140855989366.0,
+      "rhs": 140855989366.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-353E489227"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2015-09-30",
+      "lhs": 146687506706.0,
+      "rhs": 146687506706.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-0D66090125"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2015-12-31",
+      "lhs": 152592894442.0,
+      "rhs": 152592894442.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-C77540A1F8"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2016-03-31",
+      "lhs": 162807233819.0,
+      "rhs": 162807233819.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-ECDFCEF6AE"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2016-06-30",
+      "lhs": 170275785022.0,
+      "rhs": 170275785022.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-1E38786CDA"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2016-09-30",
+      "lhs": 175175152927.0,
+      "rhs": 175175152927.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-44F02384CD"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2016-12-31",
+      "lhs": 205135011042.0,
+      "rhs": 205135011042.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-35D48D698D"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2017-03-31",
+      "lhs": 213743747227.0,
+      "rhs": 213743747227.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-1A72AB11C1"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2017-06-30",
+      "lhs": 225472484104.0,
+      "rhs": 225472484104.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-01996D323B"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2017-09-30",
+      "lhs": 238955632292.0,
+      "rhs": 238955632292.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-21FB619488"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2017-12-31",
+      "lhs": 256108741849.0,
+      "rhs": 256108741849.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-15D4BBB77A"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2018-03-31",
+      "lhs": 262729417350.0,
+      "rhs": 262729417350.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-078ED7BCF0"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2018-06-30",
+      "lhs": 276232247578.0,
+      "rhs": 276232247578.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-D4824CCD22"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2018-09-30",
+      "lhs": 289680059305.0,
+      "rhs": 289680059305.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-9598225A36"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2018-12-31",
+      "lhs": 304028491385.0,
+      "rhs": 304028491385.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-1202531416"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2019-03-31",
+      "lhs": 308295146086.0,
+      "rhs": 308295146086.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-D9D65BE195"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2019-06-30",
+      "lhs": 317061830609.0,
+      "rhs": 317061830609.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-2E07F0007C"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2019-09-30",
+      "lhs": 324400678094.0,
+      "rhs": 324400678094.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-4D57067547"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2019-12-31",
+      "lhs": 340412203308.0,
+      "rhs": 340412203308.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-AA6092E108"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2020-03-31",
+      "lhs": 341414397501.0,
+      "rhs": 341414397501.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-4D9F6039AB"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2020-06-30",
+      "lhs": 350733841254.0,
+      "rhs": 350733841254.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-4A31BFEC95"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2020-09-30",
+      "lhs": 363168000656.0,
+      "rhs": 363168000656.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-2C5AF26F00"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2020-12-31",
+      "lhs": 424256806331.0,
+      "rhs": 424256806331.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-889ADDDA80"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2021-03-31",
+      "lhs": 427658157566.0,
+      "rhs": 427658157566.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-9E1358CE16"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2021-06-30",
+      "lhs": 435476169633.0,
+      "rhs": 435476169633.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-E0BFD6A588"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2021-09-30",
+      "lhs": 453872086509.0,
+      "rhs": 453872086509.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-0155D5B6F5"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2021-12-31",
+      "lhs": 450232603404.0,
+      "rhs": 450232603404.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-CBC24318C9"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2022-03-31",
+      "lhs": 457064241891.0,
+      "rhs": 457064241891.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-6B87633D28"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2022-06-30",
+      "lhs": 446291365552.0,
+      "rhs": 446291365552.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-A170948642"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2022-09-30",
+      "lhs": 430996506952.0,
+      "rhs": 430996506952.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-E914391D95"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2022-12-31",
+      "lhs": 420567865936.0,
+      "rhs": 420567865936.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-585C206559"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2023-03-31",
+      "lhs": 412385431844.0,
+      "rhs": 412385431844.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-8DFC403FE7"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2023-06-30",
+      "lhs": 409414907091.0,
+      "rhs": 409414907091.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-DB287938AC"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2023-09-30",
+      "lhs": 415655512105.0,
+      "rhs": 415655512105.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-30E3500DBB"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2023-12-31",
+      "lhs": 419187099795.0,
+      "rhs": 419187099795.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-BA18942D98"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2024-03-31",
+      "lhs": 417272675457.0,
+      "rhs": 417272675457.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-762B3A115F"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2024-06-30",
+      "lhs": 422367862387.0,
+      "rhs": 422367862387.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-3D8586A7FD"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2024-09-30",
+      "lhs": 417412481177.0,
+      "rhs": 417412481177.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-EDEA36D5D0"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2024-12-31",
+      "lhs": 429978221541.0,
+      "rhs": 429978221541.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-3D78053941"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2025-03-31",
+      "lhs": 420213183470.0,
+      "rhs": 420213183470.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-6A1AAB065B"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2025-06-30",
+      "lhs": 425801431370.0,
+      "rhs": 425801431370.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-41AABF4D4C"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2025-09-30",
+      "lhs": 430745273396.0,
+      "rhs": 430745273396.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-8BB92799EE"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2025-12-31",
+      "lhs": 436378322803.0,
+      "rhs": 436378322803.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-47260CB276"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2026-03-31",
+      "lhs": 437705366743.0,
+      "rhs": 437705366743.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-9F0745B3E2"
+    },
+    {
+      "check": "资产=负债+所有者权益",
+      "period": "2026-06-30",
+      "lhs": 439055090769.0,
+      "rhs": 439055090769.0,
+      "diff": 0.0,
+      "rel_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-6B21285EFC"
+    },
+    {
+      "check": "间接法反推经营活动现金流量净额",
+      "period": "2011Q4",
+      "reconstructed": -483452916.0,
+      "reported": -778530727.0,
+      "residual": -295077811.0,
+      "residual_pct": -37.9,
+      "passed": false,
+      "evidence_id": "EM-BC6950D4C8"
+    },
+    {
+      "check": "间接法反推经营活动现金流量净额",
+      "period": "2012Q2",
+      "reconstructed": 121827561.0,
+      "reported": 121827560.0,
+      "residual": -1.0,
+      "residual_pct": -0.0,
+      "passed": true,
+      "evidence_id": "EM-9C8004FD90"
+    },
+    {
+      "check": "间接法反推经营活动现金流量净额",
+      "period": "2012Q4",
+      "reconstructed": 2914212769.0,
+      "reported": 3088875525.0,
+      "residual": 174662756.0,
+      "residual_pct": 5.65,
+      "passed": true,
+      "evidence_id": "EM-CA56E0DB9D"
+    },
+    {
+      "check": "间接法反推经营活动现金流量净额",
+      "period": "2013Q2",
+      "reconstructed": 3727889361.0,
+      "reported": 3727889361.0,
+      "residual": 0.0,
+      "residual_pct": 0.0,
+      "passed": true,
+      "evidence_id": "EM-EC45112C00"
+    },
+    {
+      "check": "间接法反推经营活动现金流量净额",
+      "period": "2013Q4",
+      "reconstructed": 9092367497.0,
+      "reported": 8956439250.0,
+      "residual": -135928247.0,
+      "residual_pct": -1.52,
+      "passed": true,
+      "evidence_id": "EM-F86ABA4EE1"
+    },
+    {
+      "check": "间接法反推经营活动现金流量净额",
+      "period": "2014Q2",
+      "reconstructed": 3253298703.0,
+      "reported": 3253640502.0,
+      "residual": 341799.0,
+      "residual_pct": 0.01,
+      "passed": true,
+      "evidence_id": "EM-FB9C17980E"
+    },
+    {
+      "check": "间接法反推经营活动现金流量净额",
+      "period": "2014Q4",
+      "reconstructed": 8360317393.0,
+      "reported": 8095825923.0,
+      "residual": -264491470.0,
+      "residual_pct": -3.27,
+      "passed": true,
+      "evidence_id": "EM-1C7F77ACE5"
+    },
+    {
+      "check": "间接法反推经营活动现金流量净额",
+      "period": "2015Q2",
+      "reconstructed": 5681519450.0,
+      "reported": 5453391488.0,
+      "residual": -228127962.0,
+      "residual_pct": -4.18,
+      "passed": true,
+      "evidence_id": "EM-EEF35D699A"
+    },
+    {
+      "check": "间接法反推经营活动现金流量净额",
+      "period": "2015Q4",
+      "reconstructed": 11453796723.0,
+      "reported": 10493385445.0,
+      "residual": -960411278.0,
+      "residual_pct": -9.15,
+      "passed": true,
+      "evidence_id": "EM-97C8FF74C8"
+    },
+    {
+      "check": "间接法反推经营活动现金流量净额",
+      "period": "2016Q2",
+      "reconstructed": 3116475552.0,
+      "reported": 2734086955.0,
+      "residual": -382388597.0,
+      "residual_pct": -13.99,
+      "passed": false,
+      "evidence_id": "EM-86C0A5BDB6"
+    },
+    {
+      "check": "间接法反推经营活动现金流量净额",
+      "period": "2016Q4",
+      "reconstructed": 10480040287.0,
+      "reported": 10073287120.0,
+      "residual": -406753167.0,
+      "residual_pct": -4.04,
+      "passed": true,
+      "evidence_id": "EM-D4018AAE86"
+    },
+    {
+      "check": "间接法反推经营活动现金流量净额",
+      "period": "2017Q2",
+      "reconstructed": 10464814629.0,
+      "reported": 10638591266.0,
+      "residual": 173776637.0,
+      "residual_pct": 1.63,
+      "passed": true,
+      "evidence_id": "EM-3D88419DA2"
+    },
+    {
+      "check": "间接法反推经营活动现金流量净额",
+      "period": "2017Q4",
+      "reconstructed": 27074871073.0,
+      "reported": 26726929655.0,
+      "residual": -347941418.0,
+      "residual_pct": -1.3,
+      "passed": true,
+      "evidence_id": "EM-9556FC3BAE"
+    },
+    {
+      "check": "间接法反推经营活动现金流量净额",
+      "period": "2018Q2",
+      "reconstructed": 11836912738.0,
+      "reported": 11581507174.0,
+      "residual": -255405564.0,
+      "residual_pct": -2.21,
+      "passed": true,
+      "evidence_id": "EM-14215DDD3E"
+    },
+    {
+      "check": "间接法反推经营活动现金流量净额",
+      "period": "2018Q4",
+      "reconstructed": 26225046521.0,
+      "reported": 25684047196.0,
+      "residual": -540999325.0,
+      "residual_pct": -2.11,
+      "passed": true,
+      "evidence_id": "EM-4285B88574"
+    },
+    {
+      "check": "间接法反推经营活动现金流量净额",
+      "period": "2019Q2",
+      "reconstructed": 11349634525.0,
+      "reported": 11594984349.0,
+      "residual": 245349824.0,
+      "residual_pct": 2.12,
+      "passed": true,
+      "evidence_id": "EM-32AB5A22B0"
+    },
+    {
+      "check": "间接法反推经营活动现金流量净额",
+      "period": "2019Q4",
+      "reconstructed": 24922933737.0,
+      "reported": 26083079194.0,
+      "residual": 1160145457.0,
+      "residual_pct": 4.45,
+      "passed": true,
+      "evidence_id": "EM-669DFB9249"
+    },
+    {
+      "check": "间接法反推经营活动现金流量净额",
+      "period": "2020Q2",
+      "reconstructed": 9421196766.0,
+      "reported": 9716675534.0,
+      "residual": 295478768.0,
+      "residual_pct": 3.04,
+      "passed": true,
+      "evidence_id": "EM-BE1665D509"
+    },
+    {
+      "check": "间接法反推经营活动现金流量净额",
+      "period": "2020Q4",
+      "reconstructed": 35951046799.0,
+      "reported": 39251773458.0,
+      "residual": 3300726659.0,
+      "residual_pct": 8.41,
+      "passed": true,
+      "evidence_id": "EM-B5341C9A4B"
+    },
+    {
+      "check": "间接法反推经营活动现金流量净额",
+      "period": "2021Q2",
+      "reconstructed": 30815492078.0,
+      "reported": 32787642867.0,
+      "residual": 1972150789.0,
+      "residual_pct": 6.01,
+      "passed": true,
+      "evidence_id": "EM-FE677051C5"
+    },
+    {
+      "check": "间接法反推经营活动现金流量净额",
+      "period": "2021Q4",
+      "reconstructed": 59013019261.0,
+      "reported": 62698688556.0,
+      "residual": 3685669295.0,
+      "residual_pct": 5.88,
+      "passed": true,
+      "evidence_id": "EM-A197CA9773"
+    },
+    {
+      "check": "间接法反推经营活动现金流量净额",
+      "period": "2022Q2",
+      "reconstructed": 26961245671.0,
+      "reported": 28112000665.0,
+      "residual": 1150754994.0,
+      "residual_pct": 4.09,
+      "passed": true,
+      "evidence_id": "EM-E58362E372"
+    },
+    {
+      "check": "间接法反推经营活动现金流量净额",
+      "period": "2022Q4",
+      "reconstructed": 41955520457.0,
+      "reported": 43021967305.0,
+      "residual": 1066446848.0,
+      "residual_pct": 2.48,
+      "passed": true,
+      "evidence_id": "EM-75B3BDFFE0"
+    },
+    {
+      "check": "间接法反推经营活动现金流量净额",
+      "period": "2023Q2",
+      "reconstructed": 16030803880.0,
+      "reported": 16243669123.0,
+      "residual": 212865243.0,
+      "residual_pct": 1.31,
+      "passed": true,
+      "evidence_id": "EM-35478593CB"
+    },
+    {
+      "check": "间接法反推经营活动现金流量净额",
+      "period": "2023Q4",
+      "reconstructed": 36885770375.0,
+      "reported": 38301826884.0,
+      "residual": 1416056509.0,
+      "residual_pct": 3.7,
+      "passed": true,
+      "evidence_id": "EM-0F382F2A0D"
+    },
+    {
+      "check": "间接法反推经营活动现金流量净额",
+      "period": "2024Q2",
+      "reconstructed": 24395782576.0,
+      "reported": 24878969292.0,
+      "residual": 483186716.0,
+      "residual_pct": 1.94,
+      "passed": true,
+      "evidence_id": "EM-49C6FB929B"
+    },
+    {
+      "check": "间接法反推经营活动现金流量净额",
+      "period": "2024Q4",
+      "reconstructed": 46901128994.0,
+      "reported": 47737577379.0,
+      "residual": 836448385.0,
+      "residual_pct": 1.75,
+      "passed": true,
+      "evidence_id": "EM-85C714D524"
+    },
+    {
+      "check": "间接法反推经营活动现金流量净额",
+      "period": "2025Q2",
+      "reconstructed": 20150072809.0,
+      "reported": 22736307086.0,
+      "residual": 2586234277.0,
+      "residual_pct": 11.37,
+      "passed": false,
+      "evidence_id": "EM-C504577B82"
+    },
+    {
+      "check": "间接法反推经营活动现金流量净额",
+      "period": "2025Q4",
+      "reconstructed": 45239017079.0,
+      "reported": 48824555674.0,
+      "residual": 3585538595.0,
+      "residual_pct": 7.34,
+      "passed": true,
+      "evidence_id": "EM-5877949B9E"
+    },
+    {
+      "check": "间接法反推经营活动现金流量净额",
+      "period": "2026Q2",
+      "reconstructed": 22693886963.0,
+      "reported": 22744634093.0,
+      "residual": 50747130.0,
+      "residual_pct": 0.22,
+      "passed": true,
+      "evidence_id": "EM-03A2A3811F"
+    }
+  ],
+  "agent": {
+    "mode": "offline",
+    "stop_reason": "deterministic_plan",
+    "llm_calls": 0,
+    "llm_usage": {
+      "prompt_tokens": 0,
+      "completion_tokens": 0
+    },
+    "prompt_hashes": {
+      "attribution": "22f71f7586fa",
+      "system_agent": "4feb17d130a1"
+    },
+    "transcript": [
+      {
+        "step": 1,
+        "type": "tool",
+        "tool": "list_corpus",
+        "args": {},
+        "ok": true,
+        "summary": {
+          "documents": 12,
+          "items": "12 项"
+        }
+      },
+      {
+        "step": 2,
+        "type": "tool",
+        "tool": "list_periods",
+        "args": {
+          "code": "000725.SZ"
+        },
+        "ok": true,
+        "summary": {
+          "code": "000725.SZ",
+          "periods": "12 项",
+          "note": "报告期为累计口径：Q1=一季报，Q2=中报，Q3=三季报，Q4=年报。"
+        }
+      },
+      {
+        "step": 3,
+        "type": "tool",
+        "tool": "compare_companies",
+        "args": {},
+        "ok": true,
+        "summary": {
+          "comparison": "2 项"
+        }
+      },
+      {
+        "step": 4,
+        "type": "tool",
+        "tool": "check_articulation",
+        "args": {
+          "code": "000725.SZ"
+        },
+        "ok": true,
+        "summary": {
+          "code": "000725.SZ",
+          "balance_identity": "…",
+          "indirect_method": "30 项"
+        }
+      },
+      {
+        "step": 5,
+        "type": "tool",
+        "tool": "run_anomaly_rules",
+        "args": {
+          "code": "000725.SZ"
+        },
+        "ok": true,
+        "summary": {
+          "code": "000725.SZ",
+          "count": 14,
+          "findings": "14 项"
+        }
+      },
+      {
+        "step": 6,
+        "type": "tool",
+        "tool": "run_anomaly_rules",
+        "args": {
+          "code": "002714.SZ"
+        },
+        "ok": true,
+        "summary": {
+          "code": "002714.SZ",
+          "count": 7,
+          "findings": "7 项"
+        }
+      },
+      {
+        "step": 7,
+        "type": "tool",
+        "tool": "search_disclosure",
+        "args": {
+          "query": "非经常性损益 政府补助"
+        },
+        "ok": true,
+        "summary": {
+          "query": "非经常性损益 政府补助",
+          "results": "2 项"
+        }
+      },
+      {
+        "step": 8,
+        "type": "tool",
+        "tool": "search_disclosure",
+        "args": {
+          "query": "营业收入 营业成本"
+        },
+        "ok": true,
+        "summary": {
+          "query": "营业收入 营业成本",
+          "results": "2 项"
+        }
+      },
+      {
+        "step": 9,
+        "type": "tool",
+        "tool": "search_disclosure",
+        "args": {
+          "query": "所得税费用 递延所得税"
+        },
+        "ok": true,
+        "summary": {
+          "query": "所得税费用 递延所得税",
+          "results": "2 项"
+        }
+      }
+    ],
+    "final": {
+      "summary": "离线模式：未配置大语言模型，已按确定性计划完成数据提取、勾稽校验、规则判定与原文核验，产出事实层结论。归因推理需接入模型后方可生成。",
+      "findings": [],
+      "unresolved": [
+        "归因推理未启用，需配置 FINAGENT_API_KEY 后重新运行"
+      ],
+      "limitations": [
+        "离线模式不产生推论，仅输出事实与证据。"
+      ],
+      "companies": [
+        "002714.SZ",
+        "000725.SZ"
+      ]
+    }
+  },
+  "flags": {
+    "2011Q3": {
+      "cash_conversion_naive": "分母非正，比率不适用",
+      "nonrecurring_ratio": "分母非正，比率不适用",
+      "effective_tax_rate": "分母非正，比率不适用",
+      "minority_ratio": "分母非正，比率不适用"
+    },
+    "2012Q1": {
+      "cash_conversion_naive": "分母非正，比率不适用",
+      "nonrecurring_ratio": "分母非正，比率不适用",
+      "effective_tax_rate": "分母非正，比率不适用",
+      "minority_ratio": "分母非正，比率不适用"
+    },
+    "2012Q2": {
+      "cash_conversion_naive": "分母非正，比率不适用",
+      "nonrecurring_ratio": "分母非正，比率不适用",
+      "effective_tax_rate": "分母非正，比率不适用",
+      "minority_ratio": "分母非正，比率不适用"
+    },
+    "2012Q3": {
+      "cash_conversion_naive": "分母非正，比率不适用",
+      "nonrecurring_ratio": "分母非正，比率不适用",
+      "effective_tax_rate": "分母非正，比率不适用",
+      "minority_ratio": "分母非正，比率不适用"
+    },
+    "2016Q2": {
+      "cash_conversion_naive": "分母非正，比率不适用",
+      "nonrecurring_ratio": "分母非正，比率不适用",
+      "effective_tax_rate": "分母非正，比率不适用",
+      "minority_ratio": "分母非正，比率不适用"
+    },
+    "2019Q4": {
+      "cash_conversion_naive": "分母非正，比率不适用",
+      "minority_ratio": "分母非正，比率不适用"
+    },
+    "2020Q1": {
+      "cash_conversion_naive": "分母非正，比率不适用",
+      "minority_ratio": "分母非正，比率不适用"
+    },
+    "2022Q3": {
+      "cash_conversion_naive": "分母非正，比率不适用",
+      "minority_ratio": "分母非正，比率不适用"
+    },
+    "2022Q4": {
+      "cash_conversion_naive": "分母非正，比率不适用",
+      "minority_ratio": "分母非正，比率不适用"
+    },
+    "2023Q1": {
+      "cash_conversion_naive": "分母非正，比率不适用",
+      "effective_tax_rate": "分母非正，比率不适用",
+      "minority_ratio": "分母非正，比率不适用"
+    },
+    "2023Q2": {
+      "cash_conversion_naive": "分母非正，比率不适用",
+      "effective_tax_rate": "分母非正，比率不适用",
+      "minority_ratio": "分母非正，比率不适用"
+    },
+    "2023Q3": {
+      "cash_conversion_naive": "分母非正，比率不适用",
+      "effective_tax_rate": "分母非正，比率不适用",
+      "minority_ratio": "分母非正，比率不适用"
+    }
+  }
+}

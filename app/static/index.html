@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FinAgent · 上市公司财务报告分析智能体</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="logo" aria-hidden="true">
+      <svg viewBox="0 0 32 32" width="30" height="30" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 25h24"></path>
+        <path d="M7 25V14"></path>
+        <path d="M13 25V9"></path>
+        <path d="M19 25v-7"></path>
+        <path d="M25 25V6"></path>
+        <circle cx="19" cy="18" r="2.6" fill="currentColor" stroke="none"></circle>
+      </svg>
+    </span>
+    <span class="brand-text">
+      <strong>FinAgent</strong>
+      <small>上市公司财务报告分析智能体 · 2026 北京市大学生金融人工智能竞赛</small>
+    </span>
+  </div>
+
+  <div class="topbar-meta">
+    <span class="pill" id="pill-universe" title="全市场证券名录规模"><i class="dot"></i>名录读取中</span>
+    <span class="pill" id="pill-model" title="核心推理引擎"><i class="dot"></i>模型 —</span>
+    <span class="pill" id="pill-key" title="密钥状态"><i class="dot"></i>密钥 —</span>
+    <span class="pill" id="pill-busy" title="运行占用状态"><i class="dot"></i>空闲</span>
+    <button class="icon-btn" id="theme-toggle" type="button" title="切换浅色 / 深色主题"
+            aria-label="切换主题">
+      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round">
+        <circle cx="12" cy="12" r="4.2"></circle>
+        <path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.2 5.2l1.6 1.6M17.2 17.2l1.6 1.6M18.8 5.2l-1.6 1.6M6.8 17.2l-1.6 1.6"></path>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<div class="shell">
+
+<aside class="sidebar">
+  <div class="side-label">工作流</div>
+  <nav class="tabs" role="tablist" aria-label="功能分区">
+    <button type="button" role="tab" id="tab-run" aria-controls="page-run" aria-selected="true" data-tab="run"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h16"/><path d="M6.5 20v-7"/><path d="M11 20V7"/><path d="M15.5 20v-5"/><path d="M20 20V4"/></svg><span>分析工作台</span></button>
+    <button type="button" role="tab" id="tab-report" aria-controls="page-report" aria-selected="false" data-tab="report"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6"/><path d="M9 17h4"/></svg><span>分析报告</span></button>
+    <button type="button" role="tab" id="tab-trace" aria-controls="page-trace" aria-selected="false" data-tab="trace"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 6H21"/><path d="M8.5 12H21"/><path d="M8.5 18H21"/><path d="M3.5 6h.01"/><path d="M3.5 12h.01"/><path d="M3.5 18h.01"/></svg><span>执行轨迹</span></button>
+    <button type="button" role="tab" id="tab-env" aria-controls="page-env" aria-selected="false" data-tab="env"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16"/><path d="M4 17h16"/><circle cx="9" cy="7" r="2.2"/><circle cx="15" cy="17" r="2.2"/></svg><span>环境与口径</span></button>
+  </nav>
+  <div class="sidebar-foot" id="sidebar-foot"></div>
+</aside>
+
+<main>
+
+  <!-- ============================================================ 分析工作台 -->
+  <section class="page active" id="page-run" role="tabpanel" aria-labelledby="tab-run">
+    <div class="workbench">
+
+      <div class="col-left">
+        <div class="card">
+          <h2 class="card-title">任务设置</h2>
+
+          <div class="segmented" role="group" aria-label="执行动作">
+            <button type="button" class="seg active" data-action="analyze">财务分析</button>
+            <button type="button" class="seg" data-action="fetch">抓取公告</button>
+            <button type="button" class="seg" data-action="index">建立索引</button>
+          </div>
+
+          <div id="params-analyze">
+            <label class="field" for="company-search">
+              <span>检索公司<span class="req">任意上市公司均可</span></span>
+              <div class="search-shell">
+                <svg class="search-icon" viewBox="0 0 24 24" width="15" height="15" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                  <circle cx="11" cy="11" r="6.5"></circle><path d="M16 16l4.5 4.5"></path>
+                </svg>
+                <input type="text" id="company-search" autocomplete="off" spellcheck="false"
+                       placeholder="简称或代码，如 茅台 / 600519">
+                <div class="suggest" id="suggest" role="listbox" hidden></div>
+              </div>
+              <div class="hint">
+                简称会实时映射到官方代码。已内置全市场名录，沪深主板、创业板、科创板、北交所、
+                B 股以及银行／保险／证券三类金融报表格式均已支持。
+              </div>
+            </label>
+
+            <div class="selected-head">
+              <span>待分析标的</span>
+              <button type="button" class="link-btn" id="clear-targets" hidden>清空</button>
+            </div>
+            <div class="chips-wrap" id="targets">
+              <span class="empty-inline">尚未选择标的，可从上方检索或使用下方快捷样本。</span>
+            </div>
+
+            <div class="row two">
+              <label class="field" for="since-year">
+                <span>结论起算年份</span>
+                <input type="number" id="since-year" value="2025" min="2000" max="2100">
+              </label>
+              <label class="field" for="periods">
+                <span>展示报告期数</span>
+                <input type="number" id="periods" value="6" min="1" max="20">
+              </label>
+            </div>
+
+            <div class="checks">
+              <label><input type="checkbox" id="refresh"> 忽略缓存重新取数 <code>--refresh</code></label>
+              <label><input type="checkbox" id="quiet"> 精简日志（不打印工具调用）<code>--quiet</code></label>
+            </div>
+          </div>
+
+          <div id="params-fetch" hidden>
+            <label class="field" for="fetch-code">
+              <span>抓取对象</span>
+              <input type="text" id="fetch-code" placeholder="002714 或 牧原股份">
+            </label>
+            <label class="field" for="limit">
+              <span>每类报告保留份数</span>
+              <input type="number" id="limit" value="3" min="1" max="30">
+            </label>
+            <div class="hint">
+              抓取会把公告原文一次性落盘到 <code>data/corpus/</code>，此后检索与引用全部基于本地文件，
+              运行期不再依赖外网——这就是竞赛要求的"封闭/半封闭数据环境"。
+            </div>
+          </div>
+
+          <div id="params-index" hidden>
+            <div class="checks">
+              <label><input type="checkbox" id="force"> 强制重新抽取全部 PDF <code>--force</code></label>
+            </div>
+            <div class="hint">把已落盘的 PDF 原文切成文本块并建立全文索引，供智能体证据检索使用。</div>
+          </div>
+
+          <button class="btn-primary" id="go" type="button">开始运行</button>
+
+          <div class="note">
+            <strong>可复现说明</strong>
+            界面不参与任何计算，只把上方参数翻译成 <code>run.py</code> 命令行并转发输出。
+            同一条命令在终端运行结果完全一致，完整轨迹落在 <code>output/traces/</code>。
+            界面上始终显示本次实际执行的命令，可直接复制复核。
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">覆盖度一键验证<span class="card-sub">各上市地 / 报表格式</span></h2>
+          <div class="samples" id="samples"><span class="empty-inline">读取中…</span></div>
+        </div>
+      </div>
+
+      <div class="col-right">
+        <div class="card card-flush grow" id="run-console">
+          <div class="run-head">
+            <span class="state" id="run-state" data-state="idle"><i class="dot"></i>待运行</span>
+            <code class="cmd" id="run-cmd">尚未执行</code>
+            <button type="button" class="btn-ghost" id="clear-log">清空</button>
+          </div>
+          <pre class="log" id="log"><span class="l-dim">点击「开始运行」后，这里会实时显示智能体的执行过程。同一份过程会逐条写入 output/traces/*.jsonl，可事后核对。
+
+运行时会依次出现以下几类记录：</span>
+<span class="l-file">  文件访问   打开了哪份落盘公告、定位到第几页</span>
+<span class="l-tool">  工具调用   调用了什么工具、入参出参分别是什么</span>
+<span class="l-rule">  指标计算   公式与结果，全部由确定性代码产生并勾稽校验</span>
+<span class="l-ok">  结论       异常信号 / 结构性特征 / 口径提示</span>
+
+<span class="l-dim">建议先运行一次「财务分析」，再切到「执行轨迹」逐条复核证据链。</span></pre>
+          <div class="result-bar" id="result-bar"></div>
+        </div>
+
+        <div class="card" id="corpus-card">
+          <h2 class="card-title">已落盘公告原文<span class="card-sub" id="corpus-sub">封闭数据环境内容</span></h2>
+          <div class="list" id="corpus-list"><div class="empty">读取中…</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 报告 -->
+  <section class="page" id="page-report" role="tabpanel" aria-labelledby="tab-report">
+    <div class="split-side">
+      <div class="card card-flush">
+        <div class="card-title pad">分析报告</div>
+        <div class="list" id="report-list"><div class="empty">读取中…</div></div>
+      </div>
+      <div class="stack">
+        <div class="card card-flush">
+          <div class="run-head">
+            <span class="state" id="report-title" data-state="idle"><i class="dot"></i>未选择报告</span>
+            <div class="view-switch">
+              <button type="button" class="seg active" data-view="md">报告正文</button>
+              <button type="button" class="seg" data-view="table">指标宽表</button>
+            </div>
+          </div>
+          <div class="metrics" id="metrics" hidden></div>
+          <div class="report" id="report-body"><div class="empty">从左侧选择一份报告查看。</div></div>
+          <div class="table-wrap" id="table-body" hidden></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 轨迹 -->
+  <section class="page" id="page-trace" role="tabpanel" aria-labelledby="tab-trace">
+    <div class="split-side">
+      <div class="card card-flush">
+        <div class="card-title pad">运行记录</div>
+        <div class="list" id="trace-list"><div class="empty">读取中…</div></div>
+      </div>
+      <div class="card card-flush">
+        <div class="run-head">
+          <span class="state" id="trace-title" data-state="idle"><i class="dot"></i>未选择轨迹</span>
+          <div class="filters" id="trace-filters"></div>
+        </div>
+        <div class="table-wrap tall" id="trace-body">
+          <div class="empty">从左侧选择一次运行，可逐条核对文件访问、工具调用与计算过程。</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ 环境 -->
+  <section class="page" id="page-env" role="tabpanel" aria-labelledby="tab-env">
+    <div class="workbench">
+      <div class="col-left">
+        <div class="card">
+          <h2 class="card-title">运行环境</h2>
+          <dl class="kv" id="env-kv"><dt>读取中</dt><dd>…</dd></dl>
+        </div>
+        <div class="card">
+          <h2 class="card-title">命令对照</h2>
+          <div class="table-wrap">
+            <table class="data">
+              <thead><tr><th>界面动作</th><th>等价的终端命令</th></tr></thead>
+              <tbody>
+                <tr><td>检索公司</td><td><code>python run.py search 茅台</code></td></tr>
+                <tr><td>抓取公告</td><td><code>python run.py fetch --code 002714</code></td></tr>
+                <tr><td>建立索引</td><td><code>python run.py index</code></td></tr>
+                <tr><td>执行分析</td><td><code>python run.py analyze --code 贵州茅台</code></td></tr>
+                <tr><td>全部测试</td><td><code>python tests\run_all.py</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <h2 class="card-title">推理引擎配置<span class="card-sub">写入本机 config.local.yaml，不入版本库</span></h2>
+          <div class="row two">
+            <label class="field" for="set-base-url">
+              <span>接口地址（OpenAI 兼容）</span>
+              <input type="text" id="set-base-url" spellcheck="false"
+                     placeholder="https://api.deepseek.com/v1">
+            </label>
+            <label class="field" for="set-model">
+              <span>模型名称</span>
+              <input type="text" id="set-model" spellcheck="false" placeholder="deepseek-chat">
+            </label>
+          </div>
+          <label class="field" for="set-api-key">
+            <span>API Key<span class="req" id="key-state">读取中…</span></span>
+            <input type="text" id="set-api-key" spellcheck="false" autocomplete="off"
+                   placeholder="留空则不修改已保存的密钥">
+          </label>
+          <div class="settings-actions">
+            <button type="button" class="btn-primary inline" id="save-settings">保存配置</button>
+            <button type="button" class="btn-ghost" id="reload-settings">重新读取</button>
+            <span class="settings-msg" id="settings-msg"></span>
+          </div>
+          <div class="note">
+            <strong>为什么单独放一个文件</strong>
+            密钥属于个人凭据。保存在 <code>config.local.yaml</code> 后，它只存在于本机、
+            已被 <code>.gitignore</code> 排除，也不会出现在分享的压缩包里。
+            也可以在启动前设置环境变量 <code>FINAGENT_API_KEY</code>，环境变量优先级更高。
+            未配置密钥时系统照常运行，规则引擎与计算结果完全一致，仅把归因推理切换为离线模式。
+          </div>
+        </div>
+        <div class="card">
+          <h2 class="card-title">异常规则阈值<span class="card-sub">config.yaml</span></h2>
+          <div class="table-wrap" id="thresholds"></div>
+          <div class="note">
+            阈值集中配置，便于评审复现与调参。修改 <code>config.yaml</code> 后重新运行即可生效，
+            不需要改动任何代码。
+          </div>
+        </div>
+        <div class="card">
+          <h2 class="card-title">结论分类与报表格式</h2>
+          <div class="legend">
+            <div class="legend-item"><span class="tag tag-anomaly">异常信号</span>
+              <p>数据本身偏离常态，需要解释。系统会给出验证路径，并要求回到公告原文核实。</p></div>
+            <div class="legend-item"><span class="tag tag-structural">结构性特征</span>
+              <p>看似异常，实为行业或资产结构使然，必须说明而非报警。</p></div>
+            <div class="legend-item"><span class="tag tag-caliber">口径提示</span>
+              <p>计算口径本身存在限制，提醒读者不要误读。金融业现金含量即属此类。</p></div>
+          </div>
+          <div class="table-wrap" style="margin-top:14px">
+            <table class="data">
+              <thead><tr><th>报表格式</th><th>适用主体</th><th>科目口径差异</th></tr></thead>
+              <tbody>
+                <tr><td>一般工商业</td><td>制造业、消费、地产、科技等</td>
+                    <td>营业总收入 TOTAL_OPERATE_INCOME</td></tr>
+                <tr><td>银行</td><td>商业银行</td>
+                    <td>营业收入 OPERATE_INCOME；减值列 CREDIT_IMPAIRMENT_LOSS</td></tr>
+                <tr><td>保险</td><td>保险集团与保险公司</td>
+                    <td>营业收入 OPERATE_INCOME；无形资产与长期待摊摊销合并列示</td></tr>
+                <tr><td>证券</td><td>证券公司</td>
+                    <td>营业收入 OPERATE_INCOME；无「销售商品收到的现金」</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+</div><!-- /.shell -->
+
+<script src="/static/md.js"></script>
+<script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,34 @@
+# ---- Python 隔离环境与字节码（每个队友本地各自生成，不要提交）----
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# ---- 运行时数据缓存（可由命令重建，体积小但会频繁变化）----
+data/raw/
+
+# ---- 全文索引（约 16MB，用 python run.py index 重建）----
+data/corpus_index/
+
+# ---- 公告原文（约 74MB，构成封闭数据环境）----
+# 默认不提交：队友可用 python run.py fetch 自行抓取，
+# 或由你通过网盘/U盘单独分发 data/corpus/ 目录。
+# 如果希望队友直接克隆仓库就拿到公告原文，把下面这行注释掉即可。
+data/corpus/
+
+# ---- 本机私有配置（密钥等敏感信息，绝不入库）----
+config.local.yaml
+
+# ---- 运行轨迹（每次运行都会新增，噪音大）----
+output/traces/
+
+# ---- 编辑器与操作系统杂项 ----
+.vscode/
+.idea/
+*.swp
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# ---- 分发包产物（由脚本生成，不必入库）----
+dist/

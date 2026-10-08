@@ -1,0 +1,8 @@
+# 固定版本以确保评审环境可复现（版本经 tests/check_env.py 核对）
+pandas==2.3.3
+numpy==2.4.1
+requests==2.32.5
+PyYAML==6.0.3
+httpx==0.28.1
+pypdf==6.11.0
+mcp==1.27.1

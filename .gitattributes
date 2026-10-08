@@ -1,0 +1,16 @@
+# 统一换行符，避免 Windows / macOS / Linux 之间产生整文件级 diff 噪音。
+# 源码与文档一律 LF；Windows 批处理必须保持 CRLF，否则 cmd 可能解析异常。
+* text=auto eol=lf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# 二进制文件不做换行转换与 diff
+*.png binary
+*.jpg binary
+*.pdf binary
+*.zip binary
+*.xlsx binary
+
+# 公告原文与索引体积大，禁止在网页界面上做文本 diff
+data/corpus/** -diff
+data/corpus_index/** -diff
