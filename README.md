@@ -60,7 +60,7 @@
 ### 0. 从仓库开始（推荐）
 
 ```bash
-git clone <仓库地址> finagent
+git clone https://github.com/ZhengChen1227/finagent.git finagent
 cd finagent
 python -m venv .venv
 .venv\Scripts\activate
