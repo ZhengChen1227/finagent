@@ -1,4 +1,9 @@
-"""配置加载：内置默认值 <- config.yaml <- 环境变量。"""
+"""配置加载：内置默认值 <- config.yaml <- config.local.yaml <- 环境变量。
+
+本项目的输入只有一种：用户上传的财报 PDF。因此配置里不再有
+"数据源""缓存目录""预设公司清单"这类联网取数时代的字段——
+留着它们会让人以为系统还能联网取数。
+"""
 
 from __future__ import annotations
 
@@ -10,11 +15,9 @@ import yaml
 
 DEFAULTS: dict[str, Any] = {
     "data": {
-        "source": "eastmoney",
-        "cache_dir": "data/raw",
-        "corpus_dir": "data/corpus",
-        "index_dir": "data/corpus_index",
-        "refresh": False,
+        # 每一批上传落在 uploads_dir/<run_id>/ 下，PDF 原件与抽取结果同目录存放。
+        # 该目录整体被 .gitignore 排除：用户上传的财报不进入版本库。
+        "uploads_dir": "data/uploads",
     },
     "output": {
         "report_dir": "output/reports",
@@ -31,10 +34,6 @@ DEFAULTS: dict[str, Any] = {
     "agent": {
         "max_steps": 12,
     },
-    "companies": [
-        {"code": "002714.SZ", "name": "牧原股份", "industry": "生猪养殖"},
-        {"code": "000725.SZ", "name": "京东方A", "industry": "显示面板"},
-    ],
     "thresholds": {
         "impairment_yoy_pct": 300.0,
         "impairment_min_amount": 100000000.0,
@@ -61,13 +60,16 @@ def _deep_merge(base: dict, override: dict) -> dict:
 
 LOCAL_CONFIG_NAME = "config.local.yaml"
 
+# 唯一允许出网访问的域名。写在这里是为了让"运行期只连 DeepSeek"这件事
+# 有一个可被测试断言的单一来源，而不是散落在各处的口头约定。
+ALLOWED_HOST = "api.deepseek.com"
+
 
 def local_config_path(path: str = "config.yaml") -> str:
     """本机私有配置的路径。
 
-    团队协作时 config.yaml 是共享的，而密钥必须私有。
-    因此把密钥等敏感项放在同目录的 config.local.yaml，
-    该文件已在 .gitignore 中排除，不会进入版本库。
+    config.yaml 是共享的，而密钥必须私有。
+    因此把密钥放在同目录的 config.local.yaml，该文件已在 .gitignore 中排除。
     """
     return os.path.join(os.path.dirname(os.path.abspath(path)), LOCAL_CONFIG_NAME)
 
@@ -90,14 +92,6 @@ def load_config(path: str = "config.yaml") -> dict:
     return cfg
 
 
-def company_of(cfg: dict, code: str) -> dict:
-    """在配置中查找公司。匹配忽略市场后缀，兼容 002714 与 002714.SZ 两种写法。
-
-    配置中没有的公司返回占位条目，由调用方从数据源补齐名称与行业。
-    """
-    target = str(code).strip().upper()
-    bare_target = target.split(".")[0]
-    for item in cfg.get("companies", []):
-        if item["code"].upper() == target or item["code"].split(".")[0] == bare_target:
-            return dict(item)
-    return {"code": code, "name": code, "industry": "未分类"}
+def uploads_dir(cfg: dict) -> str:
+    """上传根目录的绝对路径。"""
+    return os.path.abspath(cfg["data"]["uploads_dir"])

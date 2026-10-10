@@ -1,11 +1,13 @@
 """大模型客户端（OpenAI 兼容协议，支持 Function Calling）。
 
 竞赛要求"至少使用一个大语言模型作为核心推理引擎，鼓励采用国产模型"。
-本客户端不绑定厂商，通过 base_url 即可对接 DeepSeek、通义千问、智谱 GLM、
-Kimi 等国产模型的 OpenAI 兼容接口。
+本项目选定国产模型 DeepSeek（deepseek-chat / deepseek-reasoner），
+调用地址固定为 https://api.deepseek.com/v1（见 finagent/config.py 的 ALLOWED_HOST）。
+这是全程唯一允许的外部服务：除它之外，运行期不发出任何网络请求。
 
-未配置 API Key 时，上层编排循环会自动切换为确定性离线模式，
-保证评审在无密钥环境下仍能复现完整任务流程与输出结果。
+对外提供的必须是这个客户端：本项目**没有离线降级路径**，
+缺少密钥时上层直接报错并由界面弹出密钥窗，
+而不会用模板文本冒充模型结论。
 """
 
 from __future__ import annotations

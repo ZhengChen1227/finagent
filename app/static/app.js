@@ -1,10 +1,11 @@
 /* ==========================================================================
    FinAgent 界面控制器
    --------------------------------------------------------------------------
-   这个文件只做三件事：
-       1. 把用户的一句话解析成一次明确的动作（哪个公司、做什么、附带什么问题）
-       2. 把 run.py 的子进程输出流渲染成对话
-       3. 把产物（报告 / 指标表 / 轨迹）读回来展示
+   这个文件只做四件事：
+       1. 把用户拖进来的财报 PDF 送到本机服务端解析；
+       2. 把 run.py 子进程的输出与轨迹事件渲染成"运行过程"；
+       3. 把产物（报告 / 指标表 / 结构化结论 / 轨迹）读回来展示；
+       4. 把用户填写的 API Key 交给本机服务端，用完即弃。
 
    它刻意不做任何金融计算。界面上出现的每一个数字都来自
    output/ 下的产物文件，或直接把 CSV 原样渲染成表格。
@@ -32,8 +33,7 @@
   var state = {
     view: "chat",
     status: null,
-    session: null,
-    sessions: [],
+    pending: [],
     running: false,
     abort: null,
     logLines: 0,
@@ -41,27 +41,27 @@
     traceEvents: [],
     traceFilter: "全部",
     reportPath: null,
-    reportTable: null
+    reportTable: null,
+    reportJson: null,
+    runResult: null,
+    pendingRun: null,
+    pendingNotes: []
   };
 
-  /* 同一套前端跑两种形态：
-       实测模式（本地 app/server.py）：一切数据来自 /api/*，可以发起新分析；
-       展示模式（Cloudflare Pages）：一切数据来自 demo/ 下的静态文件，只读。
-     两者的数据结构刻意保持一致，因此下面只在"取数"这一层分叉。 */
-  var STATIC = document.documentElement.hasAttribute("data-static");
-  var DEMO = { manifest: null, traces: {} };
-
+  /* 轨迹事件的中文名。轨迹里记的是程序用的键名，
+     直接展示给用户看会像在念代码，所以在此统一翻译。 */
   var TRACE_LABEL = {
     run_start: "开始", run_end: "结束", target: "分析对象", question: "用户追问",
     step: "阶段", compute: "指标计算", tool_call: "工具调用",
     file_access: "文件访问", finding: "结论", agent_start: "模型启动",
     agent_end: "模型结束", result: "结果", report: "报告生成",
-    rule_scan: "规则引擎", articulation: "勾稽校验", llm_call: "模型推理",
-    corpus_missing: "原文缺失", skip: "跳过", finish: "结束"
+    rule_error: "规则异常", llm_call: "模型推理", uploads_open: "打开上传目录",
+    upload_analyzed: "财报解析", upload_cache_hit: "命中缓存", objective: "任务描述",
+    metrics_block: "指标快照", skip: "跳过", corpus_missing: "原文缺失",
+    verification_failed: "校验未过"
   };
 
-  /* 内部标识 -> 中文名。轨迹里记的是程序用的键名，
-     直接展示给用户看会像在念代码，所以在此统一翻译。 */
+  /* 内部标识 -> 中文名 */
   var METRIC_LABEL = {
     cash_conversion_naive: "现金含量(朴素)", cash_conversion_adjusted: "现金含量(调整后)",
     gross_margin: "毛利率", net_margin: "净利率", deduct_net_margin: "扣非净利率",
@@ -70,27 +70,20 @@
     minority_ratio: "少数股东损益占比", collect_ratio: "收现比"
   };
   var STAGE_LABEL = {
-    fetch_data: "取数", compute_metrics: "算指标", articulation_check: "勾稽校验",
-    anomaly_rules: "跑规则", agent_reasoning: "模型推理", attribution: "归因",
-    load_universe: "加载名录", fetch_corpus: "抓公告"
+    compute_metrics: "算指标", articulation_check: "勾稽校验",
+    anomaly_rules: "跑规则", agent_reasoning: "模型推理"
   };
   var TOOL_LABEL = {
-    normalize: "规整报表", get_indicator: "取指标", search_disclosure: "检索公告",
-    anomaly_rules: "异常规则", run_anomaly_rules: "异常规则",
-    articulation_check: "勾稽校验", check_articulation: "勾稽校验",
-    list_corpus: "列出原文", list_periods: "列出报告期", compare_companies: "跨公司对比",
-    compute_growth: "算同比环比", read_page: "读原文页", load_skill: "载入技能",
-    list_skills: "列出技能", build_index: "建全文索引", resolve_profile: "取主体画像",
-    load_universe: "加载名录", fetch_corpus: "抓取公告", resolve_report_family: "识别报表族",
-    resolve_secucode: "解析代码", llm_attribution: "模型归因", http_get: "取数请求"
+    get_indicator: "取指标", compute_growth: "算同比环比",
+    search_disclosure: "检索上传原文", run_anomaly_rules: "异常规则",
+    check_articulation: "勾稽校验", list_materials: "列出上传材料",
+    list_periods: "列出报告期", compare_subjects: "跨主体对比",
+    list_verification: "查看交叉校验", read_page: "读原文页",
+    load_skill: "载入技能", list_skills: "列出技能", build_index: "建全文索引",
+    compute_metrics: "算指标"
   };
 
-  /* 过程块只展示"对理解这件事有意义"的事件。
-     记账类事件（run_start / run_end / agent_start / step 之外的内部步骤）
-     留在轨迹页里逐条可查，但不该挤占对话的注意力。 */
-  var PROC_HIDE = { run_start: 1, run_end: 1, agent_start: 1, report: 1 };
-
-  /* ---------------------------------------------------------------- 工具函数 */
+  /* ---------------------------------------------------------------- 小工具 */
 
   function fmtBytes(n) {
     n = Number(n) || 0;
@@ -102,6 +95,7 @@
 
   function fmtTime(ts) {
     var d = new Date((Number(ts) || 0) * 1000);
+    if (isNaN(d.getTime())) return "—";
     var p = function (v) { return (v < 10 ? "0" : "") + v; };
     return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) +
       " " + p(d.getHours()) + ":" + p(d.getMinutes());
@@ -113,135 +107,59 @@
     return p(d.getHours()) + ":" + p(d.getMinutes()) + ":" + p(d.getSeconds());
   }
 
-  /* 报告里的金额单位已经是亿元，这里只做格式化。
-     再除一次 1e8 会把 594.10 亿显示成 0.00 亿。 */
-  function fmtYi(v) {
+  function yi(v) {
+    if (v === null || v === undefined || isNaN(Number(v))) return "—";
+    var n = Number(v) / 1e8;
+    return (Math.abs(n) >= 1000 ? n.toFixed(0) : n.toFixed(2)) + " 亿";
+  }
+
+  function pctText(v, digits) {
+    if (v === null || v === undefined || isNaN(Number(v))) return "—";
+    digits = digits === undefined ? 2 : digits;
     var n = Number(v);
-    if (!isFinite(n)) return "—";
-    // 银行等巨额用万亿更好读，否则 13690 亿这种写法要数零。
-    if (Math.abs(n) >= 10000) return (n / 10000).toFixed(2) + " 万亿";
-    var s = Math.abs(n) >= 1000 ? n.toFixed(0)
-          : (Math.abs(n) >= 100 ? n.toFixed(1) : n.toFixed(2));
-    return s + " 亿";
+    return (n >= 0 ? "+" : "") + n.toFixed(digits) + "%";
   }
-
-  /* 百分比小于 1 时多留一位小数，否则 +0.04% 会被四舍五入成 +0.0%，
-     看上去像没变化，但方向箭头又往上，自相矛盾。 */
-  function pctDigits(v) {
-    return Math.abs(Number(v)) < 1 ? 2 : 1;
-  }
-
-  function pct(v, digits) {
-    var n = Number(v);
-    if (!isFinite(n)) return "—";
-    var d = digits === undefined ? pctDigits(n) : digits;
-    return (n >= 0 ? "+" : "") + n.toFixed(d) + "%";
-  }
-
-  /* 百分点变动不能带 % 号：“-22.10 个百分点”不是“-22.10%”。 */
-  function signed(v, digits) {
-    var n = Number(v);
-    if (!isFinite(n)) return "—";
-    return (n >= 0 ? "+" : "") + n.toFixed(digits === undefined ? 2 : digits);
-  }
-
-  function num(text) {
-    if (text === null || text === undefined) return NaN;
-    var t = String(text).replace(/[,%+]/g, "").trim();
-    if (!t || t === "—" || t === "-") return NaN;
-    return Number(t);
-  }
-
-  /* 把 "2026Q2" 映射到 "2025Q2"，用于计算同比 */
-  function lastYear(period) {
-    var m = String(period || "").match(/^(\d{4})(Q\d)$/i);
-    if (!m) return null;
-    return (Number(m[1]) - 1) + m[2].toUpperCase();
-  }
-
-  /* ---------------------------------------------------------------- 主题 */
 
   function applyTheme(theme, persist) {
     document.documentElement.setAttribute("data-theme", theme);
-    var label = $("theme-label");
-    var icon = $("btn-theme").querySelector("use");
-    if (label) label.textContent = theme === "dark" ? "浅色模式" : "深色模式";
-    if (icon) icon.setAttribute("href", theme === "dark" ? "#i-sun" : "#i-moon");
+    $("theme-label").textContent = theme === "dark" ? "浅色模式" : "深色模式";
+    $("btn-theme").querySelector("use").setAttribute("href",
+      theme === "dark" ? "#i-sun" : "#i-moon");
     if (persist) Store.set("theme", theme);
   }
 
   function initTheme() {
-    var forced = (location.search.match(/[?&]theme=(dark|light)/) || [])[1];
-    applyTheme(forced || Store.get("theme", "light"), false);
+    var saved = Store.get("theme", null);
+    if (!saved) {
+      saved = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark" : "light";
+    }
+    applyTheme(saved, false);
   }
-
-  /* ---------------------------------------------------------------- 视图切换 */
 
   function showView(name) {
     state.view = name;
-    var views = document.querySelectorAll(".view");
-    for (var i = 0; i < views.length; i++) views[i].classList.remove("active");
-    var target = $("view-" + name);
-    if (target) target.classList.add("active");
-
-    var navs = document.querySelectorAll(".nav-item");
-    for (var j = 0; j < navs.length; j++) {
-      var on = navs[j].getAttribute("data-view") === name;
-      navs[j].classList.toggle("active", on);
-      navs[j].setAttribute("aria-selected", on ? "true" : "false");
-    }
-    closeRailOnMobile();
-    if (name === "report") loadReports();
-    if (name === "trace") loadTraces();
+    var views = ["chat", "report", "trace", "env"];
+    views.forEach(function (v) {
+      $("view-" + v).classList.toggle("active", v === name);
+      var nav = $("nav-" + v);
+      nav.classList.toggle("active", v === name);
+      nav.setAttribute("aria-selected", v === name ? "true" : "false");
+    });
     if (name === "env") loadEnv();
+    document.getElementById("app").classList.remove("rail-open");
+    if (window.innerWidth <= 900) { $("app").classList.remove("rail-open"); }
   }
 
-  function closeRailOnMobile() { $("app").classList.remove("rail-open"); }
-
-  /* ---------------------------------------------------------------- 后端调用 */
+  /* ---------------------------------------------------------------- 网络 */
 
   function api(path, options) {
     return fetch(path, options).then(function (r) {
       return r.json().then(function (j) {
-        if (!r.ok || j.ok === false) throw new Error(j.error || ("请求失败 " + r.status));
+        if (!r.ok || j.ok === false) throw new Error(j.error || ("请求失败：" + r.status));
         return j;
       });
     });
-  }
-
-  /* 展示模式下读取本地静态文件，实测模式下走接口。返回结构一致。 */
-  function fetchReport(ref) {
-    if (STATIC) {
-      return fetch(ref).then(function (r) {
-        if (!r.ok) throw new Error("报告不存在");
-        return r.text();
-      }).then(function (t) { return { ok: true, path: ref, markdown: t }; });
-    }
-    return api("/api/report?path=" + encodeURIComponent(ref));
-  }
-
-  function fetchTable(ref) {
-    if (STATIC) {
-      return fetch(ref).then(function (r) {
-        if (!r.ok) throw new Error("指标表不存在");
-        return r.json();
-      });
-    }
-    return api("/api/table?path=" + encodeURIComponent(ref));
-  }
-
-  function fetchTrace(run, ref) {
-    if (STATIC) {
-      if (DEMO.traces[ref]) return Promise.resolve(DEMO.traces[ref]);
-      return fetch(ref).then(function (r) { return r.json(); });
-    }
-    return api("/api/trace?run=" + encodeURIComponent(run));
-  }
-
-  function loadManifest() {
-    if (DEMO.manifest) return Promise.resolve(DEMO.manifest);
-    return fetch("demo/manifest.json").then(function (r) { return r.json(); })
-      .then(function (j) { DEMO.manifest = j; return j; });
   }
 
   function apiPost(path, body) {
@@ -252,77 +170,60 @@
     });
   }
 
-  /* ---------------------------------------------------------------- API Key */
-
   function currentLLM() {
-    // 优先级：本次会话在界面上填写的 -> 服务端已配置的
-    var mine = Store.get("llm", null) || state.mine || null;
-    if (mine && mine.api_key) return mine;
-    var st = state.status || {};
-    if (st.api_key_set) return { api_key: "__server__", base_url: st.base_url, model: st.model };
-    return null;
+    var k = Store.get("api_key", "");
+    return k ? { api_key: k, model: Store.get("model", "deepseek-chat") } : null;
   }
 
   function hasKey() { return !!currentLLM(); }
 
   function refreshKeyUI() {
-    var mine = Store.get("llm", null) || state.mine || {};
-    var st = state.status || {};
     var ok = hasKey();
-    var text;
-    if (mine.api_key) text = "已填写 " + (mine.api_key.slice(0, 6)) + "…";
-    else if (st.api_key_set) text = "服务端已配置";
-    else text = "未配置密钥";
-
-    $("key-label").textContent = text;
+    var llm = currentLLM();
+    $("key-label").textContent = ok ? "已配置密钥" : "未配置密钥";
     $("key-dot").className = "dot " + (ok ? "on" : "off");
-    $("key-chip").textContent = ok ? "密钥已就绪" : "填写 API Key";
+    $("key-chip").textContent = ok ? "更换 API Key" : "填写 API Key";
     $("btn-key-2").classList.toggle("warn", !ok);
     $("model-dot").className = "dot " + (ok ? "" : "off");
-    $("model-name").textContent = mine.model || st.model || "deepseek-chat";
-
-    $("composer-hint").textContent = ok
-      ? "数据来自巨潮资讯网公告原文与东方财富公开接口，全部计算可回溯"
-      : "请先填写你自己的大模型 API Key，然后就可以开始分析任意上市公司";
   }
 
   function openKeyModal() {
-    var mine = Store.get("llm", null) || state.mine || {};
-    var st = state.status || {};
-    $("in-key").value = mine.api_key || "";
-    $("in-base").value = mine.base_url || st.base_url || "https://api.deepseek.com/v1";
-    $("in-model").value = mine.model || st.model || "deepseek-chat";
-    $("in-remember").checked = !!mine.api_key;
+    var cfg = (state.status && state.status.model) || "deepseek-chat";
+    $("in-key").value = Store.get("api_key", "");
+    $("in-model").value = Store.get("model", cfg);
+    $("in-remember").checked = !!Store.get("api_key", "");
     $("key-err").hidden = true;
     $("key-ok").hidden = true;
     $("modal-key").classList.add("open");
+    $("mask").classList.add("on");
     setTimeout(function () { $("in-key").focus(); }, 60);
   }
 
-  function closeKeyModal() { $("modal-key").classList.remove("open"); }
+  function closeKeyModal() {
+    $("modal-key").classList.remove("open");
+    $("mask").classList.remove("on");
+  }
 
   function readKeyForm() {
     return {
       api_key: $("in-key").value.trim(),
-      base_url: $("in-base").value.trim() || "https://api.deepseek.com/v1",
-      model: $("in-model").value.trim() || "deepseek-chat"
+      model: $("in-model").value
     };
   }
 
   function testKey() {
     var v = readKeyForm();
-    var err = $("key-err"), ok = $("key-ok");
-    err.hidden = true; ok.hidden = true;
-    if (!v.api_key) { err.textContent = "请先填写 API Key"; err.hidden = false; return; }
+    if (!v.api_key) { $("key-err").hidden = false; $("key-err").textContent = "请先填写 API Key"; return; }
+    $("key-err").hidden = true;
+    $("key-ok").hidden = true;
     $("btn-key-test").disabled = true;
     $("btn-key-test").textContent = "测试中…";
     apiPost("/api/key/verify", v).then(function (r) {
-      ok.textContent = "连接成功" + (r.models && r.models.length
-        ? "，可用模型 " + r.models.length + " 个（含 " + r.models.slice(0, 3).join("、") + "）" : "");
-      ok.hidden = false;
+      $("key-ok").hidden = false;
+      $("key-ok").textContent = "连接正常，可用模型：" + (r.models || []).join("、");
     }).catch(function (e) {
-      err.textContent = e.message;
-      err.hidden = false;
+      $("key-err").hidden = false;
+      $("key-err").textContent = e.message;
     }).then(function () {
       $("btn-key-test").disabled = false;
       $("btn-key-test").textContent = "测试连接";
@@ -331,13 +232,21 @@
 
   function saveKey() {
     var v = readKeyForm();
-    if (!v.api_key) { testKey(); return; }
-    if ($("in-remember").checked) Store.set("llm", v);
-    else Store.del("llm");
-    state.mine = v;
+    if (!v.api_key) { $("key-err").hidden = false; $("key-err").textContent = "请先填写 API Key"; return; }
+    if ($("in-remember").checked) {
+      Store.set("api_key", v.api_key);
+    } else {
+      Store.del("api_key");
+    }
+    Store.set("model", v.model);
+    // 同时写进本机 config.local.yaml，供命令行 run.py 复现同一套配置。
+    apiPost("/api/settings", v).then(function () {
+      pushLog("推理引擎配置已保存（接口地址固定为 api.deepseek.com）", "sys");
+    }).catch(function (e) {
+      pushLog("配置写入本机文件失败：" + e.message + "（不影响本次使用）", "err");
+    });
     refreshKeyUI();
     closeKeyModal();
-    pushLog("已填写大模型密钥（" + v.model + " @ " + v.base_url + "），只在本次运行中使用", "sys");
   }
 
   /* ---------------------------------------------------------------- 日志抽屉 */
@@ -346,1059 +255,537 @@
     var box = $("logbox");
     if (!box) return;
     var div = document.createElement("div");
-    div.className = "l " + (cls || "");
+    div.className = "l " + (cls || "sys");
     div.textContent = "[" + fmtClock() + "] " + text;
     box.appendChild(div);
     state.logLines++;
-    if (state.logLines > 3000) { box.removeChild(box.firstChild); state.logLines--; }
-    var parent = box.parentElement;
-    if (parent.scrollHeight - parent.scrollTop < parent.clientHeight + 300) {
-      parent.scrollTop = parent.scrollHeight;
+    while (box.childNodes.length > 800) { box.removeChild(box.firstChild); }
+    if (box.parentElement.scrollHeight - box.parentElement.scrollTop < 900 ||
+        state.logLines % 12 === 0) {
+      box.parentElement.scrollTop = box.parentElement.scrollHeight;
     }
   }
 
   function classifyLog(line) {
-    if (/错误|失败|异常|Traceback|Error/.test(line)) return "err";
-    if (/命中|异常信号|规则/.test(line)) return "hit";
-    if (/工具|调用|tool/.test(line)) return "tool";
-    return "";
+    if (!line) return "sys";
+    if (/错误|失败|error|Error|Traceback|Exception/.test(line)) return "err";
+    if (/\[工具\]|工具调用|tool_call/.test(line)) return "tool";
+    if (/结论|命中|异常信号/.test(line)) return "hit";
+    return "sys";
   }
 
-  function openDrawer() {
-    $("drawer").classList.add("open");
-    $("mask").classList.add("on");
-    $("drawer").setAttribute("aria-hidden", "false");
-    var body = $("logbox").parentElement;
-    body.scrollTop = body.scrollHeight;
-  }
-  function closeDrawer() {
-    $("drawer").classList.remove("open");
-    $("mask").classList.remove("on");
-    $("drawer").setAttribute("aria-hidden", "true");
-  }
+  function openDrawer() { $("drawer").classList.add("open"); $("drawer").setAttribute("aria-hidden", "false"); }
+  function closeDrawer() { $("drawer").classList.remove("open"); $("drawer").setAttribute("aria-hidden", "true"); }
 
-  /* ---------------------------------------------------------------- 会话模型 */
+  /* ---------------------------------------------------------------- 上传 */
 
-  function newSession(keepMessages) {
-    var s = {
-      id: "s" + Date.now().toString(36),
-      title: "新的分析",
-      ts: Date.now() / 1000,
-      messages: keepMessages ? state.session.messages.slice() : []
-    };
-    state.session = s;
-    if (!keepMessages) {
-      state.sessions.unshift(s);
-      state.sessions = state.sessions.slice(0, 30);
+  function renderPending() {
+    var items = state.pending || [];
+    $("pending-count").textContent = items.length + " 份";
+    $("count-pending").textContent = items.length;
+    var box = $("up-list");
+    if (!items.length) {
+      box.innerHTML = "";
+      box.hidden = true;
+    } else {
+      box.hidden = false;
+      box.innerHTML = items.map(function (it) {
+        var cls = it.confidence === "error" ? "bad" : (it.confidence === "warn" ? "warn" : "ok");
+        var icon = it.confidence === "ok" ? "#i-check" : "#i-alert";
+        var meta = [];
+        if (it.code) meta.push(it.code);
+        meta.push(it.report_kind_label || "未知报告类型");
+        meta.push(it.report_date || "未识别报告期");
+        meta.push(it.pages + " 页 · " + fmtBytes(it.bytes));
+        meta.push("抽到科目 " + (it.fields_total || 0) + " 项");
+        if (it.checks_passed !== null && it.checks_passed !== undefined) {
+          meta.push("校验通过 " + it.checks_passed +
+            (it.checks_failed ? " / 未过 " + it.checks_failed : ""));
+        }
+        var issues = (it.issues || []).map(function (s) {
+          return '<div class="up-issue">' + esc(s) + "</div>";
+        }).join("");
+        return '<div class="up-card ' + cls + '">' +
+          '<svg width="17" height="17"><use href="' + icon + '"/></svg>' +
+          '<div class="up-main">' +
+            '<div class="up-name">' + esc(it.filename) + "</div>" +
+            '<div class="up-subject">' + esc(it.subject) + "</div>" +
+            '<div class="up-meta">' + esc(meta.join(" · ")) + "</div>" +
+            issues +
+          "</div>" +
+          '<button class="icon-btn up-del" type="button" data-file="' +
+            esc(it.filename) + '" title="移出本批（不删除本机文件）">' +
+            '<svg width="15" height="15"><use href="#i-close"/></svg></button>' +
+          "</div>";
+      }).join("");
     }
-    persistSessions();
-    return s;
+    var notes = (state.pendingNotes || []);
+    $("pending-notes").hidden = !notes.length;
+    $("pending-notes").innerHTML = notes.map(function (n) { return "· " + esc(n); }).join("<br>");
+    refreshRunState();
   }
 
-  function persistSessions() {
-    // 只保存渲染所需的数据，绝不保存任何密钥
-    var clean = state.sessions.slice(0, 30).map(function (s) {
-      return {
-        id: s.id, title: s.title, ts: s.ts,
-        messages: s.messages.map(function (m) {
-          var c = JSON.parse(JSON.stringify(m));
-          if (c.events) c.events = c.events.slice(0, 260);
-          if (c.resultCard && c.resultCard.reports) {
-            c.resultCard.reports = c.resultCard.reports.slice(0, 8);
-          }
-          delete c.streaming;
-          return c;
-        })
-      };
-    });
-    Store.set("sessions", clean);
-  }
-
-  function loadSessions() {
-    state.sessions = Store.get("sessions", []) || [];
-    state.session = state.sessions.length ? state.sessions[0] : newSession(false);
-  }
-
-  /* ---------------------------------------------------------------- 意图解析 */
-
-  /* 把用户的一句话翻译成一次明确的动作。
-     规则表从上到下匹配，第一条命中即生效——顺序本身就是优先级。
-     写死在这里是为了让"系统当时是怎么理解我的"完全可解释、可复核。 */
-  var ANALYZE_HINT = /分析|看看|看一下|看下|查一下|查查|研究|诊断|体检|为什么|为何|怎么|如何|怎么样|是否|有没有|对比|比较|估值|风险|质量/;
-  var FETCH_HINT = /抓取|抓下|下载|获取|拉取|更新/;
-  var INDEX_HINT = /索引|检索库/;
-
-  function parseAction(text) {
-    if (ANALYZE_HINT.test(text)) return "analyze";
-    if (INDEX_HINT.test(text) && /建|重建|更新|做|生成/.test(text)) return "index";
-    if (FETCH_HINT.test(text) && /公告|原文|财报|年报|季报|报告|数据/.test(text)) return "fetch";
-    if (INDEX_HINT.test(text)) return "index";
-    if (FETCH_HINT.test(text)) return "fetch";
-    return "analyze";
-  }
-
-  function stripActionWords(text) {
-    // 追问内容里去掉纯操作动词，让交给模型的问题更聚焦
-    return text.replace(/^\s*(请|帮我|帮忙|麻烦|我想|我要|现在)?\s*(分析一下|分析|看看|看一下|查一下|研究一下|诊断一下)\s*/, "").trim() || text.trim();
-  }
-
-  /* ---------------------------------------------------------------- 对话渲染 */
-
-  var SUGGESTS = [
-    { t: "牧原股份 2026 中报为什么亏损", d: "亏损期确认所得税、减值激增等信号归因", q: "分析牧原股份 2026 年中报为什么亏损" },
-    { t: "京东方利润和现金流差这么多", d: "账面利润与经营现金流背离的成因", q: "京东方账面利润和经营现金流差这么多是什么原因" },
-    { t: "工商银行这个半年报怎么样", d: "金融业报表口径下的异常与口径提示区分", q: "分析工商银行 2026 年半年报的业绩表现" },
-    { t: "贵州茅台的关键指标", d: "稳健样本，用来对照亏损与背离", q: "分析贵州茅台最近几期的关键财务指标" }
-  ];
-
-  function renderSuggests() {
-    var box = $("suggest-grid");
-    if (STATIC && !DEMO.manifest) {
-      box.innerHTML = '<div class="empty" style="text-align:center">正在读取实录数据…</div>';
-      return;
-    }
-    var cards = SUGGESTS;
-    if (STATIC && DEMO.manifest && DEMO.manifest.demos.length) {
-      cards = DEMO.manifest.demos.map(function (d) {
-        return {
-          t: d.name + "（" + d.secucode + "）",
-          d: "实录回放 · " + d.findings + " 条结论，其中高优先级 " + d.high + " 条",
-          q: d.question, demo: d
-        };
-      });
-    }
-    box.innerHTML = cards.map(function (s) {
-      return '<button class="suggest-card" type="button" data-q="' + esc(s.q) + '">' +
-        "<b>" + esc(s.t) + "</b><span>" + esc(s.d) + "</span></button>";
-    }).join("");
-    box.onclick = function (ev) {
-      var btn = ev.target.closest(".suggest-card");
-      if (!btn) return;
-      var q = btn.getAttribute("data-q");
-      if (STATIC) {
-        var hit = (DEMO.manifest.demos || []).filter(function (d) { return d.question === q; })[0];
-        if (hit) { replayDemo(hit); return; }
-      }
-      $("q").value = q;
-      autoGrow();
-      send();
-    };
-  }
-
-  /* 展示站的对话不是实时计算，而是把一次真实运行的过程与产物放一遍。
-     这一点在界面上必须说清楚——把回放包装成"正在分析"是不诚实的。 */
-  function replayDemo(demo, askedText) {
+  function refreshRunState() {
     if (state.running) return;
-    // 找这次运行产出的报告：优先用清单里的 slug 定位，回退到公司名匹配
-    var report = ((state.status || {}).reports || []).filter(function (r) {
-      if (demo.reportSlug) return r.path.indexOf("/" + demo.reportSlug + ".md") >= 0;
-      return r.name.indexOf(demo.name) === 0;
-    })[0];
-
-    state.session.messages.push({
-      role: "user", text: askedText || demo.question,
-      actionLabel: "动作：财务分析（实录回放）",
-      targets: [{ code: demo.secucode, name: demo.name }]
-    });
-    if (state.session.messages.length === 1) {
-      state.session.title = "回放 · " + demo.name;
-      state.session.ts = Date.now() / 1000;
-      renderThreads();
+    var n = (state.pending || []).length;
+    var ok = n > 0 && hasKey();
+    $("btn-run").disabled = !ok;
+    if (state.runResult) {
+      // 上次运行的结果文案要留住：否则周期刷新会把它抹掉，
+      // 用户就看不到"跑完了没有"这件事。
+      $("run-state").textContent = state.runResult.text;
+      $("run-state").className = "tag " + state.runResult.cls;
+      return;
     }
+    $("run-state").textContent = !n ? "等待上传材料"
+      : (!hasKey() ? "请先填写 API Key（右上角）" : "就绪，准备分析 " + n + " 份材料");
+    $("run-state").className = "tag" + (ok ? " accent" : "");
+  }
 
-    var a = {
-      role: "assistant", events: [], text: "", streaming: true,
-      startedAt: Date.now(), resultCard: null, error: null
+  function setRunState(text, cls) {
+    state.runResult = { text: text, cls: cls || "" };
+    $("run-state").textContent = text;
+    $("run-state").className = "tag " + (cls || "");
+  }
+
+  function uploadFiles(files) {
+    var list = Array.prototype.slice.call(files || []).filter(function (f) {
+      return /\.pdf$/i.test(f.name);
+    });
+    if (!list.length) { pushLog("没有可用的 PDF 文件（只接受 .pdf）", "err"); return; }
+    $("dropzone").classList.add("busy");
+    $("run-state").textContent = "正在解析 " + list.length + " 份文件…";
+    var seq = Promise.resolve();
+    list.forEach(function (file) {
+      seq = seq.then(function () {
+        pushLog("上传 " + file.name + "（" + fmtBytes(file.size) + "）", "sys");
+        var fd = new FormData();
+        fd.append("file", file, file.name);
+        return fetch("/api/upload", { method: "POST", body: fd })
+          .then(function (r) { return r.json(); })
+          .then(function (j) {
+            if (!j.ok && j.error) throw new Error(j.error);
+            (j.added || []).forEach(function (it) {
+              pushLog("解析完成：" + it.filename + " → " + it.subject + " " +
+                (it.report_date || "") + "，科目 " + (it.fields_total || 0) + " 项" +
+                (it.checks_failed ? "，校验未过 " + it.checks_failed + " 项" : ""),
+                it.confidence === "error" ? "err" : "tool");
+            });
+            (j.rejected || []).forEach(function (it) {
+              pushLog("被拒绝：" + it.filename + " —— " + it.error, "err");
+            });
+            state.pending = j.items || [];
+            state.pendingNotes = j.notes || [];
+            state.pendingRun = j.run_id || null;
+            state.runResult = null;
+            renderPending();
+          });
+      });
+    });
+    return seq.then(function () {
+      $("dropzone").classList.remove("busy");
+      renderPending();
+    }).catch(function (e) {
+      $("dropzone").classList.remove("busy");
+      pushLog("上传失败：" + e.message, "err");
+      setRunState("上传失败：" + e.message, "");
+    });
+  }
+
+
+  function clearPending() {
+    if (state.running) { pushLog("正在运行，无法清空本批材料", "err"); return; }
+    apiPost("/api/upload/clear", {}).then(function () {
+      state.pending = [];
+      state.pendingNotes = [];
+      state.pendingRun = null;
+      renderPending();
+      pushLog("已清空当前批次（本机上的 PDF 原件仍保留在 data/uploads 下）", "sys");
+    }).catch(function (e) { pushLog("清空失败：" + e.message, "err"); });
+  }
+
+  /* ---------------------------------------------------------------- 运行 */
+
+  function startRun() {
+    if (state.running) return;
+    if (!(state.pending || []).length) { pushLog("请先上传财报 PDF", "err"); return; }
+    var llm = currentLLM();
+    if (!llm) { openKeyModal(); return; }
+
+    var params = {
+      action: "analyze",
+      upload_ids: (state.pending || []).map(function (x) { return x.upload_id; }),
+      run_id: state.pendingRun || undefined,
+      api_key: llm.api_key,
+      model: llm.model,
+      question: ($("q").value || "").trim()
     };
-    state.session.messages.push(a);
-    setRunning(true);
-    renderChat();
 
-    var entry = ((state.status || {}).traces || []).filter(function (t) {
-      return t.run === demo.run;
-    })[0];
+    state.running = true;
+    $("btn-run").disabled = true;
+    $("btn-stop").hidden = false;
+    $("panel-run").hidden = false;
+    $("run-steps").innerHTML = "";
+    $("run-kpis").hidden = true;
+    $("run-kpis").innerHTML = "";
+    setRunState("运行中…", "accent");
+    openDrawer();
+    pushLog("开始分析：" + params.upload_ids.length + " 份材料，模型 " + params.model, "sys");
 
-    fetchTrace(demo.run, entry && entry.file).then(function (events) {
-      var list = Array.isArray(events) ? events : (events.events || []);
-      var i = 0;
-      var step = Math.max(1, Math.ceil(list.length / 60));
-      var timer = setInterval(function () {
-        for (var n = 0; n < step && i < list.length; n++, i++) {
-          a.events.push(list[i]);
-        }
-        a.elapsed = ((Date.now() - a.startedAt) / 1000).toFixed(0) + "s";
-        if (i >= list.length) {
-          clearInterval(timer);
-          a.streaming = false;
-          a.text = "以上是一次真实运行的完整过程记录。下面是这次运行产出的结论概要，" +
-            "完整报告可点开查看，也可以下载 PDF。";
-          a.resultCard = {
-            ok: true, seconds: (a.elapsed || "").replace("s", ""), run_id: demo.run,
-            reports: report ? [{ name: report.name, path: report.path }] : [],
-            kpis: []
-          };
-          setRunning(false);
-          persistSessions();
-          renderChat();
-          if (report) {
-            fetchReport(report.path).then(function (r) {
-              var kpis = quickKpis(r.markdown);
-              if (kpis.length) { a.resultCard.kpis = kpis; renderChat(); persistSessions(); }
-            }).catch(function () { });
-          }
-          return;
-        }
-        var proc = document.querySelector(".proc[data-live]");
-        if (proc) {
-          var holder = document.createElement("div");
-          holder.innerHTML = renderProcess(a, state.session.messages.indexOf(a));
-          var fresh = holder.firstChild;
-          fresh.classList.add("open");
-          proc.parentNode.replaceChild(fresh, proc);
-        }
-      }, 90);
-    }).catch(function (e) {
-      setRunning(false);
-      finishAssistant(a, { error: "回放数据读取失败：" + e.message });
-    });
-  }
+    var started = Date.now();
+    var timer = setInterval(function () {
+      $("run-clock").textContent = ((Date.now() - started) / 1000).toFixed(1) + "s";
+    }, 100);
 
-  function renderChat() {
-    var wrap = $("messages");
-    var msgs = state.session ? state.session.messages : [];
-    $("welcome").hidden = msgs.length > 0;
-    wrap.innerHTML = msgs.map(renderMessage).join("");
-    var last = wrap.querySelector(".proc[data-live='1']");
-    if (last) last.classList.add("open");
-    scrollToEnd();
-  }
+    var controller = ("AbortController" in window) ? new AbortController() : null;
+    state.abort = controller;
 
-  function renderMessage(m, index) {
-    return m.role === "user" ? renderUser(m, index) : renderAssistant(m, index);
-  }
-
-  function renderUser(m, index) {
-    var targets = "";
-    if (m.targets && m.targets.length) {
-      targets = '<div class="targets">' + m.targets.map(function (t, i) {
-        return '<span class="target">' + esc(t.name) + " <small>" + esc(t.code) + "</small>" +
-          '<button type="button" data-drop="' + index + ":" + i + '" title="移除该对象">×</button></span>';
-      }).join("") + "</div>";
-    }
-    return '<div class="msg user"><div style="min-width:0;max-width:82%">' +
-      '<div class="bubble">' + esc(m.text) + "</div>" + targets +
-      (m.actionLabel ? '<div class="msg-note" style="text-align:right">' + esc(m.actionLabel) + "</div>" : "") +
-      "</div></div>";
-  }
-
-  function renderAssistant(m, index) {
-    var body = "";
-    if (m.events && m.events.length) body += renderProcess(m, index);
-
-    if (m.text) {
-      body += '<div class="answer">' + FinMD.render(m.text) +
-        (m.streaming ? '<span class="caret-blink"></span>' : "") + "</div>";
-    } else if (m.streaming && (!m.events || !m.events.length)) {
-      body += '<div class="answer"><span style="color:var(--muted)">正在准备…</span>' +
-        '<span class="caret-blink"></span></div>';
-    }
-
-    if (m.error) body += '<div class="msg-error">' + esc(m.error) + "</div>";
-    if (m.resultCard) body += renderResultCard(m);
-
-    return '<div class="msg assistant"><div class="avatar">智</div><div class="body">' +
-      body + "</div></div>";
-  }
-
-  function renderProcess(m, index) {
-    var evs = m.events;
-    var tools = 0, files = 0, findings = 0;
-    evs.forEach(function (e) {
-      if (e.event === "tool_call") tools++;
-      else if (e.event === "file_access") files++;
-      else if (e.event === "finding") findings++;
-    });
-    var bits = [];
-    if (tools) bits.push(tools + " 条执行事件");
-    if (files) bits.push(files + " 次文件访问");
-    if (findings) bits.push(findings + " 条结论");
-    var summary = bits.length ? bits.join(" · ") : (m.streaming ? "正在执行…" : "执行完成");
-
-    var rows = summariseEvents(evs).map(function (r) {
-      return '<div class="ev' + (r.hit ? " hit" : "") + '">' +
-        '<span class="ev-icon">' + (r.hit ? "●" : "·") + "</span>" +
-        '<span class="ev-kind">' + esc(r.kind) + "</span>" +
-        '<span class="ev-text">' + esc(r.text) + "</span></div>";
-    }).join("") +
-      '<div class="ev"><span class="ev-icon">→</span><span class="ev-kind">完整记录</span>' +
-      '<span class="ev-text">上面是执行摘要；逐条的文件访问、工具出入参与计算明细，' +
-      '在左侧「执行轨迹」里可以按类型筛选核对。</span></div>';
-
-    return '<div class="proc"' + (m.streaming ? ' data-live="1"' : "") + ">" +
-      '<button class="proc-head" type="button" data-proc="' + index + '">' +
-      '<span class="caret"><svg width="13" height="13"><use href="#i-caret"/></svg></span>' +
-      (m.streaming ? '<span class="spinner"></span>' : "") +
-      '<span class="summary">' + esc(summary) + "</span>" +
-      '<span class="tick">' + esc(m.elapsed || "") + "</span>" +
-      "</button>" +
-      '<div class="proc-body">' + rows + "</div></div>";
-  }
-
-  /* 把一长串事件压成几行可读的摘要。
-     依据是：用户想知道"它做了什么、依据是什么"，
-     而不是"它调了多少次 API"。 */
-  function summariseEvents(evs) {
-    var out = [];
-    var byTool = {}, computes = [], reads = 0, writes = 0;
-    var steps = [], findings = [], llm = null, result = null, question = null;
-
-    evs.forEach(function (e) {
-      var k = e.event;
-      if (PROC_HIDE[k]) return;
-      if (k === "target") {
-        out.push({ kind: "分析对象", text: (e.name || "") + "（" + (e.secucode || "") + "）" });
-      } else if (k === "question") {
-        question = e.text || "";
-      } else if (k === "step") {
-        var ms = Math.round(e.duration_ms || 0);
-        steps.push((e.name || "") + (ms > 0 ? " " + ms + "ms" : ""));
-      } else if (k === "compute") {
-        computes.push(e.name || "");
-      } else if (k === "tool_call") {
-        byTool[e.tool || "?"] = (byTool[e.tool || "?"] || 0) + 1;
-      } else if (k === "file_access") {
-        if (e.mode === "write") writes++; else reads++;
-      } else if (k === "finding") {
-        findings.push("[" + (e.level || "") + "] " + (e.title || ""));
-      } else if (k === "agent_end") {
-        llm = e;
-      } else if (k === "result") {
-        result = e;
-      }
-    });
-
-    if (question) out.push({ kind: "追问", text: question });
-
-    if (steps.length) {
-      out.push({ kind: "阶段", text: steps.map(function (x) {
-        var parts = x.split(" ");
-        return (STAGE_LABEL[parts[0]] || parts[0]) + (parts[1] ? " " + parts[1] : "");
-      }).join(" → ") });
-    }
-
-    var tools = Object.keys(byTool);
-    if (tools.length) {
-      out.push({ kind: "工具调用", text: tools.map(function (t) {
-        return (TOOL_LABEL[t] || t) + " ×" + byTool[t];
-      }).join("、") });
-    }
-
-    if (computes.length) {
-      var uniq = [];
-      computes.forEach(function (n) { if (uniq.indexOf(n) < 0) uniq.push(n); });
-      out.push({ kind: "指标计算", text: "共 " + computes.length + " 项：" +
-        uniq.slice(0, 11).map(function (n) { return METRIC_LABEL[n] || n; }).join("、") +
-        (uniq.length > 11 ? " 等" : "") });
-    }
-
-    if (reads || writes) {
-      var bits = [];
-      if (reads) bits.push("读取 " + reads + " 次");
-      if (writes) bits.push("写出 " + writes + " 次");
-      out.push({ kind: "文件访问", text: bits.join("，") + "（本地缓存与原文，逐条见轨迹）" });
-    }
-
-    if (llm) {
-      var usage = llm.llm_usage || {};
-      out.push({ kind: "模型推理", text: (llm.mode || "llm") + " 模式 · 推理 " + (llm.steps || 0) +
-        " 步 · 模型发起工具调用 " + (llm.tool_calls || 0) + " 次" +
-        (usage.prompt_tokens ? " · 输入 " + usage.prompt_tokens.toLocaleString() +
-          " / 输出 " + (usage.completion_tokens || 0).toLocaleString() + " tokens" : "") });
-    }
-
-    findings.forEach(function (f) { out.push({ kind: "结论", text: f, hit: true }); });
-
-    if (result && result.findings !== undefined && !findings.length) {
-      out.push({ kind: "结论", text: "共 " + result.findings + " 条（高优先级 " +
-        (result.high || 0) + " 条），明细见报告正文" });
-    }
-    return out;
-  }
-
-  function describeEvent(e) {
-    var kind = e.event || "";
-    if (kind === "compute") {
-      var val = e.output && e.output.latest_value;
-      var per = e.output && e.output.latest_period;
-      return (e.name || "指标") + "　" + (e.formula || "") +
-        (val === undefined ? "" : "　→ " + (Number(val).toFixed(4)) + (per ? "（" + per + "）" : ""));
-    }
-    if (kind === "step") return (e.name || "") +
-      (e.duration_ms ? "　" + Math.round(e.duration_ms) + " ms" : "") +
-      (e.ok === false ? "　未通过" : "");
-    if (kind === "agent_start") return "目标：" + (e.objective || "").slice(0, 90) +
-      "　模型 " + (e.model || "");
-    if (kind === "agent_end") return "模式 " + (e.mode || "") + " · 步数 " +
-      (e.steps || 0) + " · 工具 " + (e.tool_calls || 0) + " 次 · 停止原因 " +
-      (e.stop_reason || "");
-    if (kind === "result") return "结论 " + (e.findings || 0) + " 条（高 " + (e.high || 0) +
-      "）· " + (e.report || "");
-    if (kind === "run_end") return "共 " + (e.total_events || 0) + " 个事件";
-    if (kind === "target") return "锁定对象 " + (e.name || "") + "（" + (e.secucode || "") + "）";
-    if (kind === "question") return "用户追问：" + (e.text || "");
-    if (kind === "fetch_data") return "取数完成 " + (e.secucode || "");
-    if (kind === "rule_scan") {
-      var bits = [];
-      if (e.findings !== undefined) bits.push("结论 " + e.findings + " 条");
-      if (e.anomaly !== undefined) bits.push("异常 " + e.anomaly);
-      if (e.structural !== undefined) bits.push("结构 " + e.structural);
-      if (e.caliber !== undefined) bits.push("口径 " + e.caliber);
-      return bits.join(" · ");
-    }
-    if (kind === "articulation") return "勾稽校验 " + (e.ok === false ? "未通过" : "通过") +
-      (e.checked !== undefined ? "（核对 " + e.checked + " 项）" : "");
-    if (kind === "tool_call") return (e.tool || "工具") + " " + shortArgs(e.inputs) +
-      (e.duration_ms ? "　" + Math.round(e.duration_ms) + " ms" : "") +
-      (e.ok === false ? "　失败" : "");
-    if (kind === "file_access") {
-      var op = { read: "读取", write: "写出", search: "检索" }[e.mode] || (e.mode || "访问");
-      return op + " " + (e.path || "") + (e.note ? "（" + e.note + "）" : "");
-    }
-    if (kind === "finding") return "[" + (e.level || "") + "] " + (e.title || "") +
-      (e.rule ? "  规则 " + e.rule : "");
-    if (kind === "llm_call") return "调用 " + (e.model || "模型") + "（第 " + (e.step || 1) + " 步）";
-    if (kind === "corpus_missing") return "本地尚无该公司公告原文，归因暂无法回溯";
-    if (kind === "skip") return "跳过：" + (e.reason || "");
-    if (kind === "report") return "已写出报告";
-    if (kind === "finish") return "结束（" + (e.stop_reason || "") + "）";
-    try { return JSON.stringify(e).slice(0, 180); } catch (x) { return kind; }
-  }
-
-  function shortArgs(args) {
-    if (!args) return "";
-    try {
-      var s = typeof args === "string" ? args : JSON.stringify(args);
-      return s.length > 90 ? s.slice(0, 90) + "…" : s;
-    } catch (e) { return ""; }
-  }
-
-  function renderResultCard(m) {
-    var r = m.resultCard;
-    var kpis = (r.kpis || []).map(function (k) {
-      return '<div class="kpi"><div class="k">' + esc(k.k) + "</div>" +
-        '<div class="v">' + esc(k.v) + "</div>" +
-        '<div class="d ' + esc(k.dir || "flat") + '">' + esc(k.d || "") + "</div></div>";
-    }).join("");
-
-    var links = (r.reports || []).map(function (rp) {
-      return '<button class="btn" type="button" data-open-report="' + esc(rp.path) + '">' +
-        '<svg width="14" height="14"><use href="#i-report"/></svg> ' +
-        esc(rp.name.replace(/\.md$/, "")) + "</button>";
-    }).join("");
-
-    var pdfs = (r.reports || []).map(function (rp) {
-      return '<button class="btn" type="button" data-pdf="' + esc(rp.path) + '">' +
-        '<svg width="14" height="14"><use href="#i-download"/></svg> PDF</button>';
-    }).join("");
-
-    return '<div class="card-block">' +
-      '<div class="card-block-head">' + esc(r.ok ? "分析完成" : "运行结束（有异常）") +
-      (r.seconds ? '<span class="tag accent" style="margin-left:auto">' + esc(r.seconds) + " 秒</span>" : "") +
-      "</div>" +
-      (kpis ? '<div class="card-block-body"><div class="kpis">' + kpis + "</div></div>" : "") +
-      (links ? '<div class="card-block-body" style="border-top:1px solid var(--border)">' +
-        '<div class="act-row">' + links + pdfs + "</div>" +
-        (r.run_id ? '<div class="msg-note">运行编号 <code>' + esc(r.run_id) +
-          "</code> · 可到「执行轨迹」逐条复核</div>" : "") + "</div>" : "") +
-      "</div>";
-  }
-
-  function scrollToEnd() {
-    var s = $("stream");
-    if (s) s.scrollTop = s.scrollHeight;
-  }
-
-  /* ---------------------------------------------------------------- 发送与执行 */
-
-  function autoGrow() {
-    var t = $("q");
-    t.style.height = "auto";
-    t.style.height = Math.min(t.scrollHeight, 190) + "px";
-    $("btn-send").disabled = state.running || !t.value.trim();
-  }
-
-  function setRunning(on) {
-    state.running = on;
-    $("btn-stop").hidden = !on;
-    $("btn-send").disabled = on || !$("q").value.trim();
-    $("fab-log").classList.toggle("live", on);
-  }
-
-  function addAssistantMessage(patch) {
-    var m = Object.assign({
-      role: "assistant", events: [], text: "", streaming: true,
-      startedAt: Date.now(), resultCard: null, error: null
-    }, patch || {});
-    state.session.messages.push(m);
-    return m;
-  }
-
-  function finishAssistant(m, patch) {
-    m.streaming = false;
-    m.elapsed = ((Date.now() - m.startedAt) / 1000).toFixed(1) + "s";
-    for (var k in patch) if (Object.prototype.hasOwnProperty.call(patch, k)) m[k] = patch[k];
-    persistSessions();
-    renderChat();
-  }
-
-  function send() {
-    var text = $("q").value.trim();
-    if (!text || state.running) return;
-
-    if (STATIC) {
-      $("q").value = "";
-      autoGrow();
-      var demos = (DEMO.manifest && DEMO.manifest.demos) || [];
-      var hit = demos.filter(function (d) {
-        return text.indexOf(d.name) >= 0 || text.indexOf(d.secucode.split(".")[0]) >= 0;
-      })[0];
-      if (hit) { replayDemo(hit, text); return; }
-      state.session.messages.push({ role: "user", text: text });
-      state.session.messages.push({
-        role: "assistant",
-        text: "这里是**静态展示站**，只能浏览已经跑出来的结果，不能发起新的分析。\n\n" +
-          "原因很直接：完整分析需要在封闭数据环境里读公告原文、跑规则引擎并调用大模型，" +
-          "这些都不适合放在一个公开的静态站点上，本站也不持有任何模型密钥。\n\n" +
-          "想分析这家公司，两条路：\n\n" +
-          "1. 在本地运行 `启动FinAgent应用.bat`，输入你自己的 DeepSeek 密钥即可；\n" +
-          "2. 直接看下面这些**实录回放**，它们与实时运行的过程、产物完全一致。"
-      });
-      persistSessions();
-      renderChat();
-      return;
-    }
-
-    if (!hasKey()) {
-      openKeyModal();
-      $("key-err").textContent = "请先填写你自己的大模型 API Key，再开始分析";
-      $("key-err").hidden = false;
-      return;
-    }
-    $("q").value = "";
-    autoGrow();
-
-    var msg = { role: "user", text: text, action: parseAction(text), targets: [] };
-    state.session.messages.push(msg);
-    if (state.session.messages.length === 1) {
-      state.session.title = text.length > 24 ? text.slice(0, 24) + "…" : text;
-      state.session.ts = Date.now() / 1000;
-      renderThreads();
-    }
-    renderChat();
-
-    // 先解析出公司，再决定下一步：解析不到就不启动一次注定失败的运行。
-    api("/api/resolve?text=" + encodeURIComponent(text)).then(function (r) {
-      msg.targets = (r.items || []).map(function (x) {
-        return { code: x.secucode, name: x.name, bare: x.code };
-      });
-
-      if (msg.action === "index") {
-        msg.actionLabel = "动作：建立全文索引";
-        persistSessions();
-        renderChat();
-        return runIndex();
-      }
-      if (!msg.targets.length) {
-        msg.actionLabel = "未识别到上市公司";
-        state.session.messages.push({
-          role: "assistant",
-          text: "我没从这句话里认出上市公司。可以这样写：\n\n" +
-            "- 分析牧原股份 2026 年中报的亏损原因\n" +
-            "- 600519 最近几期的毛利率\n\n" +
-            "也可以直接点下面的推荐问题试一下。"
-        });
-        setRunning(false);
-        persistSessions();
-        renderChat();
-        return;
-      }
-      msg.actionLabel = "动作：" + (msg.action === "fetch" ? "抓取公告原文" : "财务分析");
-      persistSessions();
-      renderChat();
-      if (msg.action === "fetch") return runFetch(msg);
-      return runAnalyze(msg);
-    }).catch(function (e) {
-      pushLog("解析分析对象失败：" + e.message, "err");
-      state.session.messages.push({ role: "assistant", error: "解析失败：" + e.message });
-      renderChat();
-    });
-  }
-
-  /* 统一的一次运行：POST /api/run，读取 SSE 流 */
-  function execute(params, msg) {
-    setRunning(true);
-    var shown = {};
-    Object.keys(params).forEach(function (k) { if (k !== "api_key") shown[k] = params[k]; });
-    pushLog("执行 " + JSON.stringify(shown), "sys");
-
-    var ctl = new AbortController();
-    state.abort = ctl;
-    var llm = currentLLM() || {};
-    var body = Object.assign({}, params);
-    if (llm.api_key && llm.api_key !== "__server__") {
-      body.api_key = llm.api_key;
-      body.base_url = llm.base_url;
-      body.model = llm.model;
-    }
-
-    return fetch("/api/run", {
+    fetch("/api/run", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-      signal: ctl.signal
+      body: JSON.stringify(params),
+      signal: controller ? controller.signal : undefined
     }).then(function (resp) {
       if (!resp.ok) {
         return resp.json().catch(function () { return {}; }).then(function (j) {
-          throw new Error(j.error || ("启动失败 " + resp.status));
+          throw new Error(j.error || ("服务返回 " + resp.status));
         });
       }
-      return readStream(resp, msg);
+      return readStream(resp);
     }).catch(function (e) {
-      if (e.name === "AbortError") {
-        pushLog("用户中止了本次运行", "sys");
-        finishAssistant(msg, { text: (msg.text || "") + "\n\n> 本次运行已被手动停止。" });
-        return;
+      if (e && e.name === "AbortError") {
+        pushLog("已请求停止本次运行", "err");
+      } else {
+        pushLog("运行失败：" + e.message, "err");
       }
-      finishAssistant(msg, { error: e.message });
-      pushLog("运行失败：" + e.message, "err");
     }).then(function () {
-      setRunning(false);
+      clearInterval(timer);
+      state.running = false;
       state.abort = null;
-      refreshStatus();
+      $("btn-stop").hidden = true;
+      refreshStatus().then(function () { refreshRunState(); });
+      if (!state.runResult) { refreshRunState(); }
     });
   }
 
-  function readStream(resp, msg) {
+  function readStream(resp) {
     var reader = resp.body.getReader();
     var decoder = new TextDecoder("utf-8");
     var buffer = "";
-    var tick = setInterval(function () {
-      if (!msg.streaming) { clearInterval(tick); return; }
-      msg.elapsed = ((Date.now() - msg.startedAt) / 1000).toFixed(0) + "s";
-      var el = document.querySelector(".proc[data-live] .tick");
-      if (el) el.textContent = msg.elapsed;
-    }, 700);
-
     function pump() {
       return reader.read().then(function (res) {
-        if (res.done) { clearInterval(tick); return; }
+        if (res.done) { return; }
         buffer += decoder.decode(res.value, { stream: true });
         var parts = buffer.split("\n\n");
         buffer = parts.pop();
-        parts.forEach(function (part) { handleChunk(part, msg); });
+        parts.forEach(function (part) { handleChunk(part); });
         return pump();
       });
     }
     return pump();
   }
 
-  function handleChunk(chunk, msg) {
+  function handleChunk(chunk) {
     var line = chunk.split("\n").filter(function (l) { return l.indexOf("data:") === 0; })[0];
     if (!line) return;
     var payload;
     try { payload = JSON.parse(line.slice(5).trim()); } catch (e) { return; }
 
-    if (payload.kind === "line") { pushLog(payload.text, classifyLog(payload.text)); return; }
-    if (payload.kind === "notice") { pushLog(payload.text, "sys"); return; }
-    if (payload.kind === "trace") { appendTrace(msg, payload.event); return; }
-    if (payload.kind === "start") { pushLog("命令：" + payload.command, "sys"); return; }
-    if (payload.kind === "error") {
+    if (payload.kind === "line") {
+      if (payload.text) pushLog(payload.text, classifyLog(payload.text));
+    } else if (payload.kind === "notice") {
+      pushLog(payload.text, "sys");
+    } else if (payload.kind === "error") {
       pushLog(payload.message, "err");
-      finishAssistant(msg, { error: payload.message });
+    } else if (payload.kind === "trace") {
+      var ev = payload.event;
+      var d = describeEvent(ev);
+      if (d) {
+        pushLog("[" + d.kind + "] " + d.text, d.hit ? "hit" : "tool");
+        appendStep(d);
+      }
+    } else if (payload.kind === "start") {
+      pushLog("命令行：" + payload.command, "sys");
+    } else if (payload.kind === "done") {
+      onDone(payload);
+    }
+  }
+
+  function appendStep(d) {
+    var box = $("run-steps");
+    var div = document.createElement("div");
+    div.className = "ev" + (d.hit ? " hit" : "");
+    div.innerHTML = '<span class="ev-kind">' + esc(d.kind) + "</span>" +
+      '<span class="ev-text">' + esc(d.text) + "</span>";
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+  }
+
+  function describeEvent(e) {
+    if (!e || !e.event) return null;
+    if (e.event === "file_access" && e.mode === "write") {
+      return { kind: "写文件", text: e.note || e.path };
+    }
+    if (e.event === "tool_call") {
+      var name = TOOL_LABEL[e.tool] || e.tool;
+      var detail = e.inputs ? shortArgs(e.inputs) : "";
+      var out = e.outputs ? shortArgs(e.outputs) : "";
+      return { kind: "工具调用", text: name + (detail ? "（" + detail + "）" : "") +
+        (out ? " → " + out : "") };
+    }
+    if (e.event === "compute") {
+      return { kind: "指标计算", text: (METRIC_LABEL[e.name] || e.name) +
+        (e.output && e.output.latest_period ? " → " + e.output.latest_period : "") };
+    }
+    if (e.event === "step") {
+      return { kind: "阶段", text: (STAGE_LABEL[e.name] || e.name) + " 完成" };
+    }
+    if (e.event === "finding") {
+      return { kind: "结论", text: (e.name || "") + (e.detail ? "：" + e.detail : ""), hit: true };
+    }
+    if (e.event === "verification_failed") {
+      return { kind: "校验未过", text: (e.name || "") + "：" + (e.detail || ""), hit: true };
+    }
+    if (e.event === "upload_analyzed") {
+      return { kind: "财报解析", text: (e.file || "") + " → " + (e.subject || "") +
+        "（科目 " + Object.keys(e.fields || {}).length + " 张表）" };
+    }
+    if (e.event === "agent_start") {
+      return { kind: "模型启动", text: "模型 " + (e.model || "—") + "，工具 " +
+        ((e.tools || []).length) + " 个，技能 " + ((e.skills_matched || []).join("、") || "—") };
+    }
+    if (e.event === "agent_end") {
+      return { kind: "模型结束", text: "终止原因 " + (e.stop_reason || "") +
+        "，工具调用 " + (e.tool_calls || 0) + " 次" };
+    }
+    if (e.event === "result") {
+      return { kind: "结果", text: "结论 " + (e.findings || 0) + " 条，报告已生成" };
+    }
+    if (e.event === "rule_error") {
+      return { kind: "规则异常", text: (e.rule || "") + "：" + (e.error || ""), hit: true };
+    }
+    return null;
+  }
+
+  function shortArgs(args) {
+    if (!args || typeof args !== "object") return "";
+    var parts = [];
+    Object.keys(args).slice(0, 4).forEach(function (k) {
+      var v = args[k];
+      if (v === null || v === undefined || v === "") return;
+      if (typeof v === "object") v = Array.isArray(v) ? v.length + " 项" : "…";
+      parts.push(k + "=" + String(v).slice(0, 40));
+    });
+    return parts.join(", ");
+  }
+
+  function onDone(payload) {
+    var reports = (payload.reports || []).filter(function (r) { return /\.md$/.test(r.name); });
+    if (payload.code !== 0) {
+      pushLog("运行结束，退出码 " + payload.code + "（见上方错误信息）", "err");
+      setRunState("运行失败，请查看日志", "");
+      closeDrawer();
       return;
     }
-    if (payload.kind === "done") onDone(payload, msg);
-  }
+    pushLog("运行完成，用时 " + payload.seconds + " 秒，产出 " + reports.length + " 份报告", "sys");
+    setRunState("完成：产出 " + reports.length + " 份报告", "ok");
+    // 自动收起日志抽屉：运行结束后用户要看的是报告，
+    // 而抽屉是固定定位的浮层，摊开着会挡住报告页的按钮。
+    closeDrawer();
 
-  function appendTrace(msg, ev) {
-    if (!ev) return;
-    msg.events.push(ev);
-    // 只重绘过程块，避免整个对话重排导致滚动跳动
-    var proc = document.querySelector(".proc[data-live]");
-    if (proc) {
-      var holder = document.createElement("div");
-      holder.innerHTML = renderProcess(msg, state.session.messages.indexOf(msg));
-      var fresh = holder.firstChild;
-      fresh.classList.add("open");
-      proc.parentNode.replaceChild(fresh, proc);
-    } else {
-      renderChat();
-    }
-    if (ev.event === "finding") {
-      pushLog("结论命中 [" + (ev.level || "") + "] " + (ev.title || "") +
-        (ev.rule ? "  规则 " + ev.rule : ""), "hit");
-    }
-  }
-
-  function onDone(payload, msg) {
-    var reports = payload.reports || [];
-    var card = {
-      ok: payload.code === 0,
-      seconds: payload.seconds,
-      run_id: payload.run_id,
-      reports: reports.filter(function (r) { return /\.md$/.test(r.name); }),
-      kpis: []
-    };
-    var next = { resultCard: card };
-    if (payload.code !== 0) {
-      next.error = "子进程返回码 " + payload.code + "，请展开运行日志查看原因。";
-    }
-    finishAssistant(msg, next);
-
-    var mdReport = card.reports.filter(function (r) { return r.name.indexOf("跨公司") < 0; })[0]
-      || card.reports[0];
-    if (mdReport) {
-      api("/api/report?path=" + encodeURIComponent(mdReport.path)).then(function (r) {
-        var kpis = quickKpis(r.markdown);
-        if (kpis.length) {
-          card.kpis = kpis;
-          renderChat();
-          persistSessions();
-        }
+    // 运行结束后的结论卡片：把最新一期关键数字直接摆出来
+    var md = reports.filter(function (r) { return r.name.indexOf("跨主体") < 0; })[0] ||
+      reports[0];
+    if (md) {
+      api("/api/report?path=" + encodeURIComponent(md.path)).then(function (r) {
+        $("run-kpis").hidden = false;
+        $("run-kpis").innerHTML = quickKpis(r.markdown);
       }).catch(function () { });
+      openReport(md.path);
+      showView("report");
     }
-    pushLog("运行结束，返回码 " + payload.code + "，用时 " + payload.seconds + " 秒", "sys");
   }
 
-  /* 从报告正文里抽关键指标，做对话里的速览卡片。
-     取数刻意分两处，因为两处的口径并不一样：
-       - 「同比与环比」小节同时给了累计值和还原后的单季度值，
-         营业总收入与归母净利润优先取它，卡片上就能直接给出
-         单季度同比与环比——这正是本题最看重的口径处理；
-       - 其余指标只有「关键财务指标」表，那里是累计数，
-         卡片上标注“累计”，不与单季数混淆。 */
-  function quickKpis(markdown) {
-    var lines = String(markdown || "").split("\n");
 
-    function cells(line) {
-      var t = String(line).trim();
-      if (t.charAt(0) === "|") t = t.slice(1);
-      if (t.charAt(t.length - 1) === "|") t = t.slice(0, -1);
-      return t.split("|").map(function (s) { return s.trim(); });
-    }
-    /* 取从 from 开始的第一个 Markdown 表格；表格前的说明文字会被跳过。 */
-    function tableAfter(from, stop) {
-      var rows = [];
-      for (var j = from; j < stop; j++) {
-        if (/^\s*\|/.test(lines[j])) rows.push(lines[j]);
-        else if (rows.length) break;
-      }
-      return rows.length >= 3 ? rows : null;
-    }
-    function col(head, name) {
-      for (var h = 0; h < head.length; h++) {
-        if (head[h].indexOf(name) === 0) return h;
-      }
-      return -1;
-    }
-
-    var secA = -1, secB = lines.length;
-    for (var i = 0; i < lines.length; i++) {
-      if (secA < 0 && /^##\s*二、/.test(lines[i])) secA = i;
-      else if (secA >= 0 && /^##\s*三、/.test(lines[i])) { secB = i; break; }
-    }
-
-    function seasonal(name) {
-      if (secA < 0) return null;
-      for (var k = secA; k < secB; k++) {
-        if (lines[k].indexOf("**" + name + "**") !== 0) continue;
-        var rows = tableAfter(k + 1, secB);
-        if (!rows) return null;
-        var head = cells(rows[0]);
-        var body = rows.slice(2).map(cells);
-        var last = body[body.length - 1];
-        if (!last || last.length !== head.length) return null;
-        var iQ = col(head, "单季度值"), iY = col(head, "单季度同比"),
-            iM = col(head, "单季度环比");
-        if (iQ < 0) return null;
-        return { period: last[0], q: num(last[iQ]),
-                 yoy: iY < 0 ? NaN : num(last[iY]),
-                 qoq: iM < 0 ? NaN : num(last[iM]) };
-      }
-      return null;
-    }
-
-    var cumHead = null, cumRows = [];
-    var cumStop = secA < 0 ? lines.length : secA;
-    for (var c = 0; c < cumStop; c++) {
-      if (lines[c].indexOf("关键财务指标") < 0) continue;
-      var rows2 = tableAfter(c + 1, lines.length);
-      if (!rows2) break;
-      cumHead = cells(rows2[0]);
-      cumRows = rows2.slice(2).map(cells).filter(function (r) {
-        return r.length === cumHead.length;
-      });
-      break;
-    }
-
-    function cumulative(name) {
-      if (!cumHead || !cumRows.length) return null;
-      var idx = col(cumHead, name);
-      if (idx < 0) return null;
-      var cur = cumRows[cumRows.length - 1];
-      var prev = cumRows.filter(function (r) { return r[0] === lastYear(cur[0]); })[0];
-      var v = num(cur[idx]), pv = prev ? num(prev[idx]) : NaN;
-      var yoy = (isFinite(v) && isFinite(pv) && pv !== 0)
-        ? (v - pv) / Math.abs(pv) * 100 : NaN;
-      // 比率类指标的变动真实含义是百分点，不是百分比：
-      // 毛利率从 20.52% 到 -1.58% 写成“-107.7%”会被误读。
-      var pp = (isFinite(v) && isFinite(pv)) ? v - pv : NaN;
-      return { period: cur[0], v: v, yoy: yoy, pp: pp };
-    }
-
-    /* 方向按“四舍五入后的得数”判定，保证箭头与文字不打架：
-       显示 +0.00% 就不能画上涨。 */
-    function dirOf(v) {
-      var n = Number(v);
-      if (!isFinite(n)) return "flat";
-      var r = Number(n.toFixed(pctDigits(n)));
-      return r > 0 ? "up" : (r < 0 ? "down" : "flat");
-    }
-
-    var PICKS = ["营业总收入", "归母净利润", "经营现金流净额", "毛利率"];
-    var out = [];
-    PICKS.forEach(function (name) {
-      var ratio = (name === "毛利率");
-      var s = seasonal(name);
-      if (s && isFinite(s.q)) {
-        var bits = [];
-        if (isFinite(s.yoy)) bits.push("单季同比 " + pct(s.yoy));
-        if (isFinite(s.qoq)) bits.push("环比 " + pct(s.qoq));
-        out.push({
-          k: name + "（" + s.period + " 单季）",
-          v: fmtYi(s.q),
-          d: bits.join(" · ") || "单季",
-          dir: dirOf(s.yoy)
-        });
-        return;
-      }
-      var cu = cumulative(name);
-      if (!cu || !isFinite(cu.v)) return;
-      if (ratio) {
-        out.push({
-          k: name + "（" + cu.period + " 累计）",
-          v: pct(cu.v, 2),
-          d: isFinite(cu.pp) ? "较上年同期 " + signed(cu.pp, 2) + " 个百分点" : "累计",
-          dir: dirOf(cu.pp)
-        });
-        return;
-      }
-      out.push({
-        k: name + "（" + cu.period + " 累计）",
-        v: fmtYi(cu.v),
-        d: isFinite(cu.yoy) ? "累计同比 " + pct(cu.yoy) : "累计",
-        dir: dirOf(cu.yoy)
-      });
-    });
-    return out;
-  }
-
-  /* ---------------------------------------------------------------- 三个动作 */
-
-  function runAnalyze(msg) {
-    var a = addAssistantMessage({
-      text: "好的，我来分析 **" + msg.targets.map(function (t) { return t.name; }).join("、") +
-        "**。流程是：取财报数据 → 算同比环比 → 跑规则引擎找异常 → 勾稽校验 → 回到公告原文逐个核实。" +
-        "\n\n完成后会写出带证据编号的报告，可直接下载 PDF。"
-    });
-    renderChat();
-    var q = stripActionWords(msg.text);
-    return execute({
-      action: "analyze",
-      codes: msg.targets.map(function (t) { return t.bare || t.code; }),
-      question: q
-    }, a);
-  }
-
-  function runFetch(msg) {
-    var a = addAssistantMessage({
-      text: "我先抓取 **" + msg.targets.map(function (t) { return t.name; }).join("、") +
-        "** 的公告原文，存进本地封闭数据环境，然后重建全文索引。"
-    });
-    renderChat();
-    var chain = Promise.resolve();
-    msg.targets.forEach(function (t) {
-      chain = chain
-        .then(function () { return execute({ action: "fetch", code: t.bare || t.code, limit: 3 }, a); })
-        .then(function () { return execute({ action: "index" }, a); });
-    });
-    return chain;
-  }
-
-  function runIndex() {
-    var a = addAssistantMessage({
-      text: "正在把已落盘的公告原文切成文本块并建立全文索引，供证据检索使用。"
-    });
-    renderChat();
-    return execute({ action: "index" }, a);
-  }
 
   /* ---------------------------------------------------------------- 报告页 */
 
+  function quickKpis(markdown) {
+    var picks = [
+      ["营业总收入", "revenue"], ["归母净利润", "parent_net_profit"],
+      ["扣非归母", "deduct_parent_net_profit"], ["经营现金流", "netcash_operate"]
+    ];
+    var lines = String(markdown || "").split("\n");
+    var header = null;
+    for (var i = 0; i < lines.length; i++) {
+      if (lines[i].indexOf("| 报告期 |") === 0 && lines[i].indexOf("营业总收入") > 0) {
+        header = lines[i].split("|").map(function (s) { return s.trim(); });
+        var last = null;
+        for (var j = i + 2; j < lines.length && lines[j].indexOf("|") === 0; j++) { last = lines[j]; }
+        if (!last) return "";
+        var cells = last.split("|").map(function (s) { return s.trim(); });
+        var out = picks.map(function (p) {
+          var idx = header.indexOf(p[0]);
+          if (idx < 0 || !cells[idx]) return "";
+          return '<div class="kpi"><div class="k">' + esc(p[0]) + "</div>" +
+            '<div class="v">' + esc(cells[idx]) + " 亿</div></div>";
+        }).join("");
+        return out;
+      }
+    }
+    return "";
+  }
+
   function loadReports() {
-    var reports = (state.status || {}).reports || [];
+    var reports = ((state.status || {}).reports || []);
+    $("count-report").textContent = reports.length;
     $("report-count").textContent = reports.length;
     var box = $("report-list");
     if (!reports.length) {
-      box.innerHTML = '<div class="empty">还没有报告。<br>去「智能分析」里跑一次就有了。</div>';
+      box.innerHTML = '<div class="empty">还没有报告。到「分析工作台」上传财报并点开始分析。</div>';
       return;
     }
     box.innerHTML = reports.map(function (r) {
-      var active = r.path === state.reportPath ? " active" : "";
-      return '<button class="list-item' + active + '" type="button" data-report="' + esc(r.path) + '">' +
-        '<div class="t">' + esc(r.name.replace(/\.md$/, "")) + "</div>" +
-        '<div class="s">' + fmtTime(r.mtime) + " · " + fmtBytes(r.bytes) +
-        (r.table ? " · 含指标宽表" : "") + (r.pdf ? " · 可下载 PDF" : "") + "</div></button>";
+      var active = state.reportPath === r.path ? " active" : "";
+      return '<div class="list-item' + active + '" data-path="' + esc(r.path) + '">' +
+        '<div class="t">' + esc(r.name.replace(/_财务分析报告\.md$/, "")) + "</div>" +
+        '<div class="s">' + fmtTime(r.mtime) + " · " + fmtBytes(r.bytes) + "</div></div>";
     }).join("");
   }
 
   function openReport(path) {
     state.reportPath = path;
-    showView("report");
+    state.reportJson = path.replace(/_财务分析报告\.md$/, "_结论.json");
     loadReports();
-    $("report-body").hidden = false;
-    $("report-body").innerHTML = '<div class="empty">读取中…</div>';
+    var item = ((state.status || {}).reports || []).filter(function (x) { return x.path === path; })[0];
+    $("report-name").textContent = (item ? item.name : path).replace(/_财务分析报告\.md$/, "");
     $("report-table").hidden = true;
-    $("report-kpis").hidden = true;
-    $("btn-report-table").hidden = true;
-    $("report-name").textContent = path.split("/").pop().replace(/\.md$/, "");
-
-    fetchReport(path).then(function (r) {
-      // 报告第一行是一级标题，面板头已经显示了同名标题，正文里去掉避免重复
-      var body = String(r.markdown || "").replace(/^#\s+.*\n/, "");
-      $("report-body").innerHTML = FinMD.render(body);
-      var kpis = quickKpis(r.markdown);
-      if (kpis.length) {
-        $("report-kpis").innerHTML = kpis.map(function (k) {
-          return '<div class="kpi"><div class="k">' + esc(k.k) + '</div><div class="v">' +
-            esc(k.v) + '</div><div class="d ' + esc(k.dir) + '">' + esc(k.d) + "</div></div>";
-        }).join("");
-        $("report-kpis").hidden = false;
-      }
-      var entry = ((state.status || {}).reports || []).filter(function (x) {
-        return x.path === path;
-      })[0];
-      state.reportTable = entry && entry.table ? entry.table : null;
-      $("btn-report-table").hidden = !state.reportTable;
-      $("btn-report-table").textContent = "指标宽表";
+    $("report-json").hidden = true;
+    api("/api/report?path=" + encodeURIComponent(path)).then(function (r) {
+      $("report-body").innerHTML = FinMD.render(r.markdown);
+      $("report-kpis").innerHTML = quickKpis(r.markdown);
+      $("report-kpis").hidden = !$("report-kpis").innerHTML;
     }).catch(function (e) {
-      $("report-body").innerHTML = '<div class="msg-error">' + esc(e.message) + "</div>";
+      $("report-body").innerHTML = '<div class="empty">读取失败：' + esc(e.message) + "</div>";
     });
   }
 
   function openReportTable() {
-    if (!state.reportTable) return;
-    var body = $("report-body"), table = $("report-table");
-    if (!table.hidden) {
-      table.hidden = true; body.hidden = false;
-      $("btn-report-table").textContent = "指标宽表";
-      return;
-    }
-    $("btn-report-table").textContent = "返回正文";
-    fetchTable(state.reportTable).then(function (r) {
-      table.innerHTML = '<table class="tbl"><thead><tr>' +
+    var item = ((state.status || {}).reports || []).filter(function (x) {
+      return x.path === state.reportPath;
+    })[0];
+    if (!item || !item.table) { pushLog("这份报告没有对应的指标宽表", "err"); return; }
+    var box = $("report-table");
+    $("report-json").hidden = true;
+    box.hidden = false;
+    box.innerHTML = '<div class="empty">读取中…</div>';
+    api("/api/table?path=" + encodeURIComponent(item.table)).then(function (r) {
+      box.innerHTML = "<table><thead><tr>" +
         r.header.map(function (h) { return "<th>" + esc(h) + "</th>"; }).join("") +
         "</tr></thead><tbody>" +
         r.rows.map(function (row) {
           return "<tr>" + row.map(function (c, i) {
-            var isNum = i > 0 && String(c).trim() !== "" && !isNaN(num(c));
-            return "<td" + (isNum ? ' class="num"' : "") + ">" + esc(c) + "</td>";
+            var cls = "";
+            if (i > 0 && /^-/.test(c)) cls = ' class="down"';
+            return "<td" + cls + ">" + esc(c) + "</td>";
           }).join("") + "</tr>";
         }).join("") + "</tbody></table>" +
-        (r.truncated ? '<div class="msg-note">共 ' + r.total + " 行，界面显示前 " +
-          r.rows.length + " 行</div>" : "");
-      table.hidden = false;
-      body.hidden = true;
+        (r.truncated ? '<div class="note">仅显示前 ' + r.rows.length + " 行，共 " + r.total + " 行</div>" : "");
     }).catch(function (e) {
-      table.innerHTML = '<div class="msg-error">' + esc(e.message) + "</div>";
-      table.hidden = false;
-      body.hidden = true;
+      box.innerHTML = '<div class="empty">读取失败：' + esc(e.message) + "</div>";
+    });
+  }
+
+  function openReportJson() {
+    var path = state.reportJson ||
+      String(state.reportPath || "").replace(/_财务分析报告\.md$/, "_结论.json");
+    var box = $("report-json");
+    $("report-table").hidden = true;
+    box.hidden = false;
+    box.innerHTML = '<div class="empty">读取中…</div>';
+    api("/api/report?path=" + encodeURIComponent(path)).then(function (r) {
+      box.innerHTML = "<pre>" + esc(r.markdown) + "</pre>";
+    }).catch(function (e) {
+      box.innerHTML = '<div class="empty">读取失败：' + esc(e.message) +
+        "（结构化结论与报告同名，扩展名为 _结论.json）</div>";
     });
   }
 
   function downloadPDF(path) {
-    var url = "/api/report.pdf?path=" + encodeURIComponent(path);
-    if (STATIC) {
-      // 展示站里 PDF 是构建时预生成的静态文件，直接给出即可。
-      var item = ((state.status || {}).reports || []).filter(function (r) {
-        return r.path === path;
-      })[0];
-      if (item && item.pdf) url = item.pdf;
-      else { window.print(); return; }
-    } else {
-      pushLog("正在生成 PDF，首次生成需要几秒钟…", "sys");
-    }
-    var a = document.createElement("a");
-    a.href = url;
-    a.download = "";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    if (!path) { pushLog("请先选择一份报告", "err"); return; }
+    var item = ((state.status || {}).reports || []).filter(function (r) { return r.path === path; })[0];
+    var name = (item ? item.name : path).replace(/\.md$/, ".pdf");
+    pushLog("正在导出 PDF：" + name + "（需要本机安装 Edge/Chrome 用于渲染）", "sys");
+    fetch("/api/report.pdf?path=" + encodeURIComponent(path)).then(function (r) {
+      if (!r.ok) {
+        return r.json().catch(function () { return {}; }).then(function (j) {
+          throw new Error(j.error || ("服务返回 " + r.status));
+        });
+      }
+      var ctype = r.headers.get("Content-Type") || "";
+      if (ctype.indexOf("text/html") === 0) {
+        pushLog("未找到可用的浏览器，已改为返回可打印页面：在浏览器里按 Ctrl+P 另存为 PDF", "err");
+      }
+      return r.blob().then(function (blob) {
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url;
+        a.download = name;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(function () { URL.revokeObjectURL(url); }, 8000);
+        pushLog("PDF 已开始下载：" + name, "tool");
+      });
+    }).catch(function (e) { pushLog("导出失败：" + e.message, "err"); });
   }
 
   /* ---------------------------------------------------------------- 轨迹页 */
 
   function loadTraces() {
-    var traces = (state.status || {}).traces || [];
-    $("count-report").textContent = ((state.status || {}).reports || []).length;
+    var traces = ((state.status || {}).traces || []);
     $("count-trace").textContent = traces.length;
     $("trace-count").textContent = traces.length;
     var box = $("trace-list");
     if (!traces.length) {
-      box.innerHTML = '<div class="empty">还没有运行记录。</div>';
+      box.innerHTML = '<div class="empty">还没有运行轨迹。</div>';
       return;
     }
-    box.innerHTML = traces.slice(0, 60).map(function (t) {
-      var active = t.run === state.traceRun ? " active" : "";
-      return '<button class="list-item' + active + '" type="button" data-trace="' + esc(t.run) + '">' +
+    box.innerHTML = traces.map(function (t) {
+      var active = state.traceRun === t.run ? " active" : "";
+      return '<div class="list-item' + active + '" data-run="' + esc(t.run) + '">' +
         '<div class="t">' + esc(t.run) + "</div>" +
-        '<div class="s">' + fmtTime(t.mtime) + " · " + fmtBytes(t.bytes) + "</div></button>";
+        '<div class="s">' + fmtTime(t.mtime) + " · " + fmtBytes(t.bytes) + "</div></div>";
     }).join("");
   }
 
   function openTrace(run) {
     state.traceRun = run;
-    state.traceFilter = "全部";
     loadTraces();
-    $("trace-title").textContent = run;
-    $("trace-body").innerHTML = '<div class="empty">读取中…</div>';
-    var entry = ((state.status || {}).traces || []).filter(function (t) {
-      return t.run === run;
-    })[0];
-    fetchTrace(run, entry && entry.file).then(function (r) {
-      state.traceEvents = Array.isArray(r) ? r : (r.events || []);
+    $("trace-title").textContent = "事件明细 · " + run;
+    api("/api/trace?run=" + encodeURIComponent(run)).then(function (r) {
+      state.traceEvents = r.events || [];
       renderTraceFilters();
       renderTraceBody();
     }).catch(function (e) {
-      $("trace-body").innerHTML = '<div class="msg-error">' + esc(e.message) + "</div>";
+      $("trace-body").innerHTML = '<div class="empty">读取失败：' + esc(e.message) + "</div>";
     });
   }
 
   function renderTraceFilters() {
     var counts = {};
     state.traceEvents.forEach(function (e) {
-      var k = e.event || "其他";
-      counts[k] = (counts[k] || 0) + 1;
+      counts[e.event || "其他"] = (counts[e.event || "其他"] || 0) + 1;
     });
     var kinds = Object.keys(counts).sort(function (a, b) { return counts[b] - counts[a]; });
-    var html = '<button class="chip-btn' + (state.traceFilter === "全部" ? " warn" : "") +
-      '" type="button" data-filter="全部">全部 ' + state.traceEvents.length + "</button>";
+    var html = ['<button class="tag accent" data-kind="全部">全部 ' +
+      state.traceEvents.length + "</button>"];
     kinds.forEach(function (k) {
-      html += '<button class="chip-btn' + (state.traceFilter === k ? " warn" : "") +
-        '" type="button" data-filter="' + esc(k) + '">' +
-        esc(TRACE_LABEL[k] || k) + " " + counts[k] + "</button>";
+      var cls = state.traceFilter === k ? "accent" : "";
+      html.push('<button class="tag ' + cls + '" data-kind="' + esc(k) + '">' +
+        esc(TRACE_LABEL[k] || k) + " " + counts[k] + "</button>");
     });
-    $("trace-filters").innerHTML = html;
+    $("trace-filters").innerHTML = html.join("");
   }
 
   function renderTraceBody() {
@@ -1406,163 +793,116 @@
       return state.traceFilter === "全部" || (e.event || "其他") === state.traceFilter;
     });
     if (!evs.length) {
-      $("trace-body").innerHTML = '<div class="empty">该类型下没有事件。</div>';
+      $("trace-body").innerHTML = '<div class="empty">这一类没有事件。</div>';
       return;
     }
-    $("trace-body").innerHTML = '<table class="tbl"><thead><tr>' +
-      "<th>#</th><th>时间</th><th>事件</th><th>内容</th><th>原始字段</th>" +
-      "</tr></thead><tbody>" + evs.map(function (e, i) {
-        var raw = {};
-        for (var k in e) if (["event", "ts", "time"].indexOf(k) < 0) raw[k] = e[k];
-        return '<tr><td class="num">' + (i + 1) + "</td>" +
-          '<td class="num">' + esc(e.ts ? String(e.ts).slice(11, 19) : "") + "</td>" +
-          '<td><span class="tag ' + tagOf(e.event) + '">' +
-          esc(TRACE_LABEL[e.event] || e.event || "") + "</span></td>" +
-          "<td>" + esc(describeEvent(e)) + "</td>" +
-          '<td style="font-family:var(--mono);font-size:11px;color:var(--muted)">' +
-          esc(JSON.stringify(raw).slice(0, 200)) + "</td></tr>";
+    $("trace-body").innerHTML = '<table><thead><tr><th>#</th><th>时间</th>' +
+      "<th>类型</th><th>内容</th></tr></thead><tbody>" +
+      evs.map(function (e, i) {
+        var d = describeEvent(e) || { kind: "", text: "" };
+        var detail = JSON.stringify(e).slice(0, 400);
+        if (d.text) { detail = d.text; }
+        return "<tr><td>" + (i + 1) + "</td><td>" + esc(String(e.ts || "").slice(11, 19)) +
+          "</td><td>" + esc(TRACE_LABEL[e.event] || e.event || "") + "</td><td>" +
+          esc(detail) + "</td></tr>";
       }).join("") + "</tbody></table>";
   }
 
-  function tagOf(kind) {
-    if (kind === "finding") return "anomaly";
-    if (kind === "file_access" || kind === "tool_call") return "accent";
-    if (kind === "skip" || kind === "corpus_missing") return "structural";
-    return "caliber";
-  }
 
   /* ---------------------------------------------------------------- 环境页 */
 
   function loadEnv() {
     var st = state.status || {};
-    var corpus = st.corpus || [];
-    var docs = corpus.reduce(function (a, c) { return a + (c.documents || 0); }, 0);
-    var bytes = corpus.reduce(function (a, c) { return a + (c.bytes || 0); }, 0);
+    var items = state.pending || [];
+    var groups = (st.pending && st.pending.groups) || [];
+    var docs = items.length;
+    var bytes = items.reduce(function (a, x) { return a + (x.bytes || 0); }, 0);
+    var pages = items.reduce(function (a, x) { return a + (x.pages || 0); }, 0);
+    var fields = items.reduce(function (a, x) { return a + (x.fields_total || 0); }, 0);
+    var failed = items.reduce(function (a, x) { return a + (x.checks_failed || 0); }, 0);
 
     $("env-stats").innerHTML = [
-      { k: "全市场可分析主体", v: (st.universe_total || 0).toLocaleString(),
-        s: "沪深主板 / 科创 / 创业 / 北交所 / B 股" },
-      { k: "已落盘公告原文", v: docs + " 份",
-        s: fmtBytes(bytes) + " · " + corpus.length + " 家公司" },
-      { k: "全文索引文本块", v: ((st.index && st.index.chunks) || 0).toLocaleString(),
-        s: "用于证据检索" },
-      { k: "推理模型", v: st.model || "—",
-        s: st.api_key_set ? "服务端密钥已配置" : "由使用者在界面填写" }
+      ["本批上传材料", docs + " 份", groups.length + " 个主体"],
+      ["材料体积", fmtBytes(bytes), pages + " 页正文"],
+      ["抽取科目", fields + " 项", "全部来自上传件正文"],
+      ["交叉校验未过", failed + " 项", failed ? "已标注为需人工复核" : "全部通过"],
+      ["运行期出网", "仅模型调用", "api.deepseek.com"],
+      ["服务监听", "127.0.0.1", "只在本机可访问"]
     ].map(function (x) {
-      return '<div class="stat"><div class="k">' + esc(x.k) + '</div><div class="v">' +
-        esc(x.v) + '</div><div class="s">' + esc(x.s) + "</div></div>";
+      return '<div class="stat"><div class="k">' + esc(x[0]) + "</div>" +
+        '<div class="v">' + esc(x[1]) + "</div>" +
+        '<div class="s">' + esc(x[2]) + "</div></div>";
     }).join("");
 
-    $("env-corpus").innerHTML = corpus.length
-      ? '<table class="tbl"><thead><tr><th>代码</th><th>公司</th><th>公告</th><th>占用</th>' +
-        "<th>报告类型</th></tr></thead><tbody>" +
-        corpus.map(function (c) {
-          var entry = (st.companies || []).filter(function (x) {
-            return String(x.code).indexOf(c.code) === 0;
-          })[0];
-          var kinds = (c.kinds || []).map(function (k) {
-            return { annual: "年报", semi: "半年报", q1: "一季报", q3: "三季报" }[k] || k;
-          }).join("、");
-          return "<tr><td>" + esc(c.code) + "</td><td>" + esc(entry ? entry.name : "—") +
-            '</td><td class="num">' + c.documents + '</td><td class="num">' + fmtBytes(c.bytes) +
-            "</td><td>" + esc(kinds) + "</td></tr>";
-        }).join("") + "</tbody></table>"
-      : '<div class="empty">尚未构建数据环境。运行 <code>python run.py fetch</code> 后这里会列出已落盘的公告。</div>';
+    $("env-run").textContent = (st.pending && st.pending.run_id) || "—";
+    var box = $("env-materials");
+    if (!items.length) {
+      box.innerHTML = '<div class="empty">尚未上传任何材料。</div>';
+    } else {
+      box.innerHTML = "<table><thead><tr><th>文件</th><th>识别主体</th><th>报告期</th>" +
+        "<th>页数</th><th>科目</th><th>校验</th></tr></thead><tbody>" +
+        items.map(function (it) {
+          return "<tr><td>" + esc(it.filename) + "</td><td>" + esc(it.subject) +
+            "</td><td>" + esc((it.report_kind_label || "") + " " + (it.report_date || "")) +
+            "</td><td>" + (it.pages || "—") + "</td><td>" + (it.fields_total || 0) +
+            "</td><td>" + (it.checks_passed === null || it.checks_passed === undefined
+              ? "—" : it.checks_passed + (it.checks_failed ? " / 未过 " + it.checks_failed : "")) +
+            "</td></tr>";
+        }).join("") + "</tbody></table>";
+    }
 
-    $("env-universe-total").textContent = (st.universe_total || 0).toLocaleString() + " 只";
-
-    var samples = st.coverage_samples || [];
-    $("env-samples").innerHTML = samples.length
-      ? '<table class="tbl"><thead><tr><th>代码</th><th>名称</th><th>板块 / 报表族</th></tr></thead><tbody>' +
-        samples.map(function (s) {
-          return "<tr><td>" + esc(s.code) + "</td><td>" + esc(s.name) + "</td><td>" +
-            esc(s.segment) + "</td></tr>";
+    var vbox = $("env-verify");
+    var suspects = [];
+    items.forEach(function (it) {
+      (it.suspect || []).forEach(function (s) { suspects.push(it.filename + " · " + s); });
+    });
+    vbox.innerHTML = suspects.length
+      ? "<table><thead><tr><th>文件</th><th>需人工复核的科目</th></tr></thead><tbody>" +
+        suspects.map(function (s) {
+          var p = s.split(" · ");
+          return "<tr><td>" + esc(p[0]) + "</td><td>" + esc(p.slice(1).join(" · ")) + "</td></tr>";
         }).join("") + "</tbody></table>"
-      : '<div class="empty">暂无抽样数据。</div>';
+      : '<div class="note">本批材料目前没有被降级的科目。</div>';
 
     var thresholds = st.thresholds || {};
-    var TH_LABEL = {
-      impairment_yoy_pct: ["减值同比增幅阈值", "%", "超过即判为异常信号 R1"],
-      impairment_min_amount: ["减值绝对额门槛", "元", "金额太小不判异常，避免噪声"],
-      nonrecurring_ratio_pct: ["非经常性损益占比阈值", "%", "超过则提示利润质量"],
-      adjusted_cash_conv_low: ["调整后现金含量下限", "倍", "低于则利润与现金流背离"],
-      adjusted_cash_conv_high: ["调整后现金含量上限", "倍", "高于可能是结构性问题"],
-      qoq_swing_pct: ["单季度环比波动阈值", "%", "超过提示季节性以外的大幅波动"],
-      tax_rate_high_pct: ["实际税率异常阈值", "%", "亏损期仍有税负等情形"],
-      collect_ratio_low: ["收现比下限", "倍", "低于则收入回款质量存疑"],
-      articulation_tol_pct: ["勾稽校验容差", "%", "表间差异超过即报告"],
-      depr_to_revenue_high_pct: ["折旧摊销占收入比", "%", "判断重资产结构性特征"]
-    };
-    var rows = Object.keys(thresholds).map(function (k) {
-      var meta = TH_LABEL[k] || [k, "", ""];
-      var amount = thresholds[k];
-      if (meta[1] === "元" && Math.abs(Number(amount)) >= 1e8) {
-        amount = (amount / 1e8) + " 亿";
-      } else {
-        amount = amount + " " + meta[1];
-      }
-      return "<tr><td>" + esc(meta[0]) + '</td><td class="num">' + esc(amount) +
-        "</td><td>" + esc(meta[2]) + "</td></tr>";
-    }).join("");
-    $("env-thresholds").innerHTML =
-      '<table class="tbl"><thead><tr><th>阈值</th><th>取值</th><th>作用</th></tr></thead><tbody>' +
-      rows + "</tbody></table>";
+    $("env-thresholds").innerHTML = Object.keys(thresholds).map(function (k) {
+      return "<tr><td>" + esc(k) + "</td><td>" + esc(String(thresholds[k])) + "</td></tr>";
+    }).join("") ? "<table><tbody>" + Object.keys(thresholds).map(function (k) {
+      return "<tr><td>" + esc(k) + "</td><td>" + esc(String(thresholds[k])) + "</td></tr>";
+    }).join("") + "</tbody></table>" : '<div class="empty">—</div>';
 
     $("env-legend").innerHTML = [
-      ["anomaly", "异常信号", "数据偏离常态，需要解释。例如减值激增、亏损期确认所得税。"],
-      ["structural", "结构性特征", "看似异常，实为资产结构或行业规律使然。例如重资产企业的低现金含量。"],
-      ["caliber", "口径提示", "计算口径本身有局限，比率不具可比性。例如银行业的现金含量。"]
+      ["异常信号", "anomaly", "数据偏离常态，需要解释。例如减值突增、亏损期仍确认大额所得税。"],
+      ["结构性特征", "structural", "看似异常，实为资产结构或行业属性使然。" +
+        "例如重资产企业折旧摊销大，经营现金流远高于净利润属于正常现象。"],
+      ["口径提示", "caliber", "计算口径本身存在限制，提醒不要误读。" +
+        "例如金融业现金流量表结构与工商业不同，现金含量不可直接比较。"]
     ].map(function (x) {
-      return '<div style="margin-bottom:11px"><span class="tag ' + x[0] + '">' + x[1] +
-        '</span><div style="font-size:12.5px;color:var(--muted);margin-top:5px">' +
-        esc(x[2]) + "</div></div>";
+      return '<p><span class="tag ' + x[1] + '">' + x[0] + "</span> " +
+        '<span style="font-size:13px;color:var(--text-soft)">' + esc(x[2]) + "</span></p>";
     }).join("");
   }
 
-  /* ---------------------------------------------------------------- 侧栏与状态 */
-
-  function renderThreads() {
-    var box = $("threads");
-    if (!state.sessions.length) {
-      box.innerHTML = '<div class="empty" style="padding:16px 6px;text-align:left">暂无记录</div>';
-      return;
-    }
-    box.innerHTML = state.sessions.slice(0, 24).map(function (s) {
-      var active = state.session && s.id === state.session.id ? " active" : "";
-      return '<button class="thread' + active + '" type="button" data-session="' + esc(s.id) + '">' +
-        esc(s.title) + '<span class="thread-meta">' + fmtTime(s.ts) + "</span></button>";
-    }).join("");
-  }
+  /* ---------------------------------------------------------------- 状态刷新 */
 
   function refreshStatus() {
-    if (STATIC) {
-      return loadManifest().then(function (m) {
-        state.status = m.status;
-        // 统一成与实测模式相同的字段名，后面的渲染逻辑无需分叉
-        state.status.reports = (m.reports || []).map(function (r) {
-          return {
-            name: r.name, path: "demo/reports/" + r.slug + ".md",
-            mtime: r.mtime, bytes: r.bytes,
-            table: r.table, pdf: r.pdf, csv: r.csv
-          };
-        });
-        state.status.traces = m.traces || [];
-        $("count-report").textContent = m.reports.length;
-        $("count-trace").textContent = m.traces.length;
-        if (state.view === "report") loadReports();
-        if (state.view === "trace") loadTraces();
-        if (state.view === "env") loadEnv();
-      }).catch(function (e) { pushLog("读取展示数据失败：" + e.message, "err"); });
-    }
     return api("/api/status").then(function (r) {
-      state.status = r.status;
-      refreshKeyUI();
-      $("count-report").textContent = (r.status.reports || []).length;
-      $("count-trace").textContent = (r.status.traces || []).length;
-      if (state.view === "report") loadReports();
-      if (state.view === "trace") loadTraces();
+      state.status = r.status || {};
+      var st = state.status;
+      state.pending = (st.pending && st.pending.items) || [];
+      state.pendingNotes = (st.pending && st.pending.notes) || [];
+      state.pendingRun = (st.pending && st.pending.run_id) || null;
+      $("model-name").textContent = st.model || "deepseek-chat";
+      $("model-chip").title = "接口地址：" + (st.base_url || "") + "（固定）";
+      renderPending();
+      loadReports();
+      loadTraces();
       if (state.view === "env") loadEnv();
-    }).catch(function (e) { pushLog("读取状态失败：" + e.message, "err"); });
+      refreshKeyUI();
+      if (st.busy) { pushLog("服务端报告：已有一次运行正在进行", "sys"); }
+    }).catch(function (e) {
+      pushLog("读取状态失败：" + e.message, "err");
+    });
   }
 
   /* ---------------------------------------------------------------- 事件绑定 */
@@ -1573,73 +913,13 @@
     });
 
     $("btn-menu").addEventListener("click", function () {
-      var app = $("app");
-      if (window.innerWidth <= 860) app.classList.toggle("rail-open");
-      else app.classList.toggle("rail-hidden");
+      if (window.innerWidth <= 900) { $("app").classList.toggle("rail-open"); }
+      else { $("app").classList.toggle("rail-hidden"); }
     });
-    $("mask").addEventListener("click", closeDrawer);
 
     $("btn-new").addEventListener("click", function () {
-      if (state.running) return;
-      newSession(false);
-      renderThreads();
-      renderChat();
       showView("chat");
-      $("q").focus();
-    });
-
-    $("threads").addEventListener("click", function (ev) {
-      var b = ev.target.closest("[data-session]");
-      if (!b || state.running) return;
-      var found = state.sessions.filter(function (s) {
-        return s.id === b.getAttribute("data-session");
-      })[0];
-      if (!found) return;
-      state.session = found;
-      renderThreads();
-      renderChat();
-      showView("chat");
-    });
-
-    var q = $("q");
-    q.addEventListener("input", autoGrow);
-    q.addEventListener("keydown", function (ev) {
-      if (ev.key === "Enter" && !ev.shiftKey && !ev.isComposing) {
-        ev.preventDefault();
-        send();
-      }
-    });
-    $("btn-send").addEventListener("click", send);
-    $("btn-stop").addEventListener("click", function () {
-      if (state.abort) state.abort.abort();
-    });
-
-    $("messages").addEventListener("click", function (ev) {
-      var proc = ev.target.closest("[data-proc]");
-      if (proc) { proc.parentElement.classList.toggle("open"); return; }
-
-      var drop = ev.target.closest("[data-drop]");
-      if (drop) {
-        var parts = drop.getAttribute("data-drop").split(":");
-        var m = state.session.messages[Number(parts[0])];
-        if (m && m.targets) m.targets.splice(Number(parts[1]), 1);
-        renderChat();
-        persistSessions();
-        return;
-      }
-      var rep = ev.target.closest("[data-open-report]");
-      if (rep) { openReport(rep.getAttribute("data-open-report")); return; }
-      var pdf = ev.target.closest("[data-pdf]");
-      if (pdf) { downloadPDF(pdf.getAttribute("data-pdf")); return; }
-    });
-
-    $("btn-key").addEventListener("click", openKeyModal);
-    $("btn-key-2").addEventListener("click", openKeyModal);
-    $("btn-key-cancel").addEventListener("click", closeKeyModal);
-    $("btn-key-test").addEventListener("click", testKey);
-    $("btn-key-save").addEventListener("click", saveKey);
-    $("in-key").addEventListener("keydown", function (ev) {
-      if (ev.key === "Enter") saveKey();
+      if (!state.running) { $("file-input").click(); }
     });
 
     $("btn-theme").addEventListener("click", function () {
@@ -1649,75 +929,93 @@
 
     $("fab-log").addEventListener("click", openDrawer);
     $("btn-log-close").addEventListener("click", closeDrawer);
-    $("btn-log-clear").addEventListener("click", function () {
-      $("logbox").innerHTML = "";
-      state.logLines = 0;
+    $("btn-log-clear").addEventListener("click", function () { $("logbox").innerHTML = ""; });
+
+    $("btn-key").addEventListener("click", openKeyModal);
+    $("btn-key-2").addEventListener("click", openKeyModal);
+    $("btn-key-cancel").addEventListener("click", closeKeyModal);
+    $("btn-key-test").addEventListener("click", testKey);
+    $("btn-key-save").addEventListener("click", saveKey);
+    $("mask").addEventListener("click", closeKeyModal);
+
+    // 上传：点击 + 拖拽
+    $("btn-pick").addEventListener("click", function () { $("file-input").click(); });
+    $("file-input").addEventListener("change", function (ev) {
+      uploadFiles(ev.target.files);
+      ev.target.value = "";
+    });
+    $("dropzone").addEventListener("click", function (ev) {
+      if (ev.target.id !== "btn-pick") $("file-input").click();
+    });
+    ["dragenter", "dragover"].forEach(function (t) {
+      $("dropzone").addEventListener(t, function (ev) {
+        ev.preventDefault();
+        $("dropzone").classList.add("over");
+      });
+    });
+    ["dragleave", "drop"].forEach(function (t) {
+      $("dropzone").addEventListener(t, function (ev) {
+        ev.preventDefault();
+        $("dropzone").classList.remove("over");
+      });
+    });
+    $("dropzone").addEventListener("drop", function (ev) {
+      var dt = ev.dataTransfer;
+      if (dt && dt.files && dt.files.length) uploadFiles(dt.files);
+    });
+    window.addEventListener("dragover", function (ev) { ev.preventDefault(); });
+    window.addEventListener("drop", function (ev) { ev.preventDefault(); });
+
+    $("btn-clear").addEventListener("click", clearPending);
+    $("up-list").addEventListener("click", function (ev) {
+      var btn = ev.target.closest(".up-del");
+      if (btn) { clearPending(); }
+    });
+
+    $("btn-run").addEventListener("click", startRun);
+    $("btn-stop").addEventListener("click", function () {
+      if (state.abort) state.abort.abort();
+    });
+    $("q").addEventListener("keydown", function (ev) {
+      if (ev.key === "Enter" && (ev.ctrlKey || ev.metaKey)) startRun();
     });
 
     $("report-list").addEventListener("click", function (ev) {
-      var b = ev.target.closest("[data-report]");
-      if (b) openReport(b.getAttribute("data-report"));
+      var item = ev.target.closest(".list-item");
+      if (item) openReport(item.getAttribute("data-path"));
     });
+    $("btn-report-pdf").addEventListener("click", function () { downloadPDF(state.reportPath); });
     $("btn-report-table").addEventListener("click", openReportTable);
-    $("btn-report-pdf").addEventListener("click", function () {
-      if (state.reportPath) downloadPDF(state.reportPath);
-    });
+    $("btn-report-json").addEventListener("click", openReportJson);
 
     $("trace-list").addEventListener("click", function (ev) {
-      var b = ev.target.closest("[data-trace]");
-      if (b) openTrace(b.getAttribute("data-trace"));
+      var item = ev.target.closest(".list-item");
+      if (item) openTrace(item.getAttribute("data-run"));
     });
     $("trace-filters").addEventListener("click", function (ev) {
-      var b = ev.target.closest("[data-filter]");
+      var b = ev.target.closest("button");
       if (!b) return;
-      state.traceFilter = b.getAttribute("data-filter");
+      state.traceFilter = b.getAttribute("data-kind");
       renderTraceFilters();
       renderTraceBody();
     });
 
     document.addEventListener("keydown", function (ev) {
-      if (ev.key === "Escape") { closeKeyModal(); closeDrawer(); }
+      if (ev.key === "Escape") { closeDrawer(); closeKeyModal(); }
     });
-
-    window.addEventListener("resize", function () {
-      if (window.innerWidth > 860) $("app").classList.remove("rail-open");
-    });
-  }
-
-  /* ---------------------------------------------------------------- 展示模式 */
-
-  function applyStaticMode() {
-    if (!STATIC) return;
-    if ($("btn-key")) $("btn-key").hidden = true;
-    if ($("btn-key-2")) $("btn-key-2").hidden = true;
-    $("model-chip").innerHTML = '<span class="dot"></span><span>静态展示站 · 只读</span>';
-    $("composer-hint").textContent =
-      "本站为只读展示，内容由本地真实运行产生；发起新分析请在本地启动 FinAgent";
-    $("welcome").querySelector("h1").textContent = "看一遍真实的分析过程";
-    $("welcome").querySelector("p").textContent =
-      "下面是几次真实运行的实录回放：点开后可以看到系统调了哪些工具、读了哪些文件、" +
-      "算出了什么，以及最终产出的报告。全部内容都可在本地用同一份源码复现。";
-    if ($("btn-new")) $("btn-new").textContent = "清空当前对话";
-    pushLog("当前为静态展示模式：数据来自 demo/manifest.json，不会发起任何后台调用。", "sys");
   }
 
   /* ---------------------------------------------------------------- 启动 */
 
   function boot() {
     initTheme();
-    loadSessions();
-    renderSuggests();
-    renderThreads();
-    renderChat();
     bind();
-    autoGrow();
-
-    applyStaticMode();
-    pushLog("界面已就绪。全部结论都由 run.py 产出，本界面不做任何金融计算。", "sys");
-    refreshStatus().then(function () {
-      if (STATIC) renderSuggests();
-      else if (!hasKey()) pushLog("尚未配置大模型密钥，首次分析前需要在界面填写。", "sys");
-    });
+    pushLog("FinAgent 界面已就绪。所有数据在本机处理，运行期不联网取财务数据。", "sys");
+    pushLog("唯一出网请求：发往 api.deepseek.com 的模型调用（使用你自己的 Key）", "sys");
+    refreshStatus();
+    setInterval(function () {
+      if (!state.running) refreshStatus();
+    }, 30000);
   }
 
   if (document.readyState === "loading") {
@@ -1725,6 +1023,5 @@
   } else {
     boot();
   }
-
-  window.FinAgent = { state: state, showView: showView, openReport: openReport };
 })();
+

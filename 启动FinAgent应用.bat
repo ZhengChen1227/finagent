@@ -25,9 +25,9 @@ if not defined PYBIN (
 
 if not defined FINAGENT_API_KEY (
     echo.
-    echo [提示] 未检测到大模型密钥，分析环节将自动回落到离线归因模式。
-    echo        如需完整演示，请先设置环境变量 FINAGENT_API_KEY 再重新启动。
-    echo.
+    echo [提示] 尚未检测到 DeepSeek API Key。
+    echo        这不影响启动：应用会正常打开，请在界面右上角「设置」里
+    echo        填入你自己的 DeepSeek API Key，然后上传财报并开始分析。
 )
 
 echo 正在启动 FinAgent 应用，浏览器将自动打开……

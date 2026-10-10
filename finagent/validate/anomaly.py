@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import pandas as pd
 
-from finagent.datasource.eastmoney import evidence_id
+from finagent.datasource.schema import evidence_id
 from finagent.metrics.periods import cumulative_series, metric_table
 from finagent.validate.models import Evidence, Finding
 
@@ -76,8 +76,8 @@ def rule_impairment_jump(code, frames, cfg, table, family: str = "G") -> list[Fi
                                 "及其计提依据，判断是一次性出清还是持续恶化的起点。"),
                 verify_with="半年报/年报附注「资产减值损失」明细及存货跌价准备计提说明",
                 evidence=[Evidence("asset_impairment", "资产减值损失", cur, f"{year}Q{q}",
-                                   "利润表 ASSET_IMPAIRMENT_INCOME",
-                                   "第三方核验源(东方财富)", _eid(code, year, q, "asset_impairment"))],
+                                   "利润表「资产减值损失」",
+                                   "上传财报原文", _eid(code, year, q, "asset_impairment"))],
             ))
     return findings
 
@@ -223,7 +223,7 @@ def rule_tax_anomaly(code, frames, cfg, table, family: str = "G") -> list[Findin
                                 "该信号对判断管理层盈利预期具有参考价值。"),
                 verify_with="附注「所得税费用」中递延所得税与未确认递延所得税资产部分",
                 evidence=[Evidence("income_tax", "所得税费用", tax, period,
-                                   "利润表 INCOME_TAX", "第三方核验源(东方财富)",
+                                   "利润表「所得税费用」", "上传财报原文",
                                    _eid(code, year, q, "income_tax"))],
             ))
 

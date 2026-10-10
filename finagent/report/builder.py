@@ -69,7 +69,8 @@ def build_metrics_block(table: pd.DataFrame, periods: int) -> str:
 
 def build_report(*, company: dict, frames: dict, table: pd.DataFrame, findings: list,
                  attribution: dict, articulation: list, trace, cfg: dict,
-                 periods_shown: int = 6, agent_result: dict | None = None) -> str:
+                 periods_shown: int = 6, agent_result: dict | None = None,
+                 verification: dict | None = None) -> str:
     name = company.get("name", company.get("code"))
     code = company.get("code")
     industry = company.get("industry", "未分类")
@@ -92,15 +93,14 @@ def build_report(*, company: dict, frames: dict, table: pd.DataFrame, findings: 
             f"　|　本报告全部指标按该格式的科目口径计算")
     if not company.get("corpus_docs"):
         add(">")
-        add("> **证据强度提示**：本地尚未抓取该公司的公告原文，"
-            "本报告的归因结论仅基于结构化财务数据与规则引擎推断，"
-            "暂无法回溯至公告原文页面。如需原文级证据，请先运行 "
-            "`python run.py fetch --code " + str(code).split(".")[0] + "`。")
+        add("> **证据强度提示**：本次分析没有可用的上传财报原件，"
+            "结论仅基于结构化财务数据与规则引擎推断，暂无法回溯到原文页面。")
     add(">")
-    add("> 数据来源：巨潮资讯网定期报告（权威出处）、东方财富数据接口（第三方核验源）")
+    add("> 数据来源：**用户上传的上市公司定期报告 PDF 原文**（唯一数据来源）。"
+        "系统运行期不联网取任何财务数据，全部数字均由上传件正文抽取并经交叉校验。")
     add(">")
     add("> 计算口径：全部同比、环比与衍生指标均由程序计算并逐条绑定证据 ID，"
-        "可凭证据 ID 回溯至数据源字段与计算公式。大语言模型仅参与归因推理，不参与任何计算。")
+        "可凭证据 ID 回溯至上传财报的页码与科目；大语言模型仅参与归因推理，不参与任何计算。")
     add("")
 
     add("## 执行摘要")
@@ -228,12 +228,38 @@ def build_report(*, company: dict, frames: dict, table: pd.DataFrame, findings: 
                 "生物资产变动等），需回到附注逐项核对——这本身即是后续核查线索。")
     add("")
 
+    if verification:
+        add("### 交叉校验闸门")
+        add("")
+        add("闸门把「自算同比」与「报告披露的同比」、会计恒等式、小计与明细逐条对碰。"
+            "未通过的科目已被降级为 **需人工复核**，其数值不得当作事实使用。")
+        add("")
+        passed = verification.get("passed")
+        total = verification.get("total") or len(verification.get("checks") or [])
+        add(f"- 检查项 {total} 条：通过 {passed}，未通过 {verification.get('failed', 0)}。")
+        suspect = verification.get("suspect") or {}
+        if suspect:
+            add("")
+            add(_table(["科目", "未通过原因"],
+                       [[k, str(v).replace("|", "／")] for k, v in sorted(suspect.items())]))
+        else:
+            add("- 无科目被降级：本次抽取到的数据全部通过交叉校验。")
+        add("")
+        failed = [c for c in (verification.get("checks") or [])
+                  if c.get("level") == "fail"]
+        if failed:
+            add(_table(["检查项", "详情", "出处"],
+                       [[c.get("name", ""), str(c.get("detail", "")).replace("|", "／"),
+                         (c.get("file") or "") + (f" 第 {c['page']} 页" if c.get("page") else "")]
+                        for c in failed]))
+            add("")
+
     add("## 六、事实与推论的划分")
     add("")
     add("| 层次 | 内容 | 依据 |")
     add("|---|---|---|")
     for f in findings:
-        add(f"| 事实 | {f.statement.replace('|', '／')} | 数据源字段 + 程序计算 |")
+        add(f"| 事实 | {f.statement.replace('|', '／')} | 上传财报原文 + 程序计算 |")
     for item in items:
         inf = str(item.get("inference", "")).replace("|", "／")
         add(f"| 推论 | {inf} | 规则 {item.get('rule', '')}，置信度 {item.get('confidence', '—')} |")
@@ -261,7 +287,7 @@ def build_report(*, company: dict, frames: dict, table: pd.DataFrame, findings: 
     if agent_result:
         add("## 八、智能体执行轨迹")
         add("")
-        add(f"推理引擎：{'大语言模型 ' + (agent_result.get('model') or '') if agent_result.get('mode') == 'llm' else '确定性离线模式'}"
+        add(f"推理引擎：{'大语言模型 ' + (agent_result.get('model') or '') if agent_result.get('mode') == 'llm' else '未启用（无密钥，本报告不应出现在正式提交中）'}"
             f"　|　终止原因：`{agent_result.get('stop_reason')}`")
         add("")
         add("下表是智能体在本次任务中自主发起的工具调用序列。"
@@ -285,7 +311,8 @@ def build_report(*, company: dict, frames: dict, table: pd.DataFrame, findings: 
     add("")
     add("- 季报不披露现金流量表补充资料，折旧摊销不可得，调整后现金含量仅在中报与年报可得；"
         "本系统在这些报告期留空而非用近似值替代。")
-    add("- 数据源为第三方接口，最终以巨潮资讯网定期报告原文为准；关键结论在提交前需逐条回原文核对。")
+    add("- 全部数字来自用户上传的财报 PDF。上传件的完整性与真实性由提供方负责；"
+        "本系统对抽取结果做交叉校验，并已把未通过校验的科目标注为「需人工复核」。")
     add("- 非经常性损益、减值计提依据、会计政策变更等需查阅报表附注，本报告已标注验证路径。")
     for item in (attribution.get("limitations") or []):
         add(f"- {item}")

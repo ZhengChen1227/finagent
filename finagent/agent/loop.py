@@ -13,8 +13,10 @@
     2. 达到最大步数上限
     3. 连续两轮无新增信息（防止无效空转）
 
-离线降级：未配置模型时执行确定性探查计划。它走的是同一套工具、
-同一份轨迹结构，因此评审在无密钥环境下仍可复现完整流程与输出结构。
+本模块**没有离线降级路径**：没有可用的大模型密钥时直接报错，
+而不是退化成脚本。理由是"大语言模型作为核心推理引擎"是赛题的硬性要求，
+一个能绕过模型的降级分支会让"智能体"退化成固定流水线，
+也让评审无法判断系统究竟是模型在决策还是代码在决策。
 """
 
 from __future__ import annotations
@@ -31,14 +33,17 @@ MAX_OBSERVATION_CHARS = 4000
 
 class AgentLoop:
     def __init__(self, cfg: dict, trace=None, max_steps: int = 12,
-                 verbose: bool = True, focus_code: str | None = None) -> None:
+                 verbose: bool = True, focus_key: str | None = None,
+                 uploads=None) -> None:
         self.cfg = cfg
         self.trace = trace
         self.max_steps = max_steps
         self.verbose = verbose
-        self.focus_code = focus_code
-        self.registry = build_tools(cfg, trace, focus_code=focus_code)
+        self.focus_key = focus_key
+        self.uploads = uploads
+        self.registry = build_tools(cfg, trace, uploads=uploads, focus_key=focus_key)
         self.client = LLMClient(cfg)
+        self._cache: dict = {}
         self._cache: dict = {}
 
     # ---------------- 工具执行 ----------------
@@ -76,12 +81,21 @@ class AgentLoop:
 
     # ---------------- 主循环 ----------------
 
-    def run(self, objective: str, hint: str = "", focus_code: str | None = None) -> dict:
+    def run(self, objective: str, hint: str = "", focus_key: str | None = None) -> dict:
+        if not self.client.available:
+            # 没有密钥就不跑。这是有意的硬失败：
+            # 静默产出"事实层结论"会让人以为分析已经完成，比直接报错危险得多。
+            message = ("未配置大模型 API Key，无法启动推理。"
+                       "请在界面「设置」中填入自己的 DeepSeek API Key 后重试。")
+            if self.trace:
+                self.trace.record("agent_start", objective=objective,
+                                  mode="unavailable", error=message)
+            raise RuntimeError(message)
         if self.trace:
             self.trace.record(
                 "agent_start",
                 objective=objective,
-                mode="llm" if self.client.available else "offline",
+                mode="llm",
                 model=self.client.model or None,
                 max_steps=self.max_steps,
                 prompt_hashes=prompts.manifest(),
@@ -89,8 +103,6 @@ class AgentLoop:
                 skills_matched=[x["name"] for x in skill_lib.match(objective)],
                 tools=sorted(self.registry.keys()),
             )
-        if not self.client.available:
-            return self._offline_run(objective, hint, focus_code)
         return self._llm_run(objective, hint)
 
     def _llm_run(self, objective: str, hint: str) -> dict:
@@ -168,64 +180,6 @@ class AgentLoop:
         transcript.append({"step": "final", "type": "finalize", "reason": stop_reason})
         return self._finish("llm", stop_reason, transcript, final, messages)
 
-    # ---------------- 离线降级 ----------------
-
-    def _offline_run(self, objective: str, hint: str, focus_code: str | None = None) -> dict:
-        """确定性探查计划。
-
-        不是占位实现：它走完全相同的工具集与轨迹结构，
-        保证无密钥环境下任务流程与输出结构可被完整复现。
-        """
-        codes = [c["code"] for c in self.cfg.get("companies", [])]
-        # 探查计划必须针对本次分析对象展开，否则轨迹会张冠李戴：
-        # 报告里出现别的公司的工具调用，是可追溯性上的硬伤。
-        focus = focus_code or (codes[0] if codes else None)
-        others = [c for c in codes if c != focus]
-        transcript: list = []
-        plan = [
-            ("list_corpus", {}),
-            ("list_periods", {"code": focus}),
-            ("compare_companies", {}),
-            ("check_articulation", {"code": focus}),
-            ("run_anomaly_rules", {"code": focus}),
-        ]
-        for other in others[:1]:
-            plan.append(("run_anomaly_rules", {"code": other}))
-        findings: list = []
-        for step, (name, args) in enumerate(plan, start=1):
-            result = self._invoke(name, args)
-            transcript.append({"step": step, "type": "tool", "tool": name, "args": args,
-                               "ok": "error" not in result, "summary": _summarize(result)})
-            if name == "run_anomaly_rules":
-                findings.extend(result.get("findings") or [])
-            if self.verbose:
-                print(f"   [{step}] {name}({_brief(args)}) -> {_oneline(result)}")
-
-        # 对异常信号回原文核实——这是把推论落到证据上的关键一步，
-        # 也是本系统区别于"只跑规则就下结论"的地方。
-        step = len(plan)
-        seen_queries = set()
-        if findings:
-            for f in findings:
-                if f.get("category") != "异常信号":
-                    continue
-                query = _verify_query(f)
-                if query in seen_queries:   # 同一条检索只做一次，避免重复占用步数
-                    continue
-                seen_queries.add(query)
-                if len(seen_queries) > 3:
-                    break
-                step += 1
-                result = self._invoke("search_disclosure", {"query": query, "topk": 2})
-                transcript.append({"step": step, "type": "tool", "tool": "search_disclosure",
-                                   "args": {"query": query}, "ok": "error" not in result,
-                                   "summary": _summarize(result)})
-                if self.verbose:
-                    print(f"   [{step}] search_disclosure({query}) -> {_oneline(result)}")
-
-        final = _offline_conclusion(codes)
-        return self._finish("offline", "deterministic_plan", transcript, final, None)
-
     # ---------------- 收尾 ----------------
 
     def _finish(self, mode: str, stop_reason: str, transcript: list,
@@ -298,15 +252,3 @@ def _verify_query(finding: dict) -> str:
         "R6": "应收账款 账龄",
         "R7": "固定资产折旧 折旧年限",
     }.get(rule, "合并财务报表 主要会计政策")
-
-
-def _offline_conclusion(codes: list) -> dict:
-    return {
-        "summary": ("离线模式：未配置大语言模型，已按确定性计划完成数据提取、"
-                    "勾稽校验、规则判定与原文核验，产出事实层结论。"
-                    "归因推理需接入模型后方可生成。"),
-        "findings": [],
-        "unresolved": ["归因推理未启用，需配置 FINAGENT_API_KEY 后重新运行"],
-        "limitations": ["离线模式不产生推论，仅输出事实与证据。"],
-        "companies": codes,
-    }

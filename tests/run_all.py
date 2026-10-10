@@ -16,15 +16,16 @@ CHILD_ENV = dict(os.environ, PYTHONIOENCODING="utf-8", PYTHONUTF8="1")
 
 SUITES = [
     ("环境自检", "tests/check_env.py"),
+    ("抽取层(合成版面)", "tests/test_ingest.py"),
     ("主链路冒烟", "tests/smoke.py"),
     ("规则引擎", "tests/test_rules.py"),
     ("工具层", "tests/test_tools.py"),
-    ("编排循环(离线)", "tests/test_agent.py"),
+    ("编排循环", "tests/test_agent.py"),
     ("MCP 协议", "tests/test_mcp.py"),
     ("大模型路径", "tests/test_llm.py"),
     ("端到端复现", "tests/test_reproducibility.py"),
     ("应用界面与接口", "tests/test_app.py"),
-    ("全市场覆盖", "tests/test_market_coverage.py"),
+    ("网络边界", "tests/test_network.py"),
 ]
 
 
@@ -37,7 +38,7 @@ def main() -> int:
         status = "通过" if proc.returncode == 0 else f"失败({proc.returncode})"
         if proc.returncode != 0:
             failed.append((name, script))
-        print(f"  {name:<16} {status}")
+        print(f"  {name:<18} {status}")
 
     print()
     if failed:

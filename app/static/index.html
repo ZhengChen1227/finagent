@@ -29,9 +29,22 @@
     <circle cx="12" cy="12" r="3"/>
     <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/>
   </symbol>
-  <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-          stroke-width="1.9" stroke-linecap="round">
-    <path d="M12 5v14M5 12h14"/>
+  <symbol id="i-upload" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M12 3v13M7 8l5-5 5 5"/>
+  </symbol>
+  <symbol id="i-file" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/>
+    <path d="M14 3v5h5"/>
+  </symbol>
+  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="m4 12 5 5L20 6"/>
+  </symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 3 2 20h20L12 3Z"/><path d="M12 9v5M12 17.5v.5"/>
   </symbol>
   <symbol id="i-send" viewBox="0 0 24 24" fill="none" stroke="currentColor"
           stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -67,16 +80,11 @@
           stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
     <circle cx="8" cy="15" r="4"/><path d="m11 12 9-9 3 3-3 3-2-2"/>
   </symbol>
-  <symbol id="i-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-          stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="m9 6 6 6-6 6"/>
-  </symbol>
-  <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-          stroke-width="1.9" stroke-linecap="round">
-    <circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/>
+  <symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>
   </symbol>
 </svg>
-
 <div class="app" id="app">
 
   <!-- ============================================================ 左侧导航 -->
@@ -85,23 +93,25 @@
       <div class="brand">
         <div class="brand-mark">智</div>
         <div>
-          <div class="brand-name">智金工坊</div>
-          <div class="brand-sub">FinAgent · 财务报告分析</div>
+          <div class="brand-name">智金工坊 · FinAgent</div>
+          <div class="brand-sub">上市公司财务报告分析智能体</div>
         </div>
       </div>
-      <button class="new-btn" id="btn-new" type="button">
-        <svg width="15" height="15"><use href="#i-plus"/></svg>
-        新建分析
-      </button>
     </div>
 
     <div class="rail-scroll">
+      <button class="new-btn" id="btn-new" type="button">
+        <svg width="15" height="15"><use href="#i-upload"/></svg>
+        <span>上传新的一批财报</span>
+      </button>
+
       <div class="rail-label">功能</div>
       <nav class="nav" role="tablist">
         <button class="nav-item active" type="button" role="tab" data-view="chat"
                 aria-selected="true" id="nav-chat">
           <svg width="16" height="16"><use href="#i-chat"/></svg>
-          <span>智能分析</span>
+          <span>分析工作台</span>
+          <span class="nav-count" id="count-pending">0</span>
         </button>
         <button class="nav-item" type="button" role="tab" data-view="report"
                 aria-selected="false" id="nav-report">
@@ -122,9 +132,10 @@
         </button>
       </nav>
 
-      <div class="rail-label">历史记录</div>
-      <div class="threads" id="threads">
-        <div class="empty" style="padding:16px 6px;text-align:left">暂无记录</div>
+      <div class="rail-label">使用说明</div>
+      <div class="note" style="margin:0 2px">
+        ① 上传财报 PDF → ② 点「开始分析」→ ③ 看报告 / 轨迹。<br>
+        数据只在你自己的电脑上处理，不联网取任何财务数据。
       </div>
     </div>
 
@@ -159,37 +170,68 @@
       </button>
     </header>
 
-    <!-- ---------------------------------------------------- 智能分析 -->
+    <!-- ---------------------------------------------------- 分析工作台 -->
     <section class="view active" id="view-chat" role="tabpanel" aria-labelledby="nav-chat">
-      <div class="chat-wrap">
-        <div class="stream" id="stream">
-          <div class="stream-inner" id="stream-inner">
-            <div class="welcome" id="welcome">
-              <div class="wm">智</div>
-              <h1>今天想分析哪家公司？</h1>
-              <p>直接说公司名和你关心的问题。我会去取财报数据、算指标、跑规则引擎，
-                 再回到公告原文核实，最后给你一份带证据编号的报告。</p>
-              <div class="suggest-grid" id="suggest-grid"></div>
-            </div>
-            <div id="messages"></div>
-          </div>
-        </div>
+      <div class="page-scroll">
+        <div class="page-inner">
+          <h2 class="page-title">上传财报，开始分析</h2>
+          <p class="page-sub">
+            本系统只分析你上传的财报文件，不需要股票代码、不需要公司名称，也不联网取数。
+            把同一家公司的多期报告一起拖进来，系统会自动拼成一条时间轴，同比与环比都能算。
+          </p>
 
-        <div class="composer">
-          <div class="composer-inner">
-            <div class="composer-box">
-              <textarea id="q" rows="1" placeholder="例如：分析牧原股份 2026 年中报为什么亏损"></textarea>
-              <div class="composer-tools">
-                <span class="tag accent" id="mode-hint">回车发送 · Shift+回车换行</span>
-                <div class="spacer"></div>
-                <button class="btn ghost" id="btn-stop" type="button" hidden>停止</button>
-                <button class="send-btn" id="btn-send" type="button" title="发送">
-                  <svg width="17" height="17"><use href="#i-send"/></svg>
-                </button>
+          <div class="panel">
+            <div class="panel-head">
+              <span>① 上传财报 PDF</span>
+              <span class="spacer"></span>
+              <span class="tag" id="pending-count">0 份</span>
+              <button class="btn ghost" id="btn-clear" type="button">清空本批</button>
+            </div>
+            <div class="panel-body">
+              <div class="dropzone" id="dropzone">
+                <svg width="30" height="30"><use href="#i-upload"/></svg>
+                <b>把财报 PDF 拖到这里</b>
+                <span class="dz-sub">或者
+                  <button class="btn" id="btn-pick" type="button">选择文件</button>
+                </span>
+                <small>支持年报 / 半年报 / 一季报 / 三季报；一次可以选多份。
+                  首次上传约需 10~60 秒做解析与校验，之后同名同内容会直接复用缓存。</small>
+                <input type="file" id="file-input" accept=".pdf,application/pdf" multiple hidden>
+              </div>
+              <div class="up-list" id="up-list"></div>
+              <div class="note" id="pending-notes" hidden></div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head"><span>② 开始分析</span></div>
+            <div class="panel-body">
+              <div class="field">
+                <label for="q">定向追问（选填）</label>
+                <textarea id="q" rows="2"
+                  placeholder="例如：二季度毛利率为什么下滑？非经常性损益主要来自什么？"></textarea>
+                <div class="help">
+                  留空则执行标准体检：同比/环比准确性、非经常性损益、会计口径变化、
+                  利润与现金流背离、勾稽校验与交叉校验闸门。
+                </div>
+              </div>
+              <div class="act-row">
+                <button class="btn primary" id="btn-run" type="button">开始分析</button>
+                <button class="btn" id="btn-stop" type="button" hidden>停止本次运行</button>
+                <span class="tag" id="run-state">等待上传材料</span>
               </div>
             </div>
-            <div class="composer-hint" id="composer-hint">
-              数据来自巨潮资讯网公告原文与东方财富公开接口，全部计算可回溯
+          </div>
+
+          <div class="panel" id="panel-run" hidden>
+            <div class="panel-head">
+              <span>③ 运行过程（与轨迹文件一致）</span>
+              <span class="spacer"></span>
+              <span class="tag accent" id="run-clock">0.0s</span>
+            </div>
+            <div class="panel-body">
+              <div class="evs" id="run-steps"></div>
+              <div class="kpis" id="run-kpis" hidden></div>
             </div>
           </div>
         </div>
@@ -201,7 +243,10 @@
       <div class="page-scroll">
         <div class="page-inner wide">
           <h2 class="page-title">分析报告</h2>
-          <p class="page-sub">每份报告都标注了证据编号，可凭编号回溯到数据源字段与计算公式。</p>
+          <p class="page-sub">
+            每份报告都标注了证据编号与财报页码，可凭编号回溯到上传件原文与计算公式。
+            报告可导出为 PDF 下载。
+          </p>
           <div class="split">
             <div class="panel">
               <div class="panel-head">
@@ -219,7 +264,8 @@
                   <span id="report-name">报告正文</span>
                   <span class="spacer"></span>
                   <button class="btn ghost" id="btn-report-table" type="button">指标宽表</button>
-                  <button class="btn ghost" id="btn-report-pdf" type="button">
+                  <button class="btn ghost" id="btn-report-json" type="button">结构化结论</button>
+                  <button class="btn" id="btn-report-pdf" type="button">
                     <svg width="14" height="14"><use href="#i-download"/></svg>
                     下载 PDF
                   </button>
@@ -230,6 +276,7 @@
                     <div class="empty">从左侧选择一份报告查看。</div>
                   </div>
                   <div class="tbl-wrap" id="report-table" hidden></div>
+                  <div class="tbl-wrap" id="report-json" hidden></div>
                 </div>
               </div>
             </div>
@@ -243,8 +290,10 @@
       <div class="page-scroll">
         <div class="page-inner wide">
           <h2 class="page-title">执行轨迹</h2>
-          <p class="page-sub">每一次运行都留有完整轨迹：读了哪个文件、调了哪个工具、算了什么、
-             结论依据是什么。评委可据此逐条复核。</p>
+          <p class="page-sub">
+            每一次运行都留有完整轨迹：读了哪个文件、调了哪个工具、算了什么、结论依据是什么。
+            轨迹文件位于 <code>output/traces/&lt;运行编号&gt;.jsonl</code>，可逐条复核。
+          </p>
           <div class="split">
             <div class="panel">
               <div class="panel-head"><span>运行记录</span><span class="spacer"></span>
@@ -275,27 +324,28 @@
       <div class="page-scroll">
         <div class="page-inner wide">
           <h2 class="page-title">环境与口径</h2>
-          <p class="page-sub">封闭数据环境的构成、分析对象的覆盖范围、异常判定阈值与三类结论的区分标准。</p>
+          <p class="page-sub">封闭数据环境的构成、交叉校验闸门、异常判定阈值与三类结论的区分标准。</p>
 
           <div class="grid-3" id="env-stats" style="margin-bottom:18px"></div>
 
           <div class="grid-2">
             <div class="panel">
-              <div class="panel-head"><span>封闭数据环境（公告原文）</span></div>
+              <div class="panel-head"><span>本批上传材料（封闭数据环境的实际内容）</span>
+                <span class="spacer"></span><span class="tag" id="env-run">—</span></div>
               <div class="panel-body flush">
-                <div class="tbl-wrap" id="env-corpus"><div class="empty">读取中…</div></div>
+                <div class="tbl-wrap" id="env-materials"><div class="empty">尚未上传任何材料。</div></div>
               </div>
             </div>
 
             <div class="panel">
-              <div class="panel-head"><span>全市场覆盖</span>
-                <span class="spacer"></span>
-                <span class="tag ok" id="env-universe-total">—</span></div>
+              <div class="panel-head"><span>交叉校验闸门</span></div>
               <div class="panel-body">
-                <p style="margin-top:0;color:var(--muted);font-size:13px">
-                  以下为按板块抽样实测通过的主体。任意一家公司都可以用同样的流程分析，
-                  不依赖预先挑好的名单。</p>
-                <div class="tbl-wrap" id="env-samples"></div>
+                <div class="note" style="margin-bottom:12px">
+                  抽取出来的每个数字都要过闸门：自算同比与报告披露同比对碰、
+                  会计恒等式、小计与明细、单季还原与年报分季度表。
+                  未通过的科目会被降级为「需人工复核」并在报告中标注，绝不静默输出。
+                </div>
+                <div class="tbl-wrap" id="env-verify"></div>
               </div>
             </div>
 
@@ -352,34 +402,29 @@
 <!-- ============================================================ API Key 弹窗 -->
 <div class="modal" id="modal-key">
   <div class="modal-box">
-    <div class="modal-head">配置推理引擎</div>
+    <div class="modal-head">配置推理引擎（DeepSeek）</div>
     <div class="modal-body">
       <div class="note" style="margin-bottom:16px">
-        本系统使用你自己的大模型密钥。密钥只在本机浏览器与服务进程中短暂使用：
-        <b>不会写入仓库、不会随轨迹落盘、不会出现在报告里</b>。
+        本系统使用<b>你自己的 DeepSeek 密钥</b>。密钥只在本机浏览器与服务进程中短暂使用：
+        不会写入仓库、不会随轨迹落盘、不会出现在报告里。
+        运行期唯一的出网请求就是发往 <code>api.deepseek.com</code> 的模型调用。
       </div>
       <div class="field">
         <label for="in-key">API Key</label>
         <input type="password" id="in-key" placeholder="sk-..." autocomplete="off" spellcheck="false">
-        <div class="help">推荐使用 DeepSeek（国产模型）：<a href="https://platform.deepseek.com/api_keys" target="_blank" rel="noreferrer">platform.deepseek.com</a></div>
+        <div class="help">在
+          <a href="https://platform.deepseek.com/api_keys" target="_blank" rel="noreferrer">platform.deepseek.com</a>
+          免费注册并创建，形如 <code>sk-</code> 开头的字符串。</div>
         <div class="err" id="key-err" hidden></div>
         <div class="ok" id="key-ok" hidden></div>
       </div>
       <div class="field">
-        <label for="in-base">接口地址</label>
-        <input type="text" id="in-base" placeholder="https://api.deepseek.com/v1">
-        <div class="help">兼容 OpenAI 协议的国产模型均可填写，例如通义千问、智谱、月之暗面。</div>
-      </div>
-      <div class="field">
-        <label for="in-model">模型名称</label>
-        <input type="text" id="in-model" placeholder="deepseek-chat" list="model-list">
-        <datalist id="model-list">
-          <option value="deepseek-chat"></option>
-          <option value="deepseek-reasoner"></option>
-          <option value="qwen-plus"></option>
-          <option value="glm-4-plus"></option>
-          <option value="moonshot-v1-8k"></option>
-        </datalist>
+        <label for="in-model">模型</label>
+        <select id="in-model">
+          <option value="deepseek-chat">deepseek-chat（通用对话，速度快，推荐）</option>
+          <option value="deepseek-reasoner">deepseek-reasoner（深度推理，更慢更贵）</option>
+        </select>
+        <div class="help">接口地址固定为 <code>https://api.deepseek.com/v1</code>，不可更改。</div>
       </div>
       <label style="display:flex;gap:8px;align-items:flex-start;font-size:12.5px;color:var(--muted)">
         <input type="checkbox" id="in-remember" style="margin-top:3px">
@@ -389,7 +434,7 @@
     <div class="modal-foot">
       <button class="btn" id="btn-key-cancel" type="button">稍后再说</button>
       <button class="btn" id="btn-key-test" type="button">测试连接</button>
-      <button class="btn primary" id="btn-key-save" type="button">保存并开始</button>
+      <button class="btn primary" id="btn-key-save" type="button">保存</button>
     </div>
   </div>
 </div>
@@ -400,3 +445,4 @@
 <script src="/static/app.js"></script>
 </body>
 </html>
+

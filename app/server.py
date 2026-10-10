@@ -5,9 +5,14 @@
     * 所有指标计算、规则判定、归因结论仍由 finagent 核心产生，界面不做任何计算；
     * 所有执行仍通过 `run.py` 命令行发起，因此全链路轨迹
       （`output/traces/*.jsonl`）完整保留，可核验、可追溯、可复现；
-    * 服务端只做三件事：启动子进程、转发日志、读取产物渲染。
+    * 服务端只做四件事：收文件、启动子进程、转发日志、读取产物渲染。
 
-这保证了「有界面」这件事不削弱竞赛要求的可复现性。
+网络边界：服务**硬编码监听 127.0.0.1**，只在本机可访问。
+这是有意的设计——每位使用者都在自己的机器上独立运行，
+不需要处于同一局域网，也不需要任何人保持开机。
+因此本模块不提供 `--host` 参数，也不存在"共享给队友"的分支：
+一旦能改监听地址，就会引入"谁的机器在跑、数据传到哪去了"的不可控因素，
+与赛题"封闭数据环境"的要求直接冲突。
 
 用法：
     python app/server.py                  # 启动并自动打开浏览器
@@ -24,11 +29,11 @@ import json
 import os
 import queue
 import re
-import socket
 import subprocess
 import sys
 import threading
 import time
+import uuid
 import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, quote, urlparse
@@ -45,65 +50,30 @@ sys.path.insert(0, APP_DIR)
 # 必须置于 sys.path 注入之后：否则在任意工作目录启动都会找不到 finagent 包。
 from finagent.config import local_config_path  # noqa: E402
 
+# 服务只监听回环地址。写死为常量而不是命令行参数，见模块文档的说明。
+HOST = "127.0.0.1"
+
+# 唯一允许的推理服务地址与模型清单。国产模型（DeepSeek）作为核心推理引擎。
+BASE_URL = "https://api.deepseek.com/v1"
+MODELS = ("deepseek-chat", "deepseek-reasoner")
+
 # 允许通过接口读取的目录白名单（相对项目根）。防止任意路径读取。
 ALLOWED_ROOTS = ("output", "data", "docs", "finagent")
 
-# 分析对象既可以是代码（600519 / 600519.SH），也可以是公司简称（贵州茅台）。
-# 简称由 run.py 通过全市场名录解析，服务端只做字符层面的安全校验：
-# 命令行以参数列表方式传递（不经 shell），此处仍拒绝空白与特殊字符。
-CODES_RE = re.compile(r"^[0-9A-Za-z\u4e00-\u9fa5.\-]{1,20}$")
+# 单次上传的文件上限（一份年报通常 5~20MB；留足余量但不放任）。
+MAX_UPLOAD_BYTES = 200 * 1024 * 1024
+MAX_REQUEST_BYTES = 400 * 1024 * 1024
 
-# 覆盖度对照样本：每个上市地与报表族各取一例，用于一键验证"全市场可分析"。
-COVERAGE_SAMPLES = [
-    {"code": "600519.SH", "name": "贵州茅台", "segment": "沪市主板"},
-    {"code": "000725.SZ", "name": "京东方A", "segment": "深市主板"},
-    {"code": "300750.SZ", "name": "宁德时代", "segment": "创业板"},
-    {"code": "688981.SH", "name": "中芯国际", "segment": "科创板"},
-    {"code": "601398.SH", "name": "工商银行", "segment": "银行报表族"},
-    {"code": "601318.SH", "name": "中国平安", "segment": "保险报表族"},
-    {"code": "600030.SH", "name": "中信证券", "segment": "证券报表族"},
-    {"code": "920002.BJ", "name": "万达轴承", "segment": "北交所"},
-    {"code": "900948.SH", "name": "伊泰B股", "segment": "沪市B股"},
-]
-
-# 同一时刻只允许一次运行：局域网共享给队友时，两条 run.py 同时写
-# output/ 会互相覆盖产物。这里做非阻塞占用，冲突时明确告知而不是静默排队。
+# 同一时刻只允许一次运行：两次分析同时写 output/ 会互相覆盖产物。
+# 这里做非阻塞占用，冲突时明确告知而不是静默排队。
 RUN_LOCK = threading.Lock()
 
-
-def local_addresses():
-    """本机可被局域网访问的 IPv4 地址，默认出口网卡的地址排在首位。
-
-    排除回环与 169.254.*（链路本地地址，无法跨机访问）。
-    虚拟网卡（VPN、虚拟机网桥等）的地址无法可靠识别，因此一并列出，
-    但排在默认出口网卡之后，避免队友连错地址。
-    """
-    primary = None
-    try:
-        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
-            s.connect(("8.8.8.8", 80))   # 不实际发包，只为取默认出口网卡
-            primary = s.getsockname()[0]
-    except OSError:
-        pass
-
-    found = set()
-    try:
-        for info in socket.getaddrinfo(socket.gethostname(), None, socket.AF_INET):
-            found.add(info[4][0])
-    except OSError:
-        pass
-
-    def usable(addr):
-        return not (addr.startswith("127.") or addr.startswith("169.254."))
-
-    ordered = []
-    if primary and usable(primary):
-        ordered.append(primary)
-    for addr in sorted(found):
-        if usable(addr) and addr not in ordered:
-            ordered.append(addr)
-    return ordered
-
+# 当前上传批次。一次"上传 → 分析"对应一个 run_id 目录：
+#   data/uploads/<run_id>/
+# 用户清空重传时只切换会话指针，不删除已上传的原始文件——
+# 原始文件是结论的唯一出处，删掉它，报告里的页码就再也无法核对。
+SESSION_LOCK = threading.Lock()
+SESSION: dict = {"run_id": None, "set": None}
 
 # ------------------------------------------------------------------ 工具
 
@@ -130,46 +100,14 @@ def load_config():
     return _load(os.path.join(ROOT, "config.yaml"))
 
 
-def list_corpus(cfg):
-    """已落盘的公告原文（封闭数据环境的实际内容）。"""
-    corpus_dir = os.path.join(ROOT, cfg["data"]["corpus_dir"])
-    out = []
-    if not os.path.isdir(corpus_dir):
-        return out
-    for code in sorted(os.listdir(corpus_dir)):
-        mpath = os.path.join(corpus_dir, code, "manifest.json")
-        if not os.path.isfile(mpath):
-            continue
-        try:
-            manifest = json.loads(read_text(mpath))
-        except Exception:
-            manifest = []
-        total = 0
-        for entry in manifest:
-            pdf = entry.get("path")
-            if pdf and os.path.isfile(pdf):
-                total += os.path.getsize(pdf)
-        out.append({"code": code, "name": _corpus_name(code),
-                    "documents": len(manifest), "bytes": total,
-                    "kinds": sorted({e.get("kind", "") for e in manifest})})
-    return out
-
-
-def _corpus_name(code):
-    """给已落盘的公司补一个名称。
-
-    语料是按代码落盘的，而 config.yaml 里只登记了团队当前在看的几家。
-    若只看配置，界面就会把"贵州茅台"显示成"—"。这里统一回到全市场名录查，
-    保证界面上的名称与官方简称一致。
-    """
-    try:
-        from finagent.datasource.universe import by_code
-        item = by_code(code)
-        if item:
-            return item.get("name") or ""
-    except Exception:
-        pass
-    return ""
+def _mask_key(value):
+    """密钥打码：只保留首尾各 3 位，中间以星号替代。"""
+    text = str(value or "")
+    if not text:
+        return ""
+    if len(text) <= 8:
+        return "*" * len(text)
+    return text[:3] + "*" * (len(text) - 6) + text[-3:]
 
 
 def find_table_for(report_path):
@@ -180,8 +118,9 @@ def find_table_for(report_path):
         return None
     if os.path.isfile(os.path.join(table_dir, stem + ".csv")):
         return os.path.join(table_dir, stem + ".csv")
-    code = stem.split("_")[0]
-    hits = [f for f in os.listdir(table_dir) if f.startswith(code + "_") and f.endswith(".csv")]
+    head = stem.split("_")[0]
+    hits = [f for f in os.listdir(table_dir)
+            if f.startswith(head + "_") and f.endswith(".csv")]
     if hits:
         return os.path.join(table_dir, sorted(hits)[-1])
     return None
@@ -219,269 +158,131 @@ def list_traces(cfg, limit=60):
     return out[:limit]
 
 
-_UNIVERSE_CACHE = {"total": 0, "loaded": False}
+# ------------------------------------------------------------------ 上传会话
+
+def session_uploads(create: bool = False):
+    """取当前上传批次。create=True 时若不存在则新建一个 run_id 目录。"""
+    from finagent.ingest.dataset import UploadSet
+    with SESSION_LOCK:
+        if SESSION["set"] is None and create:
+            from finagent.config import uploads_dir
+            SESSION["set"] = UploadSet(root=uploads_dir(load_config()))
+            SESSION["run_id"] = SESSION["set"].run_id
+        return SESSION["set"]
 
 
-def _mask_key(value):
-    """密钥打码：只保留首尾各 3 位，中间以星号替代。"""
-    text = str(value or "")
-    if not text:
-        return ""
-    if len(text) <= 8:
-        return "*" * len(text)
-    return text[:3] + "*" * (len(text) - 6) + text[-3:]
+def reset_session():
+    """结束当前批次。已上传的文件保留在磁盘上，只是不再属于"当前这批"。"""
+    with SESSION_LOCK:
+        old = SESSION.get("run_id")
+        SESSION["set"] = None
+        SESSION["run_id"] = None
+        return old
 
 
-def universe_total():
-    """全市场名录条数。用于向评审直观展示覆盖范围（沪深北及 B 股）。"""
-    if _UNIVERSE_CACHE["loaded"]:
-        return _UNIVERSE_CACHE["total"]
-    try:
-        from finagent.datasource.universe import load_universe
-        total = len(load_universe())
-    except Exception:
-        total = 0
-    _UNIVERSE_CACHE.update(total=total, loaded=bool(total))
-    return total
+def entry_view(entry: dict) -> dict:
+    """把一条上传结果整理成界面要的字段，并给出识别置信度。"""
+    subject = entry.get("subject") or {}
+    warnings = list(entry.get("warnings") or [])
+    code = subject.get("code")
+    date = subject.get("report_date")
+    kind = subject.get("report_kind")
+    issues = list(warnings)
+    if not code:
+        issues.append("未解析出股票代码（将按公司名称归组）")
+    if not date:
+        issues.append("未解析出报告期，该文件无法参与同比/环比计算")
+    if not kind:
+        issues.append("未解析出报告类型")
+    level = "error" if (not date or not kind) else ("warn" if issues else "ok")
+    verification = entry.get("verification") or {}
+    return {
+        "upload_id": entry.get("upload_id"),
+        "filename": entry.get("filename"),
+        "bytes": entry.get("size"),
+        "pages": entry.get("pages"),
+        "sha256": (entry.get("sha256") or "")[:16],
+        "subject": subject.get("display") or entry.get("filename"),
+        "short_name": subject.get("short_name"),
+        "full_name": subject.get("full_name"),
+        "code": code,
+        "report_kind": kind,
+        "report_kind_label": subject.get("report_kind_label"),
+        "report_date": date,
+        "compare_date": subject.get("compare_date"),
+        "confidence": level,
+        "issues": issues,
+        "counts": entry.get("counts") or {},
+        "fields_total": sum((entry.get("counts") or {}).values()),
+        "checks_passed": verification.get("passed"),
+        "checks_failed": verification.get("failed"),
+        "suspect": sorted((verification.get("suspect") or {}).keys()),
+        "stored_path": os.path.relpath(entry["stored_path"], ROOT).replace("\\", "/")
+        if entry.get("stored_path") else None,
+    }
 
 
-# 口语简称 -> 证券代码。用户在对话里很少写全称，常见的是行业惯用缩写。
-# 这张表刻意做小：每一条都是不会与日常用语冲突的词。
-# 它是"可扩展点"——现场若遇到表外的叫法，直接往这里加一行即可，
-# 不需要改动匹配逻辑，也不会影响已经验证过的行为。
-COLLOQUIAL = {
-    "工行": "601398", "建行": "601939", "农行": "601288", "中行": "601988",
-    "招行": "600036", "交行": "601328", "邮储": "601658",
-    "中石油": "601857", "中石化": "600028", "中核电": "601985",
-    "隆基": "601012", "通威": "600438", "海康": "002415", "立讯": "002475",
-    "宁德时代": "300750", "比亚迪": "002594", "万科": "000002", "格力": "000651",
-    "中免": "601888", "片仔癀": "600436", "爱尔": "300015", "迈瑞": "300760",
-}
-
-# 行政区划与国际前缀。中文证券简称常带地域前缀，用户口语里基本会省略，
-# 例如说「茅台」而不是「贵州茅台」。剥掉前缀只在剩余长度 >= 2 时进行，
-# 避免把「中国中冶」削成单字造成误匹配。
-REGION_PREFIXES = (
-    "贵州", "中国", "上海", "深圳", "北京", "广东", "江苏", "浙江", "山东",
-    "四川", "河南", "河北", "湖南", "湖北", "安徽", "福建", "江西", "陕西",
-    "山西", "辽宁", "吉林", "黑龙江", "天津", "重庆", "云南", "广西",
-    "内蒙古", "新疆", "西藏", "宁夏", "青海", "甘肃", "海南", "香港",
-)
+def pending_payload() -> dict:
+    uploads = session_uploads()
+    if uploads is None:
+        return {"run_id": None, "items": [], "groups": [], "notes": []}
+    items = [entry_view(e) for e in uploads.entries]
+    groups = []
+    for key, members in uploads.groups().items():
+        dates = sorted({(m.get("subject") or {}).get("report_date") or "" for m in members})
+        groups.append({
+            "key": str(key),
+            "display": (members[0].get("subject") or {}).get("display") or str(key),
+            "documents": len(members),
+            "report_dates": [d for d in dates if d],
+            "periods": len([d for d in dates if d]),
+        })
+    return {"run_id": uploads.run_id, "items": items, "groups": groups,
+            "notes": _group_notes(uploads)}
 
 
-# 剥离地域前缀后如果只剩一个通用词，就放弃这个变体。
-# 否则「工商银行」会把江苏银行、北京银行……全部认出来（都剩「银行」），
-# 这是"过度召回"，比漏认更危险：它会让一次分析凭空多出五个对象。
-GENERIC_TAIL = {
-    "银行", "证券", "保险", "信托", "基金", "科技", "股份", "集团", "国际",
-    "实业", "投资", "控股", "发展", "能源", "电力", "医药", "生物", "电子",
-    "通信", "汽车", "地产", "传媒", "环保", "化工", "钢铁", "水泥", "航空",
-    "港口", "高速", "旅游", "酒店", "食品", "饮料", "电器", "机械", "重工",
-    "建设", "工程", "材料", "纺织", "服装", "农业", "牧业", "养殖", "物流",
-    "东方", "西部", "南方", "北方", "中国", "股份",
-}
-
-
-def _name_variants(name):
-    """一个简称的所有可接受写法，按确信度从高到低排列。"""
-    out = [(name, "name")]
-    stripped = name.rstrip("ABab")
-    if stripped != name and len(stripped) >= 2:
-        out.append((stripped, "short"))
-    for prefix in REGION_PREFIXES:
-        if name.startswith(prefix) and len(name) - len(prefix) >= 2:
-            tail = name[len(prefix):]
-            if tail not in GENERIC_TAIL:
-                out.append((tail, "short"))
-            break
+def _group_notes(uploads) -> list:
+    from finagent.ingest.group import notes as group_notes
+    out = []
+    for key, members in uploads.groups().items():
+        for note in group_notes(members):
+            out.append(f"{key}：{note}")
     return out
-
-
-def resolve_in_text(text, limit=6):
-    """从一段自然语言里认出上市公司。
-
-    对话式界面里，用户不会规规矩矩只填代码，他会写
-    「帮我看看京东方今年为什么现金流这么好」。因此需要一个
-    "在句子里找主体"的能力。规则是确定的、可复核的：
-
-        1. 句中出现 6 位代码               -> 命中
-        2. 句中出现证券简称（含去掉 A/B 后缀的形式）-> 命中
-        3. 句中出现简称全拼（仅当输入是拉丁字母时）-> 命中
-
-    刻意不做模糊匹配、不做拼音近似：宁可漏认，也不误认。
-    认错了公司会直接污染后面所有计算，代价远高于让用户手点一次。
-    """
-    raw = (text or "").strip()
-    if not raw:
-        return []
-    upper = raw.upper()
-    lower = raw.lower()
-    try:
-        from finagent.datasource.universe import load_universe
-        universe = load_universe()
-    except Exception:
-        return []
-
-    hits = []
-    seen = set()
-    for item in universe:
-        code = item.get("code") or ""
-        name = item.get("name") or ""
-        if not code or not name:
-            continue
-        matched = None
-        via = None
-        pos = raw.find(code)
-        if pos >= 0:
-            matched, via = code, "code"
-        else:
-            for variant, kind in _name_variants(name):
-                pos = raw.find(variant)
-                if pos >= 0:
-                    matched, via = variant, kind
-                    break
-        if matched is None:
-            pinyin = (item.get("pinyin") or "").lower()
-            if len(pinyin) >= 4 and pinyin in lower:
-                pos, matched, via = lower.find(pinyin), pinyin, "pinyin"
-        if matched is None:
-            continue
-        key = (code, matched)
-        if key in seen:
-            continue
-        seen.add(key)
-        hits.append({"code": code, "secucode": item.get("secucode"),
-                     "name": name, "market": item.get("market"),
-                     "org_id": item.get("org_id"),
-                     "matched": matched, "via": via, "at": pos})
-
-    # 先扫口语别名，再并入结果。别名的位置用于排序，缺失时排在整句末尾。
-    by_code = {h["code"]: h for h in hits}
-    for alias, code in COLLOQUIAL.items():
-        pos = raw.find(alias)
-        if pos < 0:
-            continue
-        if code in by_code:
-            continue
-        target = next((x for x in universe if x.get("code") == code), None)
-        if not target:
-            continue
-        by_code[code] = {"code": code, "secucode": target.get("secucode"),
-                         "name": target.get("name"), "market": target.get("market"),
-                         "org_id": target.get("org_id"), "matched": alias,
-                         "via": "alias", "at": pos}
-    hits = list(by_code.values())
-
-    # 重叠消歧：「京东方」命中时，「浙江东方」靠剥前缀得到的「东方」落在同一段文字里。
-    # 短匹配只要被一个更高确信度的长匹配覆盖，就不再单独作为分析对象。
-    rank = {"code": 3, "name": 3, "short": 2, "pinyin": 1, "alias": 1}
-    strong = [(h["at"], h["at"] + len(h["matched"]), rank.get(h["via"], 0))
-              for h in hits if rank.get(h["via"], 0) >= 3]
-    kept = []
-    for h in hits:
-        if rank.get(h["via"], 0) >= 3:
-            kept.append(h)
-            continue
-        start, end = h["at"], h["at"] + len(h["matched"])
-        covered = any(s0 <= start and end <= s1 and r > rank.get(h["via"], 0)
-                      for s0, s1, r in strong)
-        if not covered:
-            kept.append(h)
-    hits = kept
-
-    # 同一处文字同时命中 A 股与 B 股（京东方A / 京东方B）时只保留 A 股：
-    # 它们是同一家公司的两个股份类别，报表主体相同，重复分析只会浪费时间。
-    deduped = {}
-    for h in hits:
-        key = (h["at"], h["matched"])
-        current = deduped.get(key)
-        if current is None:
-            deduped[key] = h
-            continue
-        if _is_b_share(current["code"]) and not _is_b_share(h["code"]):
-            deduped[key] = h
-    hits = list(deduped.values())
-
-    # 先按出现位置，再让名称更长的排前面：句子里同时出现「京东方」和
-    # 「京东方A」时，长匹配是更确定的那个。
-    hits.sort(key=lambda h: (h["at"], -len(h["matched"])))
-    return hits[:limit]
-
-
-def _is_b_share(code: str) -> bool:
-    """沪市 B 股以 900 开头，深市 B 股以 200 开头。"""
-    code = str(code or "")
-    return code.startswith("900") or code.startswith("200")
-
-
-def search_universe(keyword, limit=12):
-    """在工作线程中检索名录，返回供界面下拉框直接使用的结果。"""
-    try:
-        from finagent.datasource.universe import search
-        hits = search(keyword, limit=limit)
-    except Exception:
-        return []
-    return [{"code": h["code"], "secucode": h["secucode"], "name": h["name"],
-             "market": h["market"], "org_id": h.get("org_id")} for h in hits]
 
 
 def status_payload():
     cfg = load_config()
-    chunks = os.path.join(ROOT, cfg["data"]["index_dir"], "chunks.jsonl")
-    index_chunks = 0
-    if os.path.isfile(chunks):
-        with open(chunks, "r", encoding="utf-8", errors="replace") as fh:
-            for _ in fh:
-                index_chunks += 1
-    text_dir = os.path.join(ROOT, cfg["data"]["index_dir"], "_text")
     return {
         "python": sys.version.split()[0],
         "root": ROOT,
-        "model": cfg["llm"]["model"],
-        "base_url": cfg["llm"]["base_url"],
+        "host": HOST,
+        "base_url": BASE_URL,
+        "models": list(MODELS),
+        "model": cfg["llm"]["model"] if cfg["llm"]["model"] in MODELS else MODELS[0],
         "api_key_set": bool(cfg["llm"]["api_key"]),
         "max_steps": cfg["agent"]["max_steps"],
-        "companies": cfg.get("companies", []),
-        "corpus": list_corpus(cfg),
-        "index": {"chunks": index_chunks,
-                  "texts": len(os.listdir(text_dir)) if os.path.isdir(text_dir) else 0},
         "busy": RUN_LOCK.locked(),
+        "pending": pending_payload(),
         "reports": list_reports(cfg),
         "traces": list_traces(cfg),
         "thresholds": cfg.get("thresholds", {}),
-        "universe_total": universe_total(),
-        "coverage_samples": COVERAGE_SAMPLES,
     }
 
+
+# ------------------------------------------------------------------ 命令行构造
 
 def build_command(action, params):
     """把界面参数翻译成 run.py 命令行。参数在此集中校验，避免注入。"""
     cmd = [sys.executable, "-u", os.path.join(ROOT, "run.py")]
 
-    if action == "fetch":
-        code = str(params.get("code", "")).strip()
-        if not CODES_RE.match(code):
-            raise ValueError("抓取对象需为代码或公司简称（如 002714 或 牧原股份）")
-        limit = int(params.get("limit") or 3)
-        if not 1 <= limit <= 30:
-            raise ValueError("每类报告份数需在 1~30 之间")
-        return cmd + ["fetch", "--code", code, "--limit", str(limit)]
-
-    if action == "index":
-        return cmd + (["index", "--force"] if params.get("force") else ["index"])
-
     if action == "analyze":
-        codes = params.get("codes") or []
-        if isinstance(codes, str):
-            codes = [c for c in re.split(r"[,\s]+", codes) if c]
-        if not codes:
-            raise ValueError("请至少填写一个股票代码")
-        cmd += ["analyze"]
-        for code in codes:
-            code = str(code).strip()
-            if not CODES_RE.match(code):
-                raise ValueError("股票代码格式不正确：" + code)
-            cmd += ["--code", code]
+        run_id = str(params.get("run_id") or "").strip()
+        if not run_id:
+            uploads = session_uploads()
+            run_id = uploads.run_id if uploads else ""
+        if not re.match(r"^[0-9A-Za-z][0-9A-Za-z\-]{5,63}$", run_id):
+            raise ValueError("没有可分析的财报材料，请先上传财报 PDF")
+        cmd += ["analyze", "--run", run_id]
         since = params.get("since_year")
         if since:
             cmd += ["--since-year", str(int(since))]
@@ -491,8 +292,6 @@ def build_command(action, params):
             if not 1 <= periods <= 20:
                 raise ValueError("报告期数需在 1~20 之间")
             cmd += ["--periods", str(periods)]
-        if params.get("refresh"):
-            cmd += ["--refresh"]
         if params.get("quiet"):
             cmd += ["--quiet"]
         # 用户在界面上直接敲的问题，原样交给智能体作为定向追问。
@@ -525,7 +324,7 @@ def snapshot_reports():
 class TraceTail:
     """运行期间实时跟随新增的轨迹文件，用于在界面上同步展示工具调用。
 
-    只读操作：不改动轨迹内容，因此不影响力「可追溯、可复现」的要求。
+    只读操作：不改动轨迹内容，因此不影响「可追溯、可复现」的要求。
     """
 
     def __init__(self, trace_dir, existing):
@@ -533,7 +332,6 @@ class TraceTail:
         self.existing = set(existing)
         self.path = None
         self.offset = 0
-        self._bound = None
 
     def _locate(self):
         if self.path or not os.path.isdir(self.dir):
@@ -579,10 +377,54 @@ class TraceTail:
         return events
 
 
+def parse_multipart(body: bytes, boundary: str) -> list:
+    """极简 multipart/form-data 解析。
+
+    存在的意义：不引入任何第三方 Web 框架或解析库，
+    保持"评审环境零配置即可复现"这一前提。只处理本项目需要的字段：
+    一个文件名 + 一段二进制内容，其余一律忽略。
+    """
+    delim = b"--" + boundary.encode("latin-1")
+    out = []
+    for part in body.split(delim)[1:]:
+        if part[:2] == b"--":
+            break
+        part = part.lstrip(b"\r\n")
+        head, sep, data = part.partition(b"\r\n\r\n")
+        if not sep:
+            continue
+        if data.endswith(b"\r\n"):
+            data = data[:-2]
+        headers = {}
+        for line in head.split(b"\r\n"):
+            key, _, value = line.partition(b":")
+            headers[key.strip().lower().decode("latin-1")] = value.strip().decode("latin-1")
+        disposition = headers.get("content-disposition", "")
+        found = re.search(r'filename="([^"]*)"', disposition)
+        out.append({"filename": _fix_filename(found.group(1) if found else ""),
+                    "data": data})
+    return out
+
+
+def _fix_filename(name: str) -> str:
+    """还原 multipart 里被按 latin-1 解出来的中文文件名。
+
+    浏览器发送的文件名是 UTF-8 字节，而 HTTP 头按规定按 latin-1 解析，
+    于是"牧原股份2026半年报.pdf"会变成"ç§å2026å¹´æ¥æ¥.pdf"。
+    文件名会被写进上传目录、报告与证据链，乱码会让"这份数字来自哪个文件"
+    这句话失去意义，因此这里必须还原。
+    还原失败（文件名本来就是 latin-1）时原样返回：绝不因为名字读不出来而丢文件。
+    """
+    try:
+        return name.encode("latin-1").decode("utf-8")
+    except (UnicodeEncodeError, UnicodeDecodeError):
+        return name
+
+
 # ------------------------------------------------------------------ HTTP
 
 class Handler(BaseHTTPRequestHandler):
-    server_version = "FinAgentUI/1.0"
+    server_version = "FinAgentUI/2.0"
     protocol_version = "HTTP/1.1"
 
     def log_message(self, fmt, *args):
@@ -618,6 +460,8 @@ class Handler(BaseHTTPRequestHandler):
             return self.serve_static(parsed.path[len("/static/"):])
         if parsed.path == "/api/status":
             return self.send_json({"ok": True, "status": status_payload()})
+        if parsed.path == "/api/pending":
+            return self.send_json({"ok": True, **pending_payload()})
         if parsed.path == "/api/report":
             return self.api_report(query)
         if parsed.path == "/api/table":
@@ -626,23 +470,8 @@ class Handler(BaseHTTPRequestHandler):
             return self.api_report_pdf(query)
         if parsed.path == "/api/trace":
             return self.api_trace(query)
-        if parsed.path == "/api/corpus":
-            return self.api_corpus(query)
         if parsed.path == "/api/settings":
             return self.api_settings()
-        if parsed.path == "/api/resolve":
-            text = (query.get("text") or [""])[0]
-            return self.send_json({"ok": True, "text": text,
-                                   "items": resolve_in_text(text)})
-        if parsed.path == "/api/universe":
-            keyword = (query.get("q") or [""])[0]
-            try:
-                limit = min(int((query.get("limit") or ["12"])[0]), 50)
-            except ValueError:
-                limit = 12
-            return self.send_json({"ok": True, "query": keyword,
-                                   "total": universe_total(),
-                                   "items": search_universe(keyword, limit)})
         return self.send_error_json("未知接口", 404)
 
     def serve_static(self, name):
@@ -727,16 +556,12 @@ class Handler(BaseHTTPRequestHandler):
         api_key = str(params.get("api_key") or "").strip()
         if not api_key:
             return self.send_json({"ok": False, "error": "请先填写 API Key"})
-        cfg = load_config()
-        base_url = str(params.get("base_url") or cfg["llm"]["base_url"]).rstrip("/")
-        if not base_url.startswith(("http://", "https://")):
-            return self.send_json({"ok": False, "error": "接口地址格式不正确"})
         try:
             import requests
         except Exception:
             return self.send_json({"ok": False, "error": "服务端缺少 requests 依赖"})
         try:
-            resp = requests.get(base_url + "/models",
+            resp = requests.get(BASE_URL + "/models",
                                 headers={"Authorization": "Bearer " + api_key},
                                 timeout=20)
         except Exception as exc:
@@ -747,12 +572,12 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_json({"ok": False,
                                    "error": "模型服务返回 %d：%s"
                                             % (resp.status_code, resp.text[:160])})
-        models = []
         try:
             models = [m.get("id") for m in resp.json().get("data", []) if m.get("id")]
         except Exception:
             models = []
-        return self.send_json({"ok": True, "models": models[:40]})
+        supported = [m for m in models if m in MODELS]
+        return self.send_json({"ok": True, "models": supported or list(MODELS)})
 
     def api_table(self, query):
         path = safe_path((query.get("path") or [""])[0])
@@ -786,38 +611,17 @@ class Handler(BaseHTTPRequestHandler):
         return self.send_json({"ok": True, "run": run, "events": events,
                                "file": os.path.relpath(path, ROOT).replace("\\", "/")})
 
-    def api_corpus(self, query):
-        """返回某公司的公告原文清单，供界面展示证据出处。"""
-        code = (query.get("code") or [""])[0]
-        if not re.match(r"^\d{6}$", code):
-            return self.send_error_json("需要 6 位代码")
-        cfg = load_config()
-        mpath = os.path.join(ROOT, cfg["data"]["corpus_dir"], code, "manifest.json")
-        if not os.path.isfile(mpath):
-            return self.send_json({"ok": True, "code": code, "documents": []})
-        manifest = json.loads(read_text(mpath))
-        docs = []
-        for e in manifest:
-            pdf = e.get("path")
-            docs.append({
-                "date": e.get("date"), "kind": e.get("kind"), "title": e.get("title"),
-                "url": e.get("url"),
-                "size_mb": round(os.path.getsize(pdf) / 1e6, 2)
-                if pdf and os.path.isfile(pdf) else None,
-            })
-        docs.sort(key=lambda d: (d.get("date") or ""), reverse=True)
-        return self.send_json({"ok": True, "code": code, "documents": docs})
-
     def api_settings(self):
-        """读取 / 写入推理引擎配置。
+        """读取推理引擎配置。
 
         密钥只写入本地 config.local.yaml（.gitignore 已排除），
         接口返回时始终打码，避免密钥经由浏览器或日志泄露。
         """
         cfg = load_config()
         self.send_json({"ok": True, "llm": {
-            "base_url": cfg["llm"]["base_url"],
-            "model": cfg["llm"]["model"],
+            "base_url": BASE_URL,
+            "models": list(MODELS),
+            "model": cfg["llm"]["model"] if cfg["llm"]["model"] in MODELS else MODELS[0],
             "api_key_set": bool(cfg["llm"]["api_key"]),
             "api_key_hint": _mask_key(cfg["llm"]["api_key"]),
             "local_config": os.path.relpath(
@@ -827,11 +631,6 @@ class Handler(BaseHTTPRequestHandler):
     def save_settings(self, params):
         if RUN_LOCK.locked():
             return self.send_error_json("正在运行，请等本次运行结束后再保存配置", 409)
-        try:
-            from finagent.config import local_config_path
-        except Exception as exc:
-            return self.send_error_json("无法加载配置模块：" + str(exc), 500)
-
         path = local_config_path(os.path.join(ROOT, "config.yaml"))
         data = {}
         if os.path.isfile(path):
@@ -842,19 +641,17 @@ class Handler(BaseHTTPRequestHandler):
                 data = {}
         llm = data.setdefault("llm", {})
 
-        base_url = str(params.get("base_url") or "").strip()
+        # 接口地址固定为 DeepSeek 官方地址：这是唯一允许联网的去处，
+        # 允许用户改地址等于允许把财报正文发往任意服务器。
+        llm["base_url"] = BASE_URL
         model = str(params.get("model") or "").strip()
-        api_key = str(params.get("api_key") or "").strip()
-        if base_url:
-            if not base_url.startswith(("http://", "https://")):
-                return self.send_error_json("接口地址需以 http:// 或 https:// 开头")
-            llm["base_url"] = base_url
         if model:
+            if model not in MODELS:
+                return self.send_error_json("只支持这两种模型：" + "、".join(MODELS))
             llm["model"] = model
+        api_key = str(params.get("api_key") or "").strip()
         if api_key:
             llm["api_key"] = api_key
-        if not llm:
-            return self.send_error_json("没有需要保存的内容")
 
         try:
             with open(path, "w", encoding="utf-8") as fh:
@@ -865,10 +662,80 @@ class Handler(BaseHTTPRequestHandler):
                         "api_key_set": bool(llm.get("api_key")),
                         "api_key_hint": _mask_key(llm.get("api_key"))})
 
+
+    def api_upload(self):
+        """接收用户上传的财报 PDF。
+
+        每个文件都走 `UploadSet.add()`：落盘 → layout 抽取 → 装配 → 交叉校验。
+        因此"上传完成"时识别结果与校验结果已经就绪，界面可以立刻显示
+        "这是谁家的哪一期、抽到多少科目、有没有校验未过"。
+        """
+        ctype = self.headers.get("Content-Type") or ""
+        length = int(self.headers.get("Content-Length") or 0)
+        if length <= 0:
+            return self.send_error_json("没有收到文件内容")
+        if length > MAX_REQUEST_BYTES:
+            return self.send_error_json("单次上传过大，请分次上传", 413)
+        try:
+            body = self.rfile.read(length)
+        except (BrokenPipeError, ConnectionResetError):
+            return self.send_error_json("上传中断")
+
+        parts = []
+        if ctype.startswith("multipart/form-data"):
+            found = re.search(r'boundary="?([^";,]+)"?', ctype)
+            if not found:
+                return self.send_error_json("multipart 缺少 boundary")
+            for part in parse_multipart(body, found.group(1)):
+                if part["data"]:
+                    parts.append(part)
+        else:
+            name = _fix_filename(
+                (parse_qs(urlparse(self.path).query).get("filename") or [""])[0])
+            parts.append({"filename": name, "data": body})
+        if not parts:
+            return self.send_error_json("没有解析到文件内容")
+
+        from finagent.ingest.dataset import UploadError
+        uploads = session_uploads(create=True)
+        incoming = os.path.join(uploads.dir, "_incoming")
+        os.makedirs(incoming, exist_ok=True)
+
+        added, rejected = [], []
+        for part in parts:
+            name = os.path.basename(part["filename"] or "upload.pdf")
+            if not name.lower().endswith(".pdf"):
+                rejected.append({"filename": name, "error": "只接受 PDF 文件"})
+                continue
+            if len(part["data"]) > MAX_UPLOAD_BYTES:
+                rejected.append({"filename": name, "error": "单个文件超过 200MB"})
+                continue
+            tmp = os.path.join(incoming, uuid.uuid4().hex + ".pdf")
+            with open(tmp, "wb") as fh:
+                fh.write(part["data"])
+            try:
+                entry = uploads.add(tmp, filename=name)
+                added.append(entry_view(entry))
+            except (UploadError, ValueError) as exc:
+                rejected.append({"filename": name, "error": str(exc)})
+            except Exception as exc:  # 单个坏文件不应让整批上传失败
+                rejected.append({"filename": name, "error": f"解析失败：{exc!r}"})
+            finally:
+                try:
+                    os.remove(tmp)
+                except OSError:
+                    pass
+        payload = pending_payload()
+        return self.send_json({"ok": bool(added) or not rejected,
+                               "added": added, "rejected": rejected, **payload})
+
     # ---------------- 执行动作（SSE 流式日志）
 
     def do_POST(self):
         parsed = urlparse(self.path)
+        if parsed.path == "/api/upload":
+            return self.api_upload()
+
         length = int(self.headers.get("Content-Length") or 0)
         if length > 1000000:
             return self.send_error_json("请求过大", 413)
@@ -881,11 +748,26 @@ class Handler(BaseHTTPRequestHandler):
             return self.save_settings(body)
         if parsed.path == "/api/key/verify":
             return self.api_key_verify(body)
+        if parsed.path == "/api/upload/clear":
+            return self.send_json({"ok": True, "cleared": reset_session()})
         if parsed.path != "/api/run":
             return self.send_error_json("未知接口", 404)
 
         params = body
         action = str(params.get("action", ""))
+
+        # 没有密钥就不启动。这是硬拦截：让用户当场看见"缺什么"，
+        # 而不是等一个跑了十几秒的报告告诉他"归因未启用"。
+        cfg = load_config()
+        if not (str(params.get("api_key") or "").strip() or cfg["llm"]["api_key"]):
+            return self.send_error_json(
+                "请先填写你自己的 DeepSeek API Key（界面右上角「设置」）", 400)
+
+        current = session_uploads()
+        if not (current and current.entries):
+            return self.send_error_json("请先上传至少一份财报 PDF", 400)
+        if not params.get("run_id"):
+            params["run_id"] = current.run_id
 
         try:
             cmd = build_command(action, params)
@@ -893,8 +775,7 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_error_json(str(exc))
 
         if not RUN_LOCK.acquire(blocking=False):
-            return self.send_error_json(
-                "已有一次运行正在进行（可能是队友在跑），请等它结束后再试", 409)
+            return self.send_error_json("已有一次运行正在进行，请等它结束后再试", 409)
         try:
             self._stream_run(action, cmd, params)
         finally:
@@ -939,12 +820,13 @@ class Handler(BaseHTTPRequestHandler):
             env["FINAGENT_API_KEY"] = user_key
             env["DEEPSEEK_API_KEY"] = user_key
             emit("notice", text="本次运行使用界面填写的 API Key（不落盘）")
-        user_base = str((params or {}).get("base_url") or "").strip()
-        if user_base:
-            env["FINAGENT_BASE_URL"] = user_base
+        env["FINAGENT_BASE_URL"] = BASE_URL
         user_model = str((params or {}).get("model") or "").strip()
         if user_model:
-            env["FINAGENT_MODEL"] = user_model
+            if user_model not in MODELS:
+                emit("error", message="不支持的模型：" + user_model)
+            else:
+                env["FINAGENT_MODEL"] = user_model
 
         t0 = time.perf_counter()
         run_id = None
@@ -996,7 +878,6 @@ class Handler(BaseHTTPRequestHandler):
 
         proc.wait()
         seconds = round(time.perf_counter() - t0, 2)
-        # fetch / index 不打印运行编号，改从轨迹文件名回填
         if run_id is None:
             run_id = tail.run_id
 
@@ -1021,42 +902,34 @@ class Handler(BaseHTTPRequestHandler):
 def main(argv=None):
     parser = argparse.ArgumentParser(prog="FinAgent App", description="FinAgent 桌面应用")
     parser.add_argument("--port", type=int, default=8765)
-    parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--no-browser", action="store_true",
                         help="不自动打开浏览器（也可用环境变量 FINAGENT_NO_BROWSER=1）")
     args = parser.parse_args(argv)
 
-    httpd = ThreadingHTTPServer((args.host, args.port), Handler)
-    url = "http://%s:%d/" % (args.host, args.port)
-    local_url = "http://127.0.0.1:%d/" % args.port
-    shared = args.host not in ("127.0.0.1", "localhost", "::1")
+    try:
+        httpd = ThreadingHTTPServer((HOST, args.port), Handler)
+    except OSError as exc:
+        print(f"[错误] 无法在 {HOST}:{args.port} 启动服务：{exc}")
+        print("       端口可能已被占用，可换一个端口重试："
+              f"python app\\server.py --port {args.port + 1}")
+        return 1
+    url = "http://%s:%d/" % (HOST, args.port)
     cfg = load_config()
     print("=" * 62)
     print("  FinAgent —— 上市公司财务报告分析智能体")
     print("=" * 62)
-    if shared:
-        print("  本机打开   " + local_url)
-        peers = local_addresses()
-        for index, addr in enumerate(peers):
-            if index == 0:
-                print("  队友打开   http://%s:%d/   ← 推荐发给队友" % (addr, args.port))
-            else:
-                print("  其它地址   http://%s:%d/   ← 虚拟网卡，一般不用" % (addr, args.port))
-        if not peers:
-            print("  队友打开   http://本机局域网IP:%d/" % args.port)
-        print("  共享模式   局域网内可访问；首次请在弹出的防火墙提示中允许「专用网络」")
-    else:
-        print("  界面地址   " + url)
+    print("  界面地址   " + url + "   （仅本机可访问）")
     print("  项目目录   " + ROOT)
     print("  解释器     " + sys.executable)
-    print("  推理模型   %s @ %s" % (cfg["llm"]["model"], cfg["llm"]["base_url"]))
-    print("  密钥状态   " + ("已配置" if cfg["llm"]["api_key"] else "未配置（分析将回落到离线归因）"))
+    print("  推理模型   %s @ %s" % (cfg["llm"]["model"], BASE_URL))
+    print("  密钥状态   " + ("已配置" if cfg["llm"]["api_key"]
+                             else "未配置（在界面右上角填入你自己的 DeepSeek API Key）"))
     print("  停止服务   在本窗口按 Ctrl+C")
     print("=" * 62)
 
     quiet_browser = args.no_browser or bool(os.environ.get("FINAGENT_NO_BROWSER"))
     if not quiet_browser:
-        threading.Timer(1.0, lambda: webbrowser.open(local_url if shared else url)).start()
+        threading.Timer(1.0, lambda: webbrowser.open(url)).start()
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
@@ -1068,3 +941,4 @@ def main(argv=None):
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

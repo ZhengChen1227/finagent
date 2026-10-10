@@ -1,0 +1,44 @@
+# FinAgent 共享配置（可提交，不含任何敏感信息）
+#
+# 优先级：内置默认值 < 本文件 < config.local.yaml < 环境变量。
+# 密钥一律写在 config.local.yaml（已在 .gitignore 中排除），**不要**写在本文件里。
+#
+# 绝大多数情况下你不需要改这个文件：界面上的「设置」会把 API Key 与模型写进
+# config.local.yaml，其余参数用内置默认值即可跑通全流程。
+# 需要调参时，把对应的段取消注释再改——这里列出的就是内置默认值本身。
+
+# ---- 大语言模型 ----------------------------------------------------------
+# 接口地址固定为 DeepSeek，界面与命令行都不提供修改入口：
+# 这是运行期唯一允许的对外请求（见 finagent/config.py 的 ALLOWED_HOST）。
+# llm:
+#   base_url: https://api.deepseek.com/v1   # 不可更改
+#   model: deepseek-chat                    # 或 deepseek-reasoner
+#   temperature: 0.2                        # 归因推理的采样温度，进轨迹备查
+#   timeout: 120                            # 单次请求超时（秒）
+
+# ---- 上传与输出目录 ------------------------------------------------------
+# data/uploads/<run_id>/ 存放用户上传的财报原件与抽取结果，被 .gitignore 整体排除。
+# data:
+#   uploads_dir: data/uploads
+# output:
+#   report_dir: output/reports
+#   table_dir: output/tables
+#   trace_dir: output/traces
+
+# ---- 智能体 --------------------------------------------------------------
+# agent:
+#   max_steps: 12        # ReAct 循环的最大步数，防止模型无休止取证
+
+# ---- 规则阈值 ------------------------------------------------------------
+# 所有阈值集中在这里，不散落在业务代码里；报告中会标注每个结论用了哪条阈值。
+# thresholds:
+#   impairment_yoy_pct: 300.0          # 减值损失同比增幅预警线（%）
+#   impairment_min_amount: 100000000.0 # 减值金额绝对门槛（元），低于此值不报
+#   nonrecurring_ratio_pct: 20.0       # 非经常性损益占归母净利润比重的预警线（%）
+#   adjusted_cash_conv_low: 0.5        # 调整后现金含量下限（低于视为背离）
+#   adjusted_cash_conv_high: 1.8       # 调整后现金含量上限
+#   qoq_swing_pct: 50.0                # 单季环比波动预警线（%）
+#   tax_rate_high_pct: 25.0            # 有效税率异常偏高线（%）
+#   collect_ratio_low: 0.9             # 销售收现比下限
+#   articulation_tol_pct: 0.5          # 勾稽校验容差（%）
+#   depr_to_revenue_high_pct: 15.0     # 折旧占收入比重的关注线（%）

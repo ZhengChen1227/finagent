@@ -767,3 +767,121 @@ table.tbl td.num { text-align: right; font-variant-numeric: tabular-nums; white-
   .app { display: block; height: auto; }
   .stream, .page-scroll { overflow: visible; }
 }
+
+/* ============================================================ 上传区与运行过程
+   分析工作台的三个步骤块：拖拽上传、开始分析、运行过程。
+   样式刻意保持克制：这是工具，不是展示页，重点在"看清识别结果"。 */
+
+.dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 30px 20px;
+  border: 1.5px dashed var(--border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--bg-sunken);
+  color: var(--muted);
+  cursor: pointer;
+  text-align: center;
+  transition: border-color .15s, background .15s;
+}
+.dropzone:hover, .dropzone.over {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.dropzone.busy { opacity: .6; pointer-events: none; }
+.dropzone b { font-size: 15px; color: var(--text); font-weight: 620; }
+.dropzone small { font-size: 11.8px; color: var(--faint); max-width: 520px; line-height: 1.6; }
+.dropzone .dz-sub { font-size: 13px; }
+
+.up-list { display: flex; flex-direction: column; gap: 9px; margin-top: 14px; }
+.up-card {
+  display: flex;
+  gap: 11px;
+  align-items: flex-start;
+  padding: 11px 12px;
+  border: 1px solid var(--border);
+  border-left-width: 3px;
+  border-radius: var(--radius);
+  background: var(--card);
+}
+.up-card.ok { border-left-color: var(--ok); }
+.up-card.warn { border-left-color: var(--warn); }
+.up-card.bad { border-left-color: var(--bad); }
+.up-card.ok > svg { color: var(--ok); }
+.up-card.warn > svg { color: var(--warn); }
+.up-card.bad > svg { color: var(--bad); }
+.up-card svg { flex: none; margin-top: 2px; }
+.up-main { min-width: 0; flex: 1; }
+.up-name { font-size: 13.2px; font-weight: 580; word-break: break-all; }
+.up-subject { font-size: 13.6px; font-weight: 620; color: var(--accent); margin: 3px 0 2px; }
+.up-card.bad .up-subject { color: var(--bad); }
+.up-meta { font-size: 11.8px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.up-issue { font-size: 11.8px; color: var(--bad); margin-top: 3px; }
+.up-card.warn .up-issue { color: var(--warn); }
+.up-del { flex: none; opacity: .55; }
+.up-del:hover { opacity: 1; color: var(--bad); }
+
+textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 9px 11px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13.6px;
+  line-height: 1.6;
+  resize: vertical;
+}
+textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+
+.evs {
+  max-height: 320px;
+  overflow-y: auto;
+  font-size: 12.6px;
+}
+.evs .ev {
+  display: flex;
+  gap: 10px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--border);
+}
+.evs .ev:last-child { border-bottom: none; }
+.evs .ev-kind {
+  flex: none;
+  width: 76px;
+  color: var(--muted);
+  font-size: 11.5px;
+  padding-top: 1px;
+}
+.evs .ev.hit { color: var(--bad); }
+.evs .ev.hit .ev-kind { color: var(--bad); }
+
+.answer pre, .tbl-wrap pre {
+  background: var(--bg-sunken);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  overflow-x: auto;
+  font-family: var(--mono);
+  font-size: 12.2px;
+  line-height: 1.55;
+  max-height: 60vh;
+}
+.tbl-wrap table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.tbl-wrap th, .tbl-wrap td {
+  border-bottom: 1px solid var(--border);
+  padding: 7px 10px;
+  text-align: left;
+  white-space: nowrap;
+}
+.tbl-wrap th { background: var(--bg-sunken); font-weight: 600; font-size: 12.3px; color: var(--text-soft); }
+.tbl-wrap tbody tr:hover { background: var(--bg-sunken); }
+.tbl-wrap td.down { color: var(--bad); }
+.app.rail-open .rail { transform: none; }
+

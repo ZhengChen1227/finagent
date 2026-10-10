@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import pandas as pd
 
-from finagent.datasource.eastmoney import evidence_id
+from finagent.datasource.schema import evidence_id
 from finagent.metrics.indicators import (
     _cum, _add, dep_amort, impairment, ebitda_proxy,
 )
