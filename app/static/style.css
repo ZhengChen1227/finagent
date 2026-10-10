@@ -716,8 +716,11 @@ table.tbl td.num { text-align: right; font-variant-numeric: tabular-nums; white-
 }
 
 /* 提示条 */
+/* 说明块一律 block：里面的内容是连续的行内文本（含 <b>/<code>/<br>），
+   用 flex 会把每一段文本变成独立的匿名 flex 项，各自被压到最窄宽度，
+   整段话就散成竖排的碎片。本项目没有「图标 + 文本」这种用法，不需要 flex。 */
 .note {
-  display: flex; gap: 9px;
+  display: block;
   padding: 10px 13px; border-radius: 8px;
   background: var(--bg-sunken); border: 1px solid var(--border);
   font-size: 12.5px; color: var(--text-soft);

@@ -171,8 +171,16 @@
   }
 
   function currentLLM() {
-    var k = Store.get("api_key", "");
-    return k ? { api_key: k, model: Store.get("model", "deepseek-chat") } : null;
+    var saved = Store.get("api_key", "");
+    var model = Store.get("model",
+      (state.status && state.status.model) || "deepseek-chat");
+    if (saved) return { api_key: saved, model: model };
+    // 密钥可能只写在本机的 config.local.yaml 里：用户保存时没勾「记住本次填写」，
+    // 或者换了一个浏览器配置打开。这时服务端自己会用那份密钥，
+    // 界面必须照样放行——只认浏览器存储会让已配好密钥的用户看到「未配置密钥」
+    // 并且按钮被禁用，功能明明是好的却用不了。
+    if (state.status && state.status.api_key_set) return { model: model };
+    return null;
   }
 
   function hasKey() { return !!currentLLM(); }

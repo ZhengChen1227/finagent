@@ -10,6 +10,7 @@ from __future__ import annotations
 import io
 import json
 import os
+import re
 import sys
 import threading
 import time
@@ -115,6 +116,20 @@ def main() -> int:
         check("模型限定为两个 DeepSeek 模型",
               tuple(llm.get("models") or ()) == ("deepseek-chat", "deepseek-reasoner"),
               str(llm.get("models")))
+
+        # --- 前端契约（静态检查）---
+        # 界面上没有公司名 / 股票代码输入框，这是「只吃上传财报」这条铁律的可见证据。
+        check("界面不含公司名或股票代码输入框",
+              not re.search(r'id="[^"]*(company|stock|secucode)[^"]*"', html),
+              "")
+
+        js = (ROOT / "app" / "static" / "app.js").read_text(encoding="utf-8")
+        # 密钥可能只写在本机的 config.local.yaml 里（用户保存时没勾「记住本次填写」，
+        # 或换了浏览器配置）。前端若只认浏览器存储，这类用户会看到「未配置密钥」
+        # 且「开始分析」被禁用——功能明明是好的却用不了。
+        check("前端把服务端已配置的密钥也算作可用", "api_key_set" in js, "")
+        check("前端不引用已删除的联网取数接口",
+              not any(w in js for w in ("/api/resolve", "/api/universe")), "")
 
         # --- 没有材料时不得启动运行 ---
         code, payload = request(port, "/api/run", "POST",
