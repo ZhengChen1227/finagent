@@ -31,13 +31,16 @@ import threading
 import time
 import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, quote, urlparse
 
 import yaml
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
+APP_DIR = os.path.dirname(os.path.abspath(__file__))
+STATIC_DIR = os.path.join(APP_DIR, "static")
 sys.path.insert(0, ROOT)
+# 让 pdfexport 无论从哪个工作目录启动都能被导入。
+sys.path.insert(0, APP_DIR)
 
 # 必须置于 sys.path 注入之后：否则在任意工作目录启动都会找不到 finagent 包。
 from finagent.config import local_config_path  # noqa: E402
@@ -146,9 +149,27 @@ def list_corpus(cfg):
             pdf = entry.get("path")
             if pdf and os.path.isfile(pdf):
                 total += os.path.getsize(pdf)
-        out.append({"code": code, "documents": len(manifest), "bytes": total,
+        out.append({"code": code, "name": _corpus_name(code),
+                    "documents": len(manifest), "bytes": total,
                     "kinds": sorted({e.get("kind", "") for e in manifest})})
     return out
+
+
+def _corpus_name(code):
+    """给已落盘的公司补一个名称。
+
+    语料是按代码落盘的，而 config.yaml 里只登记了团队当前在看的几家。
+    若只看配置，界面就会把"贵州茅台"显示成"—"。这里统一回到全市场名录查，
+    保证界面上的名称与官方简称一致。
+    """
+    try:
+        from finagent.datasource.universe import by_code
+        item = by_code(code)
+        if item:
+            return item.get("name") or ""
+    except Exception:
+        pass
+    return ""
 
 
 def find_table_for(report_path):
@@ -222,6 +243,175 @@ def universe_total():
         total = 0
     _UNIVERSE_CACHE.update(total=total, loaded=bool(total))
     return total
+
+
+# 口语简称 -> 证券代码。用户在对话里很少写全称，常见的是行业惯用缩写。
+# 这张表刻意做小：每一条都是不会与日常用语冲突的词。
+# 它是"可扩展点"——现场若遇到表外的叫法，直接往这里加一行即可，
+# 不需要改动匹配逻辑，也不会影响已经验证过的行为。
+COLLOQUIAL = {
+    "工行": "601398", "建行": "601939", "农行": "601288", "中行": "601988",
+    "招行": "600036", "交行": "601328", "邮储": "601658",
+    "中石油": "601857", "中石化": "600028", "中核电": "601985",
+    "隆基": "601012", "通威": "600438", "海康": "002415", "立讯": "002475",
+    "宁德时代": "300750", "比亚迪": "002594", "万科": "000002", "格力": "000651",
+    "中免": "601888", "片仔癀": "600436", "爱尔": "300015", "迈瑞": "300760",
+}
+
+# 行政区划与国际前缀。中文证券简称常带地域前缀，用户口语里基本会省略，
+# 例如说「茅台」而不是「贵州茅台」。剥掉前缀只在剩余长度 >= 2 时进行，
+# 避免把「中国中冶」削成单字造成误匹配。
+REGION_PREFIXES = (
+    "贵州", "中国", "上海", "深圳", "北京", "广东", "江苏", "浙江", "山东",
+    "四川", "河南", "河北", "湖南", "湖北", "安徽", "福建", "江西", "陕西",
+    "山西", "辽宁", "吉林", "黑龙江", "天津", "重庆", "云南", "广西",
+    "内蒙古", "新疆", "西藏", "宁夏", "青海", "甘肃", "海南", "香港",
+)
+
+
+# 剥离地域前缀后如果只剩一个通用词，就放弃这个变体。
+# 否则「工商银行」会把江苏银行、北京银行……全部认出来（都剩「银行」），
+# 这是"过度召回"，比漏认更危险：它会让一次分析凭空多出五个对象。
+GENERIC_TAIL = {
+    "银行", "证券", "保险", "信托", "基金", "科技", "股份", "集团", "国际",
+    "实业", "投资", "控股", "发展", "能源", "电力", "医药", "生物", "电子",
+    "通信", "汽车", "地产", "传媒", "环保", "化工", "钢铁", "水泥", "航空",
+    "港口", "高速", "旅游", "酒店", "食品", "饮料", "电器", "机械", "重工",
+    "建设", "工程", "材料", "纺织", "服装", "农业", "牧业", "养殖", "物流",
+    "东方", "西部", "南方", "北方", "中国", "股份",
+}
+
+
+def _name_variants(name):
+    """一个简称的所有可接受写法，按确信度从高到低排列。"""
+    out = [(name, "name")]
+    stripped = name.rstrip("ABab")
+    if stripped != name and len(stripped) >= 2:
+        out.append((stripped, "short"))
+    for prefix in REGION_PREFIXES:
+        if name.startswith(prefix) and len(name) - len(prefix) >= 2:
+            tail = name[len(prefix):]
+            if tail not in GENERIC_TAIL:
+                out.append((tail, "short"))
+            break
+    return out
+
+
+def resolve_in_text(text, limit=6):
+    """从一段自然语言里认出上市公司。
+
+    对话式界面里，用户不会规规矩矩只填代码，他会写
+    「帮我看看京东方今年为什么现金流这么好」。因此需要一个
+    "在句子里找主体"的能力。规则是确定的、可复核的：
+
+        1. 句中出现 6 位代码               -> 命中
+        2. 句中出现证券简称（含去掉 A/B 后缀的形式）-> 命中
+        3. 句中出现简称全拼（仅当输入是拉丁字母时）-> 命中
+
+    刻意不做模糊匹配、不做拼音近似：宁可漏认，也不误认。
+    认错了公司会直接污染后面所有计算，代价远高于让用户手点一次。
+    """
+    raw = (text or "").strip()
+    if not raw:
+        return []
+    upper = raw.upper()
+    lower = raw.lower()
+    try:
+        from finagent.datasource.universe import load_universe
+        universe = load_universe()
+    except Exception:
+        return []
+
+    hits = []
+    seen = set()
+    for item in universe:
+        code = item.get("code") or ""
+        name = item.get("name") or ""
+        if not code or not name:
+            continue
+        matched = None
+        via = None
+        pos = raw.find(code)
+        if pos >= 0:
+            matched, via = code, "code"
+        else:
+            for variant, kind in _name_variants(name):
+                pos = raw.find(variant)
+                if pos >= 0:
+                    matched, via = variant, kind
+                    break
+        if matched is None:
+            pinyin = (item.get("pinyin") or "").lower()
+            if len(pinyin) >= 4 and pinyin in lower:
+                pos, matched, via = lower.find(pinyin), pinyin, "pinyin"
+        if matched is None:
+            continue
+        key = (code, matched)
+        if key in seen:
+            continue
+        seen.add(key)
+        hits.append({"code": code, "secucode": item.get("secucode"),
+                     "name": name, "market": item.get("market"),
+                     "org_id": item.get("org_id"),
+                     "matched": matched, "via": via, "at": pos})
+
+    # 先扫口语别名，再并入结果。别名的位置用于排序，缺失时排在整句末尾。
+    by_code = {h["code"]: h for h in hits}
+    for alias, code in COLLOQUIAL.items():
+        pos = raw.find(alias)
+        if pos < 0:
+            continue
+        if code in by_code:
+            continue
+        target = next((x for x in universe if x.get("code") == code), None)
+        if not target:
+            continue
+        by_code[code] = {"code": code, "secucode": target.get("secucode"),
+                         "name": target.get("name"), "market": target.get("market"),
+                         "org_id": target.get("org_id"), "matched": alias,
+                         "via": "alias", "at": pos}
+    hits = list(by_code.values())
+
+    # 重叠消歧：「京东方」命中时，「浙江东方」靠剥前缀得到的「东方」落在同一段文字里。
+    # 短匹配只要被一个更高确信度的长匹配覆盖，就不再单独作为分析对象。
+    rank = {"code": 3, "name": 3, "short": 2, "pinyin": 1, "alias": 1}
+    strong = [(h["at"], h["at"] + len(h["matched"]), rank.get(h["via"], 0))
+              for h in hits if rank.get(h["via"], 0) >= 3]
+    kept = []
+    for h in hits:
+        if rank.get(h["via"], 0) >= 3:
+            kept.append(h)
+            continue
+        start, end = h["at"], h["at"] + len(h["matched"])
+        covered = any(s0 <= start and end <= s1 and r > rank.get(h["via"], 0)
+                      for s0, s1, r in strong)
+        if not covered:
+            kept.append(h)
+    hits = kept
+
+    # 同一处文字同时命中 A 股与 B 股（京东方A / 京东方B）时只保留 A 股：
+    # 它们是同一家公司的两个股份类别，报表主体相同，重复分析只会浪费时间。
+    deduped = {}
+    for h in hits:
+        key = (h["at"], h["matched"])
+        current = deduped.get(key)
+        if current is None:
+            deduped[key] = h
+            continue
+        if _is_b_share(current["code"]) and not _is_b_share(h["code"]):
+            deduped[key] = h
+    hits = list(deduped.values())
+
+    # 先按出现位置，再让名称更长的排前面：句子里同时出现「京东方」和
+    # 「京东方A」时，长匹配是更确定的那个。
+    hits.sort(key=lambda h: (h["at"], -len(h["matched"])))
+    return hits[:limit]
+
+
+def _is_b_share(code: str) -> bool:
+    """沪市 B 股以 900 开头，深市 B 股以 200 开头。"""
+    code = str(code or "")
+    return code.startswith("900") or code.startswith("200")
 
 
 def search_universe(keyword, limit=12):
@@ -305,6 +495,15 @@ def build_command(action, params):
             cmd += ["--refresh"]
         if params.get("quiet"):
             cmd += ["--quiet"]
+        # 用户在界面上直接敲的问题，原样交给智能体作为定向追问。
+        # 只做长度与换行校验：内容本身不解释、不改写，保持"用户问什么就问什么"。
+        question = str(params.get("question") or "").strip()
+        if question:
+            if len(question) > 500:
+                raise ValueError("追问内容请控制在 500 字以内")
+            if "\x00" in question:
+                raise ValueError("追问内容包含非法字符")
+            cmd += ["--question", question]
         return cmd
 
     raise ValueError("不支持的动作：" + str(action))
@@ -423,12 +622,18 @@ class Handler(BaseHTTPRequestHandler):
             return self.api_report(query)
         if parsed.path == "/api/table":
             return self.api_table(query)
+        if parsed.path == "/api/report.pdf":
+            return self.api_report_pdf(query)
         if parsed.path == "/api/trace":
             return self.api_trace(query)
         if parsed.path == "/api/corpus":
             return self.api_corpus(query)
         if parsed.path == "/api/settings":
             return self.api_settings()
+        if parsed.path == "/api/resolve":
+            text = (query.get("text") or [""])[0]
+            return self.send_json({"ok": True, "text": text,
+                                   "items": resolve_in_text(text)})
         if parsed.path == "/api/universe":
             keyword = (query.get("q") or [""])[0]
             try:
@@ -461,6 +666,93 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_error_json("报告不存在", 404)
         self.send_json({"ok": True, "path": os.path.relpath(path, ROOT).replace("\\", "/"),
                         "markdown": read_text(path)})
+
+    def api_report_pdf(self, query):
+        """把一份 Markdown 报告导出为 PDF。
+
+        浏览器可用时返回真正的 PDF；找不到浏览器时退化成"可直接打印的 HTML"，
+        用户在浏览器里按 Ctrl+P 另存即可。无论哪条路径都不返回半成品文件。
+        """
+        path = safe_path((query.get("path") or [""])[0])
+        if not path or not os.path.isfile(path) or not path.endswith(".md"):
+            return self.send_error_json("报告不存在", 404)
+
+        try:
+            import pdfexport
+        except Exception as exc:  # pragma: no cover - 仅在文件被破坏时发生
+            return self.send_error_json("PDF 模块加载失败：" + str(exc), 500)
+
+        markdown = read_text(path)
+        title, body_md, meta = pdfexport.split_report(markdown)
+        document = pdfexport.build_document(
+            title,
+            pdfexport.format_meta(meta) or ["<b>生成工具</b> FinAgent"],
+            pdfexport.markdown_to_html(body_md),
+            footer_note="<b>文件</b> %s　|　<b>导出时间</b> %s<br>"
+                        % (os.path.basename(path), time.strftime("%Y-%m-%d %H:%M:%S")),
+        )
+        inline = (query.get("inline") or [""])[0] in ("1", "true", "yes")
+        filename = os.path.basename(path)[:-3] + ".pdf"
+
+        if pdfexport.find_browser() is None:
+            # 无浏览器：给出打印页，并说明原因，避免用户以为"下载坏了"。
+            return self._send(200, document.encode("utf-8"),
+                              "text/html; charset=utf-8")
+
+        data = pdfexport.html_to_pdf(document)
+        if not data:
+            return self.send_error_json("PDF 生成失败，请改用浏览器打印", 500)
+
+        disposition = "inline" if inline else "attachment"
+        ascii_name = re.sub(r"[^0-9A-Za-z._-]", "_", filename)
+        self.send_response(200)
+        self.send_header("Content-Type", "application/pdf")
+        self.send_header("Content-Length", str(len(data)))
+        self.send_header(
+            "Content-Disposition",
+            '%s; filename="%s"; filename*=UTF-8\'\'%s'
+            % (disposition, ascii_name, quote(filename)))
+        self.send_header("Cache-Control", "no-store")
+        self.end_headers()
+        try:
+            self.wfile.write(data)
+        except (BrokenPipeError, ConnectionResetError):
+            pass
+
+    def api_key_verify(self, params):
+        """验证用户填写的密钥是否可用。
+
+        只在内存里用一次，不落盘——密钥是用户自己的，服务端没有理由保存它。
+        """
+        api_key = str(params.get("api_key") or "").strip()
+        if not api_key:
+            return self.send_json({"ok": False, "error": "请先填写 API Key"})
+        cfg = load_config()
+        base_url = str(params.get("base_url") or cfg["llm"]["base_url"]).rstrip("/")
+        if not base_url.startswith(("http://", "https://")):
+            return self.send_json({"ok": False, "error": "接口地址格式不正确"})
+        try:
+            import requests
+        except Exception:
+            return self.send_json({"ok": False, "error": "服务端缺少 requests 依赖"})
+        try:
+            resp = requests.get(base_url + "/models",
+                                headers={"Authorization": "Bearer " + api_key},
+                                timeout=20)
+        except Exception as exc:
+            return self.send_json({"ok": False, "error": "无法连接模型服务：" + str(exc)})
+        if resp.status_code == 401:
+            return self.send_json({"ok": False, "error": "密钥无效或已过期（401）"})
+        if resp.status_code >= 400:
+            return self.send_json({"ok": False,
+                                   "error": "模型服务返回 %d：%s"
+                                            % (resp.status_code, resp.text[:160])})
+        models = []
+        try:
+            models = [m.get("id") for m in resp.json().get("data", []) if m.get("id")]
+        except Exception:
+            models = []
+        return self.send_json({"ok": True, "models": models[:40]})
 
     def api_table(self, query):
         path = safe_path((query.get("path") or [""])[0])
@@ -587,6 +879,8 @@ class Handler(BaseHTTPRequestHandler):
 
         if parsed.path == "/api/settings":
             return self.save_settings(body)
+        if parsed.path == "/api/key/verify":
+            return self.api_key_verify(body)
         if parsed.path != "/api/run":
             return self.send_error_json("未知接口", 404)
 
@@ -602,11 +896,11 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_error_json(
                 "已有一次运行正在进行（可能是队友在跑），请等它结束后再试", 409)
         try:
-            self._stream_run(action, cmd)
+            self._stream_run(action, cmd, params)
         finally:
             RUN_LOCK.release()
 
-    def _stream_run(self, action, cmd):
+    def _stream_run(self, action, cmd, params=None):
         """执行一次动作，把子进程输出与轨迹事件以 SSE 推送给界面。"""
         self.send_response(200)
         self.send_header("Content-Type", "text/event-stream; charset=utf-8")
@@ -638,6 +932,19 @@ class Handler(BaseHTTPRequestHandler):
         env = os.environ.copy()
         env["PYTHONIOENCODING"] = "utf-8"
         env["PYTHONUNBUFFERED"] = "1"
+        # 界面传来的密钥只在本进程的环境变量里活一次，用完即弃，
+        # 不写 config.local.yaml、不进日志、不随轨迹落盘。
+        user_key = str((params or {}).get("api_key") or "").strip()
+        if user_key:
+            env["FINAGENT_API_KEY"] = user_key
+            env["DEEPSEEK_API_KEY"] = user_key
+            emit("notice", text="本次运行使用界面填写的 API Key（不落盘）")
+        user_base = str((params or {}).get("base_url") or "").strip()
+        if user_base:
+            env["FINAGENT_BASE_URL"] = user_base
+        user_model = str((params or {}).get("model") or "").strip()
+        if user_model:
+            env["FINAGENT_MODEL"] = user_model
 
         t0 = time.perf_counter()
         run_id = None

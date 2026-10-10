@@ -54,8 +54,15 @@
 界面只是 `run.py` 的外壳——它把参数翻译成命令行并转发输出，不参与任何计算。
 同一组参数在界面与终端运行结果完全一致，轨迹照常落在 `output/traces/`。
 
-给队友用有三种方式（详见 `docs/团队协作.md`）：**Git 克隆**（长期协作，推荐）、
-局域网共享（队友零安装）、拷贝文件夹 + `一键安装依赖.bat`（各人独立环境）。
+给队友用有四种方式（详见 `docs/使用指南.md` 第十三节）：
+
+- **公网展示站**（队友零安装、跨网络）：`python scripts/构建展示站.py --zip`，
+  把 `dist/FinAgent-展示站.zip` 传到 Cloudflare Pages 或 GitHub Pages，得到一个只读网址
+- **Git 克隆**（长期协作，推荐）
+- 局域网共享（队友零安装，需在同一网络）
+- 拷贝文件夹 + `一键安装依赖.bat`（各人独立环境）
+
+界面右上角填自己的模型 API Key 即可开始分析，密钥不落盘；报告可一键导出 PDF。
 
 ### 0. 从仓库开始（推荐）
 
@@ -99,6 +106,12 @@ python run.py index     # 抽取文本并建立全文索引
 python run.py analyze
 ```
 
+也可以带一个具体问题，让归因部分优先回答它：
+
+```bash
+python run.py analyze --code 002714 --question "为什么上半年由盈转亏"
+```
+
 ### 4. （可选）接入大模型
 
 未配置模型时系统自动降级为确定性离线模式，计算、校验、报告生成能力不受影响。
@@ -125,6 +138,19 @@ python run.py mcp
 ```
 
 任何支持 MCP 的宿主均可调用同一套工具，得到与系统内部完全一致的结果。
+
+### 6. 导出 PDF 报告
+
+报告页与对话里的报告卡片都带 PDF 按钮。服务端把 Markdown 渲染成打印级 HTML，
+再调用本机已装的 Edge / Chrome 无头模式打印，**不引入额外 Python 依赖**；
+找不到浏览器时自动退化为浏览器打印对话框。
+
+命令行导出（供静态站点固化产物时使用）：
+
+```bash
+python scripts/构建展示站.py --zip     # 同时预生成全部报告的 PDF
+python scripts/构建展示站.py --no-pdf  # 跳过 PDF，构建更快
+```
 
 ---
 
@@ -218,12 +244,14 @@ finagent/
     builder.py                结构化报告生成
 
 app/                          ← 图形界面（纯标准库，无新增第三方依赖）
-  server.py                   本地服务端：启动子进程、转发日志、实时跟随轨迹
+  server.py                   本地服务端：启动子进程、转发日志、实时跟随轨迹、
+                              校验用户密钥、导出 PDF、自然语言识别公司
+  pdfexport.py                Markdown → 打印级 HTML → 无头浏览器打印 PDF
   static/
-    index.html                页面结构（分析 / 报告 / 执行轨迹 / 环境自检）
-    style.css                 样式
+    index.html                页面结构（对话 / 报告 / 轨迹 / 环境）
+    style.css                 样式（含深色主题与响应式）
     md.js                     极简 Markdown 渲染
-    app.js                    交互逻辑
+    app.js                    交互逻辑、会话管理、轨迹回放
 
 启动FinAgent应用.bat           双击启动图形界面
 启动FinAgent应用（局域网共享）.bat  以 0.0.0.0 启动，队友在同一局域网内用浏览器访问
@@ -231,7 +259,9 @@ app/                          ← 图形界面（纯标准库，无新增第三�
 run.py                        CLI 入口
 config.yaml                   配置文件
 .gitignore                    版本库忽略规则（排除 .venv、公告原文、索引与缓存）
+scripts/构建展示站.py           把真实产物固化成只读静态站（含 PDF），用于公网展示
 docs/使用指南.md               完整操作手册（环境搭建、命令、配置、排错）
+docs/团队协作.md               分发与分工说明
 THIRD_PARTY.md                第三方依赖与数据来源说明
 requirements.txt              依赖清单（版本固定）
 tests/                        测试与自检

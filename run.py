@@ -75,11 +75,15 @@ def resolve_inputs(values, cfg: dict) -> list:
 
 # ---------------------------------------------------------------- 任务构造
 
-def build_objective(company: dict, cfg: dict) -> str:
+def build_objective(company: dict, cfg: dict, question: str = "") -> str:
     """构造交给智能体的任务描述。
 
     这段文字就是 Prompt 的一部分：它决定智能体关注什么。
     注意它只给目标与约束，不规定步骤——步骤由模型自己决定。
+
+    question 是用户在界面上自己敲的问题。它被原样附加在任务描述里，
+    使同一套工具链既能跑标准体检，也能回答"为什么二季度毛利率掉了"这类
+    定向追问——追问内容本身也会进入技能匹配与轨迹，可被复核。
     """
     peers = [c["name"] for c in cfg.get("companies", [])
              if c["code"] != company["code"]]
@@ -87,6 +91,14 @@ def build_objective(company: dict, cfg: dict) -> str:
     family_label = company.get("report_family_label", "")
     family_line = (f"该主体适用{family_label}报表格式，"
                    f"请勿套用其它行业的经验口径。\n" if family_label else "")
+    question = (question or "").strip()
+    focus_line = ""
+    if question:
+        focus_line = (
+            f"\n用户本次的定向追问（优先级高于常规体检，但同样必须落到证据上）：\n"
+            f"  「{question}」\n"
+            f"请优先围绕该问题取证与作答，并在结论中单独给出针对该问题的回答；"
+            f"若原文证据不足以回答，须明说证据不足，不得臆测。\n")
     return (
         f"任务：分析 {company['name']}（{company['code']}，{company.get('industry', '')}）"
         f"的报告期业绩变化与异常信号。\n"
@@ -97,7 +109,8 @@ def build_objective(company: dict, cfg: dict) -> str:
         f"3. 对识别出的异常信号，必须回到公告原文核实原因，不得仅凭规则结论下判断。\n"
         f"4. 注意区分「异常信号」「结构性特征」与「口径提示」三类结论。\n"
         f"5. 重点关注利润与现金流的关系、减值计提、所得税异常、非经常性损益。\n"
-        f"{peer_line}\n"
+        f"{peer_line}"
+        f"{focus_line}\n"
         f"证据充分后请输出最终 JSON 结论。"
     )
 
@@ -129,7 +142,8 @@ def to_attribution(agent_result: dict, name: str, code: str, findings: list) -> 
 # ---------------------------------------------------------------- 单公司分析
 
 def analyze_one(code: str, cfg: dict, trace: Trace, since_year: int,
-                periods_shown: int, refresh: bool, verbose: bool = True) -> dict | None:
+                periods_shown: int, refresh: bool, verbose: bool = True,
+                question: str = "") -> dict | None:
     company = company_of(cfg, code)
 
     with trace.step("fetch_data", secucode=code):
@@ -195,7 +209,9 @@ def analyze_one(code: str, cfg: dict, trace: Trace, since_year: int,
         loop = AgentLoop(cfg, trace,
                          max_steps=int(cfg.get("agent", {}).get("max_steps", 12)),
                          verbose=verbose, focus_code=secucode)
-        agent_result = loop.run(build_objective(company, cfg), focus_code=code)
+        trace.record("question", text=(question or '').strip() or None)
+    agent_result = loop.run(build_objective(company, cfg, question),
+                            focus_code=code)
 
     attribution = to_attribution(agent_result, name, code, findings)
 
@@ -375,7 +391,8 @@ def cmd_analyze(cfg: dict, args) -> int:
         trace.record("target", input=target.get("code"), secucode=target["secucode"],
                      name=target["name"], matched=target["matched"])
         result = analyze_one(target["secucode"], cfg, trace, args.since_year,
-                             args.periods, args.refresh, verbose=not args.quiet)
+                             args.periods, args.refresh, verbose=not args.quiet,
+                             question=getattr(args, "question", "") or "")
         if result is not None:
             results.append(result)
 
@@ -445,6 +462,8 @@ def main(argv=None) -> int:
     p_an.add_argument("--periods", type=int, default=6)
     p_an.add_argument("--refresh", action="store_true")
     p_an.add_argument("--quiet", action="store_true", help="不打印工具调用过程")
+    p_an.add_argument("--question", default="",
+                      help="用户的定向追问；会连同标准体检一起交给智能体")
 
     p_se = sub.add_parser("search", help="在全市场名录中检索公司代码")
     p_se.add_argument("keyword", nargs="+", help="公司简称或代码，可用空格分隔多个")

@@ -1,5 +1,5 @@
 {
-  "run_id": "20261008T185735-d197ffe3",
+  "run_id": "20261010T170733-3c7c5825",
   "company": {
     "code": "600519.SH",
     "name": "贵州茅台",
@@ -36,69 +36,77 @@
     }
   ],
   "attribution": {
-    "summary": "贵州茅台2026H1营业总收入922.78亿元（累计同比+1.30%），归母净利445.17亿元（累计同比-1.95%），但单季度已现拐点：2026Q2单季收入同比-5.23%、归母净利同比-6.90%。规则引擎唯一命中的异常信号（2025Q2调整后现金含量0.27）经原文核实为口径提示而非利润质量问题——公司合并了茅台集团财务有限公司，其「存放中央银行和同业款项净增加额」在2025H1为+254.11亿元（流出）、2026H1为-218.95亿元（流入），单此一项即解释了经营现金流的全部波动。折旧摊销仅占收入1.31%，不存在重资产结构性误判空间。减值、所得税、非经常性损益三项均无异常，利润质量良好。",
+    "summary": "贵州茅台2026H1营业总收入922.78亿元(+1.30%)、归母净利445.17亿元(-1.95%)，收入微增而利润转负，单季度看Q2收入-5.23%、归母净利-6.90%，业绩拐点已现。利润质量优异：毛利率89.73%、归母净利率48.24%、非经常性损益占比仅0.12%、有效税率25.07%稳定，无减值异常。规则引擎命中的2025Q2「调整后现金含量0.27」经原文核实，系控股子公司茅台集团财务公司『存放中央银行和同业款项净增加额』+25.41亿元所致，属合并口径提示而非利润质量问题；2026H1该科目转为-21.90亿元，经营现金流因此升至706.91亿元。",
     "items": [
       {
-        "rule": "2025Q2「调整后现金含量0.27」系财务子公司银行类科目所致，属口径提示而非利润质量问题",
+        "rule": "定向追问：贵州茅台最近几期关键财务指标",
+        "period": "2024Q2-2026Q2",
+        "fact": "2026Q2(累计)：营业总收入922.78亿元(EM-72282190CD)、归母净利445.17亿元(EM-650EDF6CEE)、扣非归母净利444.64亿元(EM-EA8820BA12)、经营现金流净额706.91亿元(EM-0A89EEE6D4)、毛利率89.73%(EM-E851AEC057)、归母净利率48.24%(EM-8D7B040BAB)、有效税率25.07%(EM-8C58120E62)、非经常性损益占比0.12%(EM-A40C71D251)、折旧摊销占收入1.31%(EM-269E8801AE)、现金含量朴素1.54(EM-5A4B385201)/调整后1.50(EM-15915B3A52)。2026Q1：收入547.03亿元(EM-CCBD43181D)、归母净利272.43亿元(EM-74EF4EAAEF)、经营现金流269.10亿元(EM-BA36EA74E4)。2025Q4：收入1720.54亿元(EM-647ACE38CB)、归母净利823.20亿元(EM-E9DE9639F0)、经营现金流615.22亿元(EM-A2F2009A83)、调整后现金含量0.70(EM-82A6EE6F98)。2025Q2：调整后现金含量0.27(EM-FAF8B268D0)、朴素0.28(EM-9A07F713F5)。",
+        "inference": "最近三期呈现『收入增速逐级回落、利润由正转负』的轨迹：2026Q1收入+6.34%/归母净利+1.47%，2026Q2累计收入+1.30%/归母净利-1.95%，单季度Q2收入-5.23%、归母净利-6.90%。盈利指标本身仍处高位且稳定（毛利率89.7%-91.3%、净利率48%左右、有效税率25%），未见减值或非经常项目扰动。",
+        "confidence": "高",
+        "verify_with": "2026年三季报以确认单季度利润负增长是否延续；分产品/分渠道销量与吨价数据（半年报仅披露收入结构，未披露销量与吨价）"
+      },
+      {
+        "rule": "2025Q2调整后现金含量0.27：系财务公司存款科目所致，非利润质量问题",
         "period": "2025Q2",
-        "fact": "2025Q2经营活动现金流量净额131.19亿元（EM-E22118B714），净利润469.87亿元（EM-26A28B73CA），朴素现金含量0.2792（EM-9A07F713F5），调整后0.2727（EM-FAF8B268D0），规则引擎R2b判定偏离[0.5,1.8]区间。折旧摊销占收入仅1.23%（EM-BEB2A6E436）。2025年半年报第32页合并现金流量表显示：经营活动现金流出小计848.83亿元中，「存放中央银行和同业款项净增加额」为+254.11亿元（2024H1为+71.97亿元），系流出项。",
-        "inference": "该科目源于控股子公司贵州茅台集团财务有限公司向央行缴存/存放同业资金，属银行类经营活动，与白酒销售无关。254.11亿元的单边流出即可覆盖净利润与经营现金流之间约338.7亿元的缺口。2026H1同一科目转为-218.95亿元（流入，2026年半年报第34页），经营现金流随之回升至706.91亿元（EM-0A89EEE6D4），调整后现金含量1.4964（EM-15915B3A52）。故该信号是合并报表口径下金融子公司科目波动，非收入未转化现金。",
+        "fact": "规则引擎R2b命中：2025Q2经营活动现金流量净额/(净利润+折旧摊销+减值计提)=0.27(EM-FAF8B268D0)，朴素口径0.28(EM-9A07F713F5)，当期经营现金流仅131.19亿元(EM-E22118B714)而净利润469.87亿元(EM-26A28B73CA)。原文核实：2025年半年报合并现金流量表第32页显示『存放中央银行和同业款项净增加额』为25,410,788,169.25元（上年同期7,196,590,763.00元），构成经营活动现金流出。2026年半年报第34页同一科目为-21,895,452,284.18元（转为流入），经营现金流随之升至706.91亿元。2026年一季报第2页明确说明经营现金流变动205.48%『主要是公司控股子公司贵州茅台集团财务有限公司不可随时支取的同业存款净增加额减少』。",
+        "inference": "该比值偏离由合并报表范围内的茅台集团财务公司（金融子公司）存款/存放央行款项科目驱动，属合并口径下金融业务与白酒主业混列的结果，不代表白酒主业收入未转化为现金。折旧摊销占收入仅1.23%(EM-BEB2A6E436)，故不适用『重资产结构性特征』解释，应归为口径提示。",
         "confidence": "高",
-        "verify_with": "财务有限公司单独财务报表及金融企业准备金计提明细；若需剔除金融子公司影响，应取母公司现金流量表口径（2025H1母公司经营现金流净额81.96亿元、2026H1为152.25亿元，见2026年半年报第35页）"
+        "verify_with": "财务公司分部报告或母公司口径现金流量表（母公司2025H1经营现金流81.96亿元、2026H1为152.25亿元，可作剔除金融子公司后的对照）"
       },
       {
-        "rule": "累计同比与单季度同比背离，2026Q2单季收入与利润双双转负，业绩拐点已现",
+        "rule": "2026Q2单季度收入与利润同比转负，累计口径掩盖拐点",
         "period": "2026Q2",
-        "fact": "2026Q2营业总收入累计922.78亿元，累计同比+1.30%；但还原后单季度收入375.75亿元，单季同比-5.23%，单季环比-31.31%。归母净利累计445.17亿元，累计同比-1.95%；单季度172.74亿元，单季同比-6.90%，单季环比-36.59%。同期毛利率由2025Q2的91.46%（EM-67898700FD）降至89.73%（EM-E851AEC057），归母净利率由49.84%（EM-A49C7C7247）降至48.24%（EM-8D7B040BAB）。营业成本由77.77亿元（EM-0A7C0DCA9D）升至94.74亿元（EM-86A8423D0F）。",
-        "inference": "累计口径仍为正增长掩盖了单季度已转负的事实，属技能库所述「累计同比为正而单季度同比为负」的拐点信号。成本增速快于收入是毛利率下滑的直接来源。2026年半年报第7页披露公司正推进「全面向C」茅台酒营销市场化改革，构建「随行就市、相对平稳、供需适配、量价平衡」动态价格调整机制，并调整产品结构与投放节奏——价格机制与投放节奏变化可能是单季收入承压的原因，但报告未给出量价拆分数据，无法量化归因。",
+        "fact": "2026Q2累计营业总收入同比+1.30%，但单季度同比-5.23%、环比-31.31%；累计归母净利同比-1.95%，单季度同比-6.90%、环比-36.59%(compute_growth)。2025Q4单季度收入同比-19.35%、归母净利同比-30.34%。半年报第6页原文：『上半年，公司营业总收入922.78亿元，同比增长1.3%；归属于上市公司股东的净利润445.17亿元，同比下降1.95%』，并称行业『正经历着深刻的周期性与结构性调整』。",
+        "inference": "累计同比为正而单季度同比为负，表明业绩拐点已现，单季度口径比累计口径更具解释力。原文将背景归因于行业周期性与结构性调整及公司『全面向C』营销市场化改革（产品结构、价格机制、渠道布局调整），但未量化量价拆分。",
         "confidence": "中",
-        "verify_with": "2026年半年报「销售情况」分产品/渠道/地区收入表（第8页已见茅台酒777.24亿元、系列酒129.34亿元、直销519.62亿元、批发代理386.97亿元）需与上年同期同口径对比；另需茅台酒与系列酒的销量、吨价数据以拆分量价驱动"
+        "verify_with": "半年报分产品收入（茅台酒777.24亿元、系列酒129.34亿元，第8页）与上年同期对比、以及销量/吨价数据，以判定是量还是价驱动；三季报确认趋势"
       },
       {
-        "rule": "合同负债同比-60.31%，预收货款政策调整，需关注对后续收入确认节奏的影响",
+        "rule": "利润质量优异：非经常性损益占比极低，无减值异常",
         "period": "2026Q2",
-        "fact": "2026年半年报第9页披露：合同负债期末31.78亿元，较上年期末80.07亿元下降60.31%，原文说明为「主要是公司进行市场化改革，销售模式改变，预收货款政策相应调整」；其他流动负债由9.95亿元降至3.84亿元（-61.37%），说明为「经销商预付货款减少，待转销项税相应减少」。同期收现比1.0666（EM-93D04D9DCD），与2025Q2的1.0438（EM-5862461C81）相比未恶化。",
-        "inference": "合同负债大幅下降与销售模式改革（自售+经销+代售多维体系）方向一致，属主动政策调整而非渠道打款能力恶化——收现比未下降支持这一判断。但预收款蓄水池变薄意味着未来收入的「缓冲垫」减少，收入确认将更直接暴露于终端动销。",
-        "confidence": "中",
-        "verify_with": "2026年三季报合同负债余额及环比变化；经销商数量变动明细（2026H1国内经销商净减46家，见第8页）与打款政策的进一步说明"
-      },
-      {
-        "rule": "非经常性损益占比0.12%，利润质量良好，无政府补助或投资收益依赖",
-        "period": "2026Q2",
-        "fact": "归母净利445.17亿元（EM-650EDF6CEE），扣非归母净利444.64亿元（EM-EA8820BA12），非经常性损益占比0.1183%（EM-A40C71D251），远低于10%阈值。其他收益（政府补助等）仅2355.45万元（EM-483EC52EB6），投资收益仅101.39万元（EM-61DE83EC7E）。2025H1非经常性损益合计1271.47万元（2025年半年报第6页）。",
-        "inference": "报表利润与扣非利润几乎无差异，利润全部来自主营业务，不存在对非经常项目的依赖。政府补助与投资收益绝对额极小，不构成利润来源。",
+        "fact": "2026Q2非经常性损益占归母净利0.12%(EM-A40C71D251)，归母净利445.17亿元与扣非444.64亿元差额仅0.53亿元。半年报第109页非经常性损益明细表：合计52,672,775.85元，其中政府补助20,012,654.88元、公允价值变动及处置损益22,537,102.09元、其他营业外收支29,131,392.76元。其他收益(政府补助等)仅2355.45万元(EM-483EC52EB6)、投资收益101.39万元(EM-61DE83EC7E)。资产减值损失为空值(EM-BA59D1E20A)、信用减值损失3247.38万元(EM-D30CC1B70A)。2025Q4非经常性损益占比0.03%(EM-0DDF97240C)。",
+        "inference": "利润几乎全部来自主营业务，对政府补助、资产处置、公允价值变动无依赖，扣非与报表利润口径基本一致，利润可持续性强。信用减值损失绝对额小，无大额减值计提迹象。",
         "confidence": "高",
-        "verify_with": "无需进一步核实；如需完整构成可读2026年半年报非经常性损益明细表"
+        "verify_with": "年报附注中应收账款账龄与坏账准备计提政策，确认信用减值损失来源"
       },
       {
-        "rule": "减值计提与所得税均无异常",
+        "rule": "有效税率稳定，无所得税异常",
         "period": "2026Q2",
-        "fact": "2026Q2信用减值损失3247.38万元（EM-D30CC1B70A），资产减值损失为空值（EM-BA59D1E20A），impairment_provision为空值（EM-52BC48BDF7）。有效税率2026Q2为25.07%（EM-8C58120E62），2025Q2为25.15%（EM-9BDA57BE53）；所得税费用2026Q2为154.05亿元（EM-E67D50BD0E），2025Q2为157.91亿元（EM-F0A72B1FF0）。存货613.17亿元（EM-71E0A94586），较上年期末614.27亿元微降0.18%。",
-        "inference": "信用减值绝对额占归母净利不足0.1%，无资产减值计提，存货规模稳定，不存在通过减值调节利润的迹象。有效税率两期几乎持平于25%左右，与白酒行业25%法定税率一致，无所得税异常。",
+        "fact": "2026Q2有效税率25.07%(EM-8C58120E62)，2025Q2为25.15%(EM-9BDA57BE53)，两期基本持平，与白酒行业25%法定税率一致。",
+        "inference": "所得税费用与利润总额匹配，无税率异常波动，未见通过所得税调节利润的迹象。",
         "confidence": "高",
-        "verify_with": "如需确认递延所得税与纳税调整明细，可读2026年半年报所得税费用附注"
+        "verify_with": "年报附注所得税费用与会计利润调整表，确认无重大纳税调整项"
       },
       {
-        "rule": "折旧摊销占收入仅1.31%，不适用重资产结构性口径，跨公司对照可证",
-        "period": "2026Q2",
-        "fact": "贵州茅台2026Q2折旧摊销占收入1.31%（EM-269E8801AE），朴素现金含量1.5356（EM-5A4B385201），调整后1.4964（EM-15915B3A52），两者接近。同口径对照：京东方A（000725）折旧摊销占收入17.45%，朴素现金含量4.521，调整后0.9493；牧原股份（002714）折旧摊销占收入13.74%，调整后-0.9307。",
-        "inference": "京东方呈现典型的「朴素比值高、调整后接近1、折旧占收入>15%」重资产结构性特征；茅台折旧占比极低，其现金含量波动不可能由折旧摊销解释，进一步印证2025Q2异常来自金融子公司科目而非资产结构。",
+        "rule": "勾稽校验：资产负债表恒等式全部通过，间接法残差可控",
+        "period": "2023Q3-2026Q2",
+        "fact": "check_articulation显示资产负债表恒等式60个期间全部通过，最大相对偏差0.0%。间接法反推经营活动现金流量净额：2026Q2残差231,798,546.21元、残差率0.33%通过；2025Q2残差486,701,935.83元、残差率3.71%通过；2025Q4残差826,740,853.64元、残差率1.34%通过。历史期间2022Q2残差率6039.36%未通过。",
+        "inference": "本次分析所涉报告期（2025Q2-2026Q2）数据自洽，间接法残差率均在4%以内，解析数据可用于分析。2022Q2的异常残差属历史期间，不影响本期结论，但提示早期数据存在解析或口径问题。",
         "confidence": "高",
-        "verify_with": "无需进一步核实"
+        "verify_with": "2022Q2原始现金流量表附注，确认残差异常原因（本次未展开）"
+      },
+      {
+        "rule": "跨公司对照：茅台非重资产结构，现金含量波动不可套用重资产解释",
+        "period": "2026Q2",
+        "fact": "compare_companies显示2026Q2折旧摊销占收入比重：贵州茅台1.31%、牧原股份13.74%、京东方A 17.45%。同期现金含量朴素/调整后：茅台1.54/1.50、京东方4.52/0.95、牧原归母净利为负(-60.78亿元)且经营现金流为负(-22.24亿元)。",
+        "inference": "京东方朴素现金含量4.52而调整后0.95，是典型重资产折旧摊销造成的结构性特征；茅台折旧占比仅1.31%，其现金含量波动不适用重资产解释，须归因于财务公司存款科目（见前述口径提示）。",
+        "confidence": "高",
+        "verify_with": "无需补充材料"
       }
     ],
     "cross_company": "",
     "limitations": [
-      "本次分析仅使用本地已落盘公告与已校验数据库，未获取财务有限公司单独报表，金融子公司对合并现金流的完整影响无法精确剥离。",
-      "规则引擎在2025年及之后仅命中1条信号，未覆盖2026Q2单季拐点（该信号由compute_growth还原单季度值后识别），说明规则库对累计口径掩盖的拐点识别能力有限。",
-      "所有数值均取自工具返回值，未做任何自行计算；单季度值来自compute_growth的还原口径，与直接相减可能存在四舍五入差异。",
-      "2026Q2为最新报告期，尚无三季报验证单季拐点是否延续，业绩趋势判断存在不确定性。"
+      "本次分析基于本地已落盘的12份公告（2023Q3-2026Q2）与已校验财务数据库，未获取2026年三季报，无法确认单季度利润负增长是否延续。",
+      "合并报表包含控股子公司茅台集团财务有限公司，其存款、存放央行及同业款项科目与白酒主业混列于经营活动现金流，导致经营现金流指标波动性显著高于主业实际现金创造能力；本次未取得财务公司分部报告，无法完全剥离其影响。",
+      "半年报未披露销量与吨价，业绩变动的量价归因证据不足。",
+      "所有数值均来自工具返回值，未做任何自行计算或修正。"
     ],
     "unresolved": [
-      "2026Q2单季收入同比-5.23%的量价拆分：报告未披露茅台酒与系列酒的销量、吨价同比数据，无法判断是投放量收缩还是价格下行主导，需三季报或渠道调研数据补充。",
-      "合同负债-60.31%所对应的预收货款政策调整细节未量化：改革后新销售模式（自售+经销+代售）下收入确认时点是否变化，报告未说明，需查阅收入确认会计政策附注。",
-      "财务有限公司「存放中央银行和同业款项」科目的具体构成（法定准备金 vs 超额存放同业）未在半年报中拆分，无法判断该科目未来是否继续大幅波动。",
-      "勾稽校验中2022Q2间接法残差占比6039.36%（未通过），本次分析未追溯该历史期间，需确认是否为早期数据解析问题。"
+      "2026Q2单季度收入-5.23%、归母净利-6.90%的量价拆分：半年报仅披露分产品收入（茅台酒777.24亿元、系列酒129.34亿元）与分渠道收入，未披露销量与吨价，无法判定是量减还是价降驱动。",
+      "2026H1国内经销商净减少46家（增220减266，第8页），原文注明主要为系列酒经销商，但未说明对收入的影响程度。",
+      "2022Q2间接法残差率6039.36%的原因未核实，属历史期间数据问题。",
+      "资产减值损失科目在2026Q2返回空值，无法确认是零计提还是数据缺失。"
     ]
   },
   "articulation": [
@@ -1008,8 +1016,8 @@
     "stop_reason": "model_finished",
     "llm_calls": 12,
     "llm_usage": {
-      "prompt_tokens": 235020,
-      "completion_tokens": 7602
+      "prompt_tokens": 223732,
+      "completion_tokens": 9183
     },
     "prompt_hashes": {
       "attribution": "22f71f7586fa",
@@ -1128,7 +1136,7 @@
         "args": {
           "code": "600519",
           "indicator": "net_profit",
-          "period": "2025Q2"
+          "period": "2026Q2"
         },
         "ok": true,
         "summary": {
@@ -1136,10 +1144,10 @@
           "indicator": "net_profit",
           "label": "净利润(含少数股东)",
           "formula": "报表原始科目（累计值）",
-          "period": "2025Q2",
-          "value": 46986681449.24,
+          "period": "2026Q2",
+          "value": 46033330566.78,
           "unit": "元",
-          "evidence_id": "EM-26A28B73CA",
+          "evidence_id": "EM-FD41F865D5",
           "source": "定期报告（第三方接口核验）"
         }
       },
@@ -1150,7 +1158,7 @@
         "args": {
           "code": "600519",
           "indicator": "netcash_operate",
-          "period": "2025Q2"
+          "period": "2026Q2"
         },
         "ok": true,
         "summary": {
@@ -1158,98 +1166,10 @@
           "indicator": "netcash_operate",
           "label": "经营活动产生的现金流量净额",
           "formula": "报表原始科目（累计值）",
-          "period": "2025Q2",
-          "value": 13119061031.33,
-          "unit": "元",
-          "evidence_id": "EM-E22118B714",
-          "source": "定期报告（第三方接口核验）"
-        }
-      },
-      {
-        "step": 3,
-        "type": "tool",
-        "tool": "get_indicator",
-        "args": {
-          "code": "600519",
-          "indicator": "cash_conversion_naive",
-          "period": "2025Q2"
-        },
-        "ok": true,
-        "summary": {
-          "code": "600519.SH",
-          "indicator": "cash_conversion_naive",
-          "label": "现金含量(朴素)",
-          "formula": "经营活动现金流量净额 / 净利润(含少数股东)",
-          "period": "2025Q2",
-          "value": 0.2792080782615517,
-          "unit": "比率/倍数",
-          "evidence_id": "EM-9A07F713F5",
-          "source": "定期报告（第三方接口核验）"
-        }
-      },
-      {
-        "step": 3,
-        "type": "tool",
-        "tool": "get_indicator",
-        "args": {
-          "code": "600519",
-          "indicator": "cash_conversion_adjusted",
-          "period": "2025Q2"
-        },
-        "ok": true,
-        "summary": {
-          "code": "600519.SH",
-          "indicator": "cash_conversion_adjusted",
-          "label": "现金含量(调整后/EBITDA口径)",
-          "formula": "经营活动现金流量净额 / (净利润 + 折旧摊销 + 减值计提)",
-          "period": "2025Q2",
-          "value": 0.2727247589082302,
-          "unit": "比率/倍数",
-          "evidence_id": "EM-FAF8B268D0",
-          "source": "定期报告（第三方接口核验）"
-        }
-      },
-      {
-        "step": 3,
-        "type": "tool",
-        "tool": "get_indicator",
-        "args": {
-          "code": "600519",
-          "indicator": "dep_to_revenue",
-          "period": "2025Q2"
-        },
-        "ok": true,
-        "summary": {
-          "code": "600519.SH",
-          "indicator": "dep_to_revenue",
-          "label": "折旧摊销占收入比重",
-          "formula": "(折旧+摊销) / 营业总收入",
-          "period": "2025Q2",
-          "value": 0.012261934172805997,
-          "unit": "比率/倍数",
-          "evidence_id": "EM-BEB2A6E436",
-          "source": "定期报告（第三方接口核验）"
-        }
-      },
-      {
-        "step": 3,
-        "type": "tool",
-        "tool": "get_indicator",
-        "args": {
-          "code": "600519",
-          "indicator": "cash_conversion_adjusted",
-          "period": "2026Q2"
-        },
-        "ok": true,
-        "summary": {
-          "code": "600519.SH",
-          "indicator": "cash_conversion_adjusted",
-          "label": "现金含量(调整后/EBITDA口径)",
-          "formula": "经营活动现金流量净额 / (净利润 + 折旧摊销 + 减值计提)",
           "period": "2026Q2",
-          "value": 1.4963943891800429,
-          "unit": "比率/倍数",
-          "evidence_id": "EM-15915B3A52",
+          "value": 70690750119.06,
+          "unit": "元",
+          "evidence_id": "EM-0A89EEE6D4",
           "source": "定期报告（第三方接口核验）"
         }
       },
@@ -1281,147 +1201,112 @@
         "tool": "get_indicator",
         "args": {
           "code": "600519",
-          "indicator": "netcash_operate",
+          "indicator": "cash_conversion_adjusted",
           "period": "2026Q2"
         },
         "ok": true,
         "summary": {
           "code": "600519.SH",
-          "indicator": "netcash_operate",
-          "label": "经营活动产生的现金流量净额",
-          "formula": "报表原始科目（累计值）",
+          "indicator": "cash_conversion_adjusted",
+          "label": "现金含量(调整后/EBITDA口径)",
+          "formula": "经营活动现金流量净额 / (净利润 + 折旧摊销 + 减值计提)",
           "period": "2026Q2",
-          "value": 70690750119.06,
-          "unit": "元",
-          "evidence_id": "EM-0A89EEE6D4",
+          "value": 1.4963943891800429,
+          "unit": "比率/倍数",
+          "evidence_id": "EM-15915B3A52",
           "source": "定期报告（第三方接口核验）"
         }
       },
       {
-        "step": 4,
-        "type": "tool",
-        "tool": "search_disclosure",
-        "args": {
-          "query": "经营活动产生的现金流量净额 说明",
-          "code": "600519",
-          "kind": "semi",
-          "topk": 6
-        },
-        "ok": true,
-        "summary": {
-          "query": "经营活动产生的现金流量净额 说明",
-          "results": "6 项"
-        }
-      },
-      {
-        "step": 4,
-        "type": "tool",
-        "tool": "search_disclosure",
-        "args": {
-          "query": "客户存款和同业存放款项净增加额",
-          "code": "600519",
-          "topk": 6
-        },
-        "ok": true,
-        "summary": {
-          "query": "客户存款和同业存放款项净增加额",
-          "results": "6 项"
-        }
-      },
-      {
-        "step": 4,
-        "type": "tool",
-        "tool": "search_disclosure",
-        "args": {
-          "query": "存放中央银行和同业款项净增加额",
-          "code": "600519",
-          "topk": 6
-        },
-        "ok": true,
-        "summary": {
-          "query": "存放中央银行和同业款项净增加额",
-          "results": "6 项"
-        }
-      },
-      {
-        "step": 4,
+        "step": 3,
         "type": "tool",
         "tool": "get_indicator",
         "args": {
           "code": "600519",
-          "indicator": "impairment_provision",
-          "period": "2025Q2"
-        },
-        "ok": true,
-        "summary": {
-          "code": "600519.SH",
-          "indicator": "impairment_provision",
-          "label": "资产减值准备(计提额)",
-          "formula": "报表原始科目（累计值）",
-          "period": "2025Q2",
-          "value": null,
-          "unit": "元",
-          "evidence_id": "EM-054E64F56C",
-          "source": "定期报告（第三方接口核验）"
-        }
-      },
-      {
-        "step": 4,
-        "type": "tool",
-        "tool": "get_indicator",
-        "args": {
-          "code": "600519",
-          "indicator": "impairment_provision",
+          "indicator": "dep_to_revenue",
           "period": "2026Q2"
         },
         "ok": true,
         "summary": {
           "code": "600519.SH",
-          "indicator": "impairment_provision",
-          "label": "资产减值准备(计提额)",
-          "formula": "报表原始科目（累计值）",
+          "indicator": "dep_to_revenue",
+          "label": "折旧摊销占收入比重",
+          "formula": "(折旧+摊销) / 营业总收入",
           "period": "2026Q2",
-          "value": null,
-          "unit": "元",
-          "evidence_id": "EM-52BC48BDF7",
+          "value": 0.01308426356297581,
+          "unit": "比率/倍数",
+          "evidence_id": "EM-269E8801AE",
           "source": "定期报告（第三方接口核验）"
         }
       },
       {
-        "step": 5,
+        "step": 3,
         "type": "tool",
-        "tool": "read_page",
-        "args": {
-          "doc_id": "600519_2025-08-13_semi",
-          "page": 32
-        },
-        "ok": true,
-        "summary": {
-          "doc_id": "600519_2025-08-13_semi",
-          "page": 32,
-          "title": "贵州茅台2025年半年度报告",
-          "date": "2025-08-13",
-          "text": "贵州茅台酒股份有限公司2025 年半年度报告\n32 / 103\n客户存款和同业存放款项净增加额 -2,516,653,584.50 11,489,834,329.99\n向中央银行借款净增加额\n向其他金融机构拆入资金净增加额\n收到原保险合同保"
-        }
-      },
-      {
-        "step": 5,
-        "type": "tool",
-        "tool": "search_disclosure",
+        "tool": "get_indicator",
         "args": {
           "code": "600519",
-          "kind": "semi",
-          "query": "财务有限公司 吸收存款",
-          "topk": 5
+          "indicator": "parent_net_profit",
+          "period": "2026Q2"
         },
         "ok": true,
         "summary": {
-          "query": "财务有限公司 吸收存款",
-          "results": "5 项"
+          "code": "600519.SH",
+          "indicator": "parent_net_profit",
+          "label": "归属于母公司股东的净利润",
+          "formula": "报表原始科目（累计值）",
+          "period": "2026Q2",
+          "value": 44516880421.86,
+          "unit": "元",
+          "evidence_id": "EM-650EDF6CEE",
+          "source": "定期报告（第三方接口核验）"
         }
       },
       {
-        "step": 6,
+        "step": 3,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "600519",
+          "indicator": "deduct_parent_net_profit",
+          "period": "2026Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "600519.SH",
+          "indicator": "deduct_parent_net_profit",
+          "label": "扣除非经常性损益后归母净利润",
+          "formula": "报表原始科目（累计值）",
+          "period": "2026Q2",
+          "value": 44464207646.01,
+          "unit": "元",
+          "evidence_id": "EM-EA8820BA12",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 3,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "600519",
+          "indicator": "nonrecurring_ratio",
+          "period": "2026Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "600519.SH",
+          "indicator": "nonrecurring_ratio",
+          "label": "非经常性损益占归母净利比重",
+          "formula": "(归母净利润 - 扣非归母净利润) / 归母净利润",
+          "period": "2026Q2",
+          "value": 0.001183209051282343,
+          "unit": "比率/倍数",
+          "evidence_id": "EM-A40C71D251",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 4,
         "type": "tool",
         "tool": "compute_growth",
         "args": {
@@ -1445,7 +1330,7 @@
         }
       },
       {
-        "step": 6,
+        "step": 4,
         "type": "tool",
         "tool": "compute_growth",
         "args": {
@@ -1469,73 +1354,119 @@
         }
       },
       {
-        "step": 6,
+        "step": 4,
         "type": "tool",
-        "tool": "get_indicator",
+        "tool": "compute_growth",
         "args": {
           "code": "600519",
-          "indicator": "parent_net_profit",
+          "indicator": "netcash_operate",
           "period": "2026Q2"
         },
         "ok": true,
         "summary": {
           "code": "600519.SH",
-          "indicator": "parent_net_profit",
-          "label": "归属于母公司股东的净利润",
-          "formula": "报表原始科目（累计值）",
+          "indicator": "netcash_operate",
+          "label": "经营活动产生的现金流量净额",
           "period": "2026Q2",
-          "value": 44516880421.86,
-          "unit": "元",
-          "evidence_id": "EM-650EDF6CEE",
-          "source": "定期报告（第三方接口核验）"
+          "cumulative": 70690750119.06,
+          "single_quarter": 43780858849.93,
+          "yoy_cum_pct": 438.84,
+          "yoy_single_pct": 915.8289,
+          "qoq_single_pct": 62.6943,
+          "note": "",
+          "method": "单季度值 = 本期累计 - 上期累计；环比基于单季度值计算"
         }
       },
       {
-        "step": 6,
+        "step": 4,
         "type": "tool",
         "tool": "get_indicator",
         "args": {
           "code": "600519",
-          "indicator": "deduct_parent_net_profit",
-          "period": "2026Q2"
+          "indicator": "cash_conversion_adjusted",
+          "period": "2025Q2"
         },
         "ok": true,
         "summary": {
           "code": "600519.SH",
-          "indicator": "deduct_parent_net_profit",
-          "label": "扣除非经常性损益后归母净利润",
-          "formula": "报表原始科目（累计值）",
-          "period": "2026Q2",
-          "value": 44464207646.01,
-          "unit": "元",
-          "evidence_id": "EM-EA8820BA12",
-          "source": "定期报告（第三方接口核验）"
-        }
-      },
-      {
-        "step": 6,
-        "type": "tool",
-        "tool": "get_indicator",
-        "args": {
-          "code": "600519",
-          "indicator": "nonrecurring_ratio",
-          "period": "2026Q2"
-        },
-        "ok": true,
-        "summary": {
-          "code": "600519.SH",
-          "indicator": "nonrecurring_ratio",
-          "label": "非经常性损益占归母净利比重",
-          "formula": "(归母净利润 - 扣非归母净利润) / 归母净利润",
-          "period": "2026Q2",
-          "value": 0.001183209051282343,
+          "indicator": "cash_conversion_adjusted",
+          "label": "现金含量(调整后/EBITDA口径)",
+          "formula": "经营活动现金流量净额 / (净利润 + 折旧摊销 + 减值计提)",
+          "period": "2025Q2",
+          "value": 0.2727247589082302,
           "unit": "比率/倍数",
-          "evidence_id": "EM-A40C71D251",
+          "evidence_id": "EM-FAF8B268D0",
           "source": "定期报告（第三方接口核验）"
         }
       },
       {
-        "step": 6,
+        "step": 4,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "600519",
+          "indicator": "cash_conversion_naive",
+          "period": "2025Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "600519.SH",
+          "indicator": "cash_conversion_naive",
+          "label": "现金含量(朴素)",
+          "formula": "经营活动现金流量净额 / 净利润(含少数股东)",
+          "period": "2025Q2",
+          "value": 0.2792080782615517,
+          "unit": "比率/倍数",
+          "evidence_id": "EM-9A07F713F5",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 4,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "600519",
+          "indicator": "netcash_operate",
+          "period": "2025Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "600519.SH",
+          "indicator": "netcash_operate",
+          "label": "经营活动产生的现金流量净额",
+          "formula": "报表原始科目（累计值）",
+          "period": "2025Q2",
+          "value": 13119061031.33,
+          "unit": "元",
+          "evidence_id": "EM-E22118B714",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 4,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "600519",
+          "indicator": "net_profit",
+          "period": "2025Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "600519.SH",
+          "indicator": "net_profit",
+          "label": "净利润(含少数股东)",
+          "formula": "报表原始科目（累计值）",
+          "period": "2025Q2",
+          "value": 46986681449.24,
+          "unit": "元",
+          "evidence_id": "EM-26A28B73CA",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 4,
         "type": "tool",
         "tool": "get_indicator",
         "args": {
@@ -1557,29 +1488,60 @@
         }
       },
       {
-        "step": 6,
+        "step": 5,
+        "type": "tool",
+        "tool": "search_disclosure",
+        "args": {
+          "query": "经营活动产生的现金流量净额 减少",
+          "code": "600519",
+          "kind": "semi",
+          "topk": 6
+        },
+        "ok": true,
+        "summary": {
+          "query": "经营活动产生的现金流量净额 减少",
+          "results": "6 项"
+        }
+      },
+      {
+        "step": 5,
+        "type": "tool",
+        "tool": "search_disclosure",
+        "args": {
+          "query": "客户存款和同业存放款项净增加额",
+          "code": "600519",
+          "topk": 6
+        },
+        "ok": true,
+        "summary": {
+          "query": "客户存款和同业存放款项净增加额",
+          "results": "6 项"
+        }
+      },
+      {
+        "step": 5,
         "type": "tool",
         "tool": "get_indicator",
         "args": {
           "code": "600519",
-          "indicator": "gross_margin",
-          "period": "2025Q2"
+          "indicator": "impairment_provision",
+          "period": "2026Q2"
         },
         "ok": true,
         "summary": {
           "code": "600519.SH",
-          "indicator": "gross_margin",
-          "label": "毛利率",
-          "formula": "(营业总收入 - 营业成本) / 营业总收入",
-          "period": "2025Q2",
-          "value": 0.9146210358879172,
-          "unit": "比率/倍数",
-          "evidence_id": "EM-67898700FD",
+          "indicator": "impairment_provision",
+          "label": "资产减值准备(计提额)",
+          "formula": "报表原始科目（累计值）",
+          "period": "2026Q2",
+          "value": null,
+          "unit": "元",
+          "evidence_id": "EM-52BC48BDF7",
           "source": "定期报告（第三方接口核验）"
         }
       },
       {
-        "step": 6,
+        "step": 5,
         "type": "tool",
         "tool": "get_indicator",
         "args": {
@@ -1594,139 +1556,7 @@
         }
       },
       {
-        "step": 7,
-        "type": "tool",
-        "tool": "get_indicator",
-        "args": {
-          "code": "600519",
-          "indicator": "effective_tax_rate",
-          "period": "2026Q2"
-        },
-        "ok": true,
-        "summary": {
-          "code": "600519.SH",
-          "indicator": "effective_tax_rate",
-          "label": "有效税率",
-          "formula": "所得税费用 / 利润总额",
-          "period": "2026Q2",
-          "value": 0.2507403155354022,
-          "unit": "比率/倍数",
-          "evidence_id": "EM-8C58120E62",
-          "source": "定期报告（第三方接口核验）"
-        }
-      },
-      {
-        "step": 7,
-        "type": "tool",
-        "tool": "get_indicator",
-        "args": {
-          "code": "600519",
-          "indicator": "effective_tax_rate",
-          "period": "2025Q2"
-        },
-        "ok": true,
-        "summary": {
-          "code": "600519.SH",
-          "indicator": "effective_tax_rate",
-          "label": "有效税率",
-          "formula": "所得税费用 / 利润总额",
-          "period": "2025Q2",
-          "value": 0.25154224608449416,
-          "unit": "比率/倍数",
-          "evidence_id": "EM-9BDA57BE53",
-          "source": "定期报告（第三方接口核验）"
-        }
-      },
-      {
-        "step": 7,
-        "type": "tool",
-        "tool": "get_indicator",
-        "args": {
-          "code": "600519",
-          "indicator": "income_tax",
-          "period": "2026Q2"
-        },
-        "ok": true,
-        "summary": {
-          "code": "600519.SH",
-          "indicator": "income_tax",
-          "label": "所得税费用",
-          "formula": "报表原始科目（累计值）",
-          "period": "2026Q2",
-          "value": 15405088610.51,
-          "unit": "元",
-          "evidence_id": "EM-E67D50BD0E",
-          "source": "定期报告（第三方接口核验）"
-        }
-      },
-      {
-        "step": 7,
-        "type": "tool",
-        "tool": "get_indicator",
-        "args": {
-          "code": "600519",
-          "indicator": "income_tax",
-          "period": "2025Q2"
-        },
-        "ok": true,
-        "summary": {
-          "code": "600519.SH",
-          "indicator": "income_tax",
-          "label": "所得税费用",
-          "formula": "报表原始科目（累计值）",
-          "period": "2025Q2",
-          "value": 15791319317.58,
-          "unit": "元",
-          "evidence_id": "EM-F0A72B1FF0",
-          "source": "定期报告（第三方接口核验）"
-        }
-      },
-      {
-        "step": 7,
-        "type": "tool",
-        "tool": "get_indicator",
-        "args": {
-          "code": "600519",
-          "indicator": "asset_impairment",
-          "period": "2026Q2"
-        },
-        "ok": true,
-        "summary": {
-          "code": "600519.SH",
-          "indicator": "asset_impairment",
-          "label": "资产减值损失",
-          "formula": "报表原始科目（累计值）",
-          "period": "2026Q2",
-          "value": null,
-          "unit": "元",
-          "evidence_id": "EM-BA59D1E20A",
-          "source": "定期报告（第三方接口核验）"
-        }
-      },
-      {
-        "step": 7,
-        "type": "tool",
-        "tool": "get_indicator",
-        "args": {
-          "code": "600519",
-          "indicator": "credit_impairment",
-          "period": "2026Q2"
-        },
-        "ok": true,
-        "summary": {
-          "code": "600519.SH",
-          "indicator": "credit_impairment",
-          "label": "信用减值损失",
-          "formula": "报表原始科目（累计值）",
-          "period": "2026Q2",
-          "value": 32473761.91,
-          "unit": "元",
-          "evidence_id": "EM-D30CC1B70A",
-          "source": "定期报告（第三方接口核验）"
-        }
-      },
-      {
-        "step": 7,
+        "step": 5,
         "type": "tool",
         "tool": "get_indicator",
         "args": {
@@ -1748,7 +1578,7 @@
         }
       },
       {
-        "step": 7,
+        "step": 5,
         "type": "tool",
         "tool": "get_indicator",
         "args": {
@@ -1770,199 +1600,112 @@
         }
       },
       {
-        "step": 8,
-        "type": "tool",
-        "tool": "search_disclosure",
-        "args": {
-          "code": "600519",
-          "kind": "semi",
-          "query": "营业收入变动 原因",
-          "topk": 5
-        },
-        "ok": true,
-        "summary": {
-          "query": "营业收入变动 原因",
-          "results": "5 项"
-        }
-      },
-      {
-        "step": 8,
-        "type": "tool",
-        "tool": "search_disclosure",
-        "args": {
-          "code": "600519",
-          "kind": "semi",
-          "query": "市场化改革 销售模式改变 预收货款政策",
-          "topk": 5
-        },
-        "ok": true,
-        "summary": {
-          "query": "市场化改革 销售模式改变 预收货款政策",
-          "results": "5 项"
-        }
-      },
-      {
-        "step": 8,
-        "type": "tool",
-        "tool": "get_indicator",
-        "args": {
-          "code": "600519",
-          "indicator": "sale_expense",
-          "period": "2026Q2"
-        },
-        "ok": true,
-        "summary": {
-          "code": "600519.SH",
-          "indicator": "sale_expense",
-          "label": "销售费用",
-          "formula": "报表原始科目（累计值）",
-          "period": "2026Q2",
-          "value": 3206308341.53,
-          "unit": "元",
-          "evidence_id": "EM-76901411EA",
-          "source": "定期报告（第三方接口核验）"
-        }
-      },
-      {
-        "step": 8,
-        "type": "tool",
-        "tool": "get_indicator",
-        "args": {
-          "code": "600519",
-          "indicator": "sale_expense",
-          "period": "2025Q2"
-        },
-        "ok": true,
-        "summary": {
-          "code": "600519.SH",
-          "indicator": "sale_expense",
-          "label": "销售费用",
-          "formula": "报表原始科目（累计值）",
-          "period": "2025Q2",
-          "value": 3260462949.46,
-          "unit": "元",
-          "evidence_id": "EM-E1AC3F4A4B",
-          "source": "定期报告（第三方接口核验）"
-        }
-      },
-      {
-        "step": 8,
-        "type": "tool",
-        "tool": "get_indicator",
-        "args": {
-          "code": "600519",
-          "indicator": "operating_cost",
-          "period": "2026Q2"
-        },
-        "ok": true,
-        "summary": {
-          "code": "600519.SH",
-          "indicator": "operating_cost",
-          "label": "营业成本",
-          "formula": "报表原始科目（累计值）",
-          "period": "2026Q2",
-          "value": 9473762565.88,
-          "unit": "元",
-          "evidence_id": "EM-86A8423D0F",
-          "source": "定期报告（第三方接口核验）"
-        }
-      },
-      {
-        "step": 8,
-        "type": "tool",
-        "tool": "get_indicator",
-        "args": {
-          "code": "600519",
-          "indicator": "operating_cost",
-          "period": "2025Q2"
-        },
-        "ok": true,
-        "summary": {
-          "code": "600519.SH",
-          "indicator": "operating_cost",
-          "label": "营业成本",
-          "formula": "报表原始科目（累计值）",
-          "period": "2025Q2",
-          "value": 7777491083.93,
-          "unit": "元",
-          "evidence_id": "EM-0A7C0DCA9D",
-          "source": "定期报告（第三方接口核验）"
-        }
-      },
-      {
-        "step": 9,
+        "step": 6,
         "type": "tool",
         "tool": "read_page",
         "args": {
-          "doc_id": "600519_2026-08-15_semi",
-          "page": 8
+          "doc_id": "600519_2025-08-13_semi",
+          "page": 32
         },
         "ok": true,
         "summary": {
-          "doc_id": "600519_2026-08-15_semi",
-          "page": 8,
-          "title": "贵州茅台2026年半年度报告",
-          "date": "2026-08-15",
-          "text": "贵州茅台酒股份有限公司2026 年半年度报告\n8 / 110\n公司吸收集团公司成员单位存款增加及不可随时支取的同业存款减少。\n投资活动产生的现金流量净额变动原因说明：主要是本期公司控股子公司贵州茅台集团财务有限\n公司购买的同业存单到期收回。"
+          "doc_id": "600519_2025-08-13_semi",
+          "page": 32,
+          "title": "贵州茅台2025年半年度报告",
+          "date": "2025-08-13",
+          "text": "贵州茅台酒股份有限公司2025 年半年度报告\n32 / 103\n客户存款和同业存放款项净增加额 -2,516,653,584.50 11,489,834,329.99\n向中央银行借款净增加额\n向其他金融机构拆入资金净增加额\n收到原保险合同保"
         }
       },
       {
-        "step": 9,
-        "type": "tool",
-        "tool": "read_page",
-        "args": {
-          "doc_id": "600519_2026-08-15_semi",
-          "page": 34
-        },
-        "ok": true,
-        "summary": {
-          "doc_id": "600519_2026-08-15_semi",
-          "page": 34,
-          "title": "贵州茅台2026年半年度报告",
-          "date": "2026-08-15",
-          "text": "贵州茅台酒股份有限公司2026 年半年度报告\n34 / 110\n经营活动现金流入小计 109,245,728,301.02 98,002,530,175.18\n购买商品、接受劳务支付的现金 6,118,893,646.05 6,076,04"
-        }
-      },
-      {
-        "step": 10,
-        "type": "tool",
-        "tool": "compare_companies",
-        "args": {
-          "codes": [
-            "600519",
-            "002714",
-            "000725"
-          ]
-        },
-        "ok": true,
-        "summary": {
-          "comparison": "3 项"
-        }
-      },
-      {
-        "step": 10,
+        "step": 6,
         "type": "tool",
         "tool": "get_indicator",
         "args": {
           "code": "600519",
-          "indicator": "dep_to_revenue",
+          "indicator": "effective_tax_rate",
           "period": "2026Q2"
         },
         "ok": true,
         "summary": {
           "code": "600519.SH",
-          "indicator": "dep_to_revenue",
-          "label": "折旧摊销占收入比重",
-          "formula": "(折旧+摊销) / 营业总收入",
+          "indicator": "effective_tax_rate",
+          "label": "有效税率",
+          "formula": "所得税费用 / 利润总额",
           "period": "2026Q2",
-          "value": 0.01308426356297581,
+          "value": 0.2507403155354022,
           "unit": "比率/倍数",
-          "evidence_id": "EM-269E8801AE",
+          "evidence_id": "EM-8C58120E62",
           "source": "定期报告（第三方接口核验）"
         }
       },
       {
-        "step": 10,
+        "step": 6,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "600519",
+          "indicator": "effective_tax_rate",
+          "period": "2025Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "600519.SH",
+          "indicator": "effective_tax_rate",
+          "label": "有效税率",
+          "formula": "所得税费用 / 利润总额",
+          "period": "2025Q2",
+          "value": 0.25154224608449416,
+          "unit": "比率/倍数",
+          "evidence_id": "EM-9BDA57BE53",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 6,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "600519",
+          "indicator": "asset_impairment",
+          "period": "2026Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "600519.SH",
+          "indicator": "asset_impairment",
+          "label": "资产减值损失",
+          "formula": "报表原始科目（累计值）",
+          "period": "2026Q2",
+          "value": null,
+          "unit": "元",
+          "evidence_id": "EM-BA59D1E20A",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 6,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "600519",
+          "indicator": "credit_impairment",
+          "period": "2026Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "600519.SH",
+          "indicator": "credit_impairment",
+          "label": "信用减值损失",
+          "formula": "报表原始科目（累计值）",
+          "period": "2026Q2",
+          "value": 32473761.91,
+          "unit": "元",
+          "evidence_id": "EM-D30CC1B70A",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 6,
         "type": "tool",
         "tool": "get_indicator",
         "args": {
@@ -1984,7 +1727,721 @@
         }
       },
       {
+        "step": 6,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "600519",
+          "indicator": "operating_cost",
+          "period": "2026Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "600519.SH",
+          "indicator": "operating_cost",
+          "label": "营业成本",
+          "formula": "报表原始科目（累计值）",
+          "period": "2026Q2",
+          "value": 9473762565.88,
+          "unit": "元",
+          "evidence_id": "EM-86A8423D0F",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 6,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "600519",
+          "indicator": "sale_expense",
+          "period": "2026Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "600519.SH",
+          "indicator": "sale_expense",
+          "label": "销售费用",
+          "formula": "报表原始科目（累计值）",
+          "period": "2026Q2",
+          "value": 3206308341.53,
+          "unit": "元",
+          "evidence_id": "EM-76901411EA",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 7,
+        "type": "tool",
+        "tool": "read_page",
+        "args": {
+          "doc_id": "600519_2026-08-15_semi",
+          "page": 34
+        },
+        "ok": true,
+        "summary": {
+          "doc_id": "600519_2026-08-15_semi",
+          "page": 34,
+          "title": "贵州茅台2026年半年度报告",
+          "date": "2026-08-15",
+          "text": "贵州茅台酒股份有限公司2026 年半年度报告\n34 / 110\n经营活动现金流入小计 109,245,728,301.02 98,002,530,175.18\n购买商品、接受劳务支付的现金 6,118,893,646.05 6,076,04"
+        }
+      },
+      {
+        "step": 7,
+        "type": "tool",
+        "tool": "search_disclosure",
+        "args": {
+          "code": "600519",
+          "query": "存放中央银行和同业款项净增加额",
+          "topk": 5
+        },
+        "ok": true,
+        "summary": {
+          "query": "存放中央银行和同业款项净增加额",
+          "results": "5 项"
+        }
+      },
+      {
+        "step": 7,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "600519",
+          "indicator": "cash_conversion_adjusted",
+          "period": "2025Q4"
+        },
+        "ok": true,
+        "summary": {
+          "code": "600519.SH",
+          "indicator": "cash_conversion_adjusted",
+          "label": "现金含量(调整后/EBITDA口径)",
+          "formula": "经营活动现金流量净额 / (净利润 + 折旧摊销 + 减值计提)",
+          "period": "2025Q4",
+          "value": 0.7025511865115059,
+          "unit": "比率/倍数",
+          "evidence_id": "EM-82A6EE6F98",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 7,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "600519",
+          "indicator": "cash_conversion_naive",
+          "period": "2025Q4"
+        },
+        "ok": true,
+        "summary": {
+          "code": "600519.SH",
+          "indicator": "cash_conversion_naive",
+          "label": "现金含量(朴素)",
+          "formula": "经营活动现金流量净额 / 净利润(含少数股东)",
+          "period": "2025Q4",
+          "value": 0.7211577861097138,
+          "unit": "比率/倍数",
+          "evidence_id": "EM-B514EA2B17",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 7,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "600519",
+          "indicator": "cash_conversion_adjusted",
+          "period": "2026Q1"
+        },
+        "ok": true,
+        "summary": {
+          "code": "600519.SH",
+          "indicator": "cash_conversion_adjusted",
+          "label": "现金含量(调整后/EBITDA口径)",
+          "formula": "经营活动现金流量净额 / (净利润 + 折旧摊销 + 减值计提)",
+          "period": "2026Q1",
+          "value": null,
+          "unit": "比率/倍数",
+          "evidence_id": "EM-8D80D1728A",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 7,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "600519",
+          "indicator": "nonrecurring_ratio",
+          "period": "2025Q4"
+        },
+        "ok": true,
+        "summary": {
+          "code": "600519.SH",
+          "indicator": "nonrecurring_ratio",
+          "label": "非经常性损益占归母净利比重",
+          "formula": "(归母净利润 - 扣非归母净利润) / 归母净利润",
+          "period": "2025Q4",
+          "value": 0.00032749543797981775,
+          "unit": "比率/倍数",
+          "evidence_id": "EM-0DDF97240C",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 7,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "600519",
+          "indicator": "gross_margin",
+          "period": "2025Q4"
+        },
+        "ok": true,
+        "summary": {
+          "code": "600519.SH",
+          "indicator": "gross_margin",
+          "label": "毛利率",
+          "formula": "(营业总收入 - 营业成本) / 营业总收入",
+          "period": "2025Q4",
+          "value": 0.9134442518467244,
+          "unit": "比率/倍数",
+          "evidence_id": "EM-EB1A300367",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 7,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "600519",
+          "indicator": "net_margin",
+          "period": "2025Q4"
+        },
+        "ok": true,
+        "summary": {
+          "code": "600519.SH",
+          "indicator": "net_margin",
+          "label": "归母净利率",
+          "formula": "归母净利润 / 营业总收入",
+          "period": "2025Q4",
+          "value": 0.47845435072550624,
+          "unit": "比率/倍数",
+          "evidence_id": "EM-0A046FF6F1",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 8,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "600519",
+          "indicator": "revenue",
+          "period": "2026Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "600519.SH",
+          "indicator": "revenue",
+          "label": "营业总收入",
+          "formula": "报表原始科目（累计值）",
+          "period": "2026Q2",
+          "value": 92278072083.21,
+          "unit": "元",
+          "evidence_id": "EM-72282190CD",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 8,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "600519",
+          "indicator": "revenue",
+          "period": "2025Q4"
+        },
+        "ok": true,
+        "summary": {
+          "code": "600519.SH",
+          "indicator": "revenue",
+          "label": "营业总收入",
+          "formula": "报表原始科目（累计值）",
+          "period": "2025Q4",
+          "value": 172054171890.91,
+          "unit": "元",
+          "evidence_id": "EM-647ACE38CB",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 8,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "600519",
+          "indicator": "parent_net_profit",
+          "period": "2025Q4"
+        },
+        "ok": true,
+        "summary": {
+          "code": "600519.SH",
+          "indicator": "parent_net_profit",
+          "label": "归属于母公司股东的净利润",
+          "formula": "报表原始科目（累计值）",
+          "period": "2025Q4",
+          "value": 82320067101.68,
+          "unit": "元",
+          "evidence_id": "EM-E9DE9639F0",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 8,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "600519",
+          "indicator": "netcash_operate",
+          "period": "2025Q4"
+        },
+        "ok": true,
+        "summary": {
+          "code": "600519.SH",
+          "indicator": "netcash_operate",
+          "label": "经营活动产生的现金流量净额",
+          "formula": "报表原始科目（累计值）",
+          "period": "2025Q4",
+          "value": 61522204989.35,
+          "unit": "元",
+          "evidence_id": "EM-A2F2009A83",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 8,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "600519",
+          "indicator": "revenue",
+          "period": "2026Q1"
+        },
+        "ok": true,
+        "summary": {
+          "code": "600519.SH",
+          "indicator": "revenue",
+          "label": "营业总收入",
+          "formula": "报表原始科目（累计值）",
+          "period": "2026Q1",
+          "value": 54702912385.23,
+          "unit": "元",
+          "evidence_id": "EM-CCBD43181D",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 8,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "600519",
+          "indicator": "parent_net_profit",
+          "period": "2026Q1"
+        },
+        "ok": true,
+        "summary": {
+          "code": "600519.SH",
+          "indicator": "parent_net_profit",
+          "label": "归属于母公司股东的净利润",
+          "formula": "报表原始科目（累计值）",
+          "period": "2026Q1",
+          "value": 27242512886.45,
+          "unit": "元",
+          "evidence_id": "EM-74EF4EAAEF",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 8,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "600519",
+          "indicator": "netcash_operate",
+          "period": "2026Q1"
+        },
+        "ok": true,
+        "summary": {
+          "code": "600519.SH",
+          "indicator": "netcash_operate",
+          "label": "经营活动产生的现金流量净额",
+          "formula": "报表原始科目（累计值）",
+          "period": "2026Q1",
+          "value": 26909891269.13,
+          "unit": "元",
+          "evidence_id": "EM-BA36EA74E4",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 8,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "600519",
+          "indicator": "dep_to_revenue",
+          "period": "2025Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "600519.SH",
+          "indicator": "dep_to_revenue",
+          "label": "折旧摊销占收入比重",
+          "formula": "(折旧+摊销) / 营业总收入",
+          "period": "2025Q2",
+          "value": 0.012261934172805997,
+          "unit": "比率/倍数",
+          "evidence_id": "EM-BEB2A6E436",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 9,
+        "type": "tool",
+        "tool": "search_disclosure",
+        "args": {
+          "code": "600519",
+          "kind": "semi",
+          "query": "营业收入变动原因",
+          "topk": 5
+        },
+        "ok": true,
+        "summary": {
+          "query": "营业收入变动原因",
+          "results": "5 项"
+        }
+      },
+      {
+        "step": 9,
+        "type": "tool",
+        "tool": "search_disclosure",
+        "args": {
+          "code": "600519",
+          "kind": "semi",
+          "query": "茅台酒 系列酒 营业收入 分产品",
+          "topk": 5
+        },
+        "ok": true,
+        "summary": {
+          "query": "茅台酒 系列酒 营业收入 分产品",
+          "results": "5 项"
+        }
+      },
+      {
+        "step": 9,
+        "type": "tool",
+        "tool": "search_disclosure",
+        "args": {
+          "code": "600519",
+          "query": "非经常性损益",
+          "topk": 5
+        },
+        "ok": true,
+        "summary": {
+          "query": "非经常性损益",
+          "results": "5 项"
+        }
+      },
+      {
         "step": 10,
+        "type": "tool",
+        "tool": "compute_growth",
+        "args": {
+          "code": "600519",
+          "indicator": "revenue",
+          "period": "2026Q1"
+        },
+        "ok": true,
+        "summary": {
+          "code": "600519.SH",
+          "indicator": "revenue",
+          "label": "营业总收入",
+          "period": "2026Q1",
+          "cumulative": 54702912385.23,
+          "single_quarter": 54702912385.23,
+          "yoy_cum_pct": 6.336,
+          "yoy_single_pct": 6.336,
+          "qoq_single_pct": null,
+          "note": "",
+          "method": "单季度值 = 本期累计 - 上期累计；环比基于单季度值计算"
+        }
+      },
+      {
+        "step": 10,
+        "type": "tool",
+        "tool": "compute_growth",
+        "args": {
+          "code": "600519",
+          "indicator": "parent_net_profit",
+          "period": "2026Q1"
+        },
+        "ok": true,
+        "summary": {
+          "code": "600519.SH",
+          "indicator": "parent_net_profit",
+          "label": "归属于母公司股东的净利润",
+          "period": "2026Q1",
+          "cumulative": 27242512886.45,
+          "single_quarter": 27242512886.45,
+          "yoy_cum_pct": 1.4714,
+          "yoy_single_pct": 1.4714,
+          "qoq_single_pct": null,
+          "note": "",
+          "method": "单季度值 = 本期累计 - 上期累计；环比基于单季度值计算"
+        }
+      },
+      {
+        "step": 10,
+        "type": "tool",
+        "tool": "compute_growth",
+        "args": {
+          "code": "600519",
+          "indicator": "revenue",
+          "period": "2025Q4"
+        },
+        "ok": true,
+        "summary": {
+          "code": "600519.SH",
+          "indicator": "revenue",
+          "label": "营业总收入",
+          "period": "2025Q4",
+          "cumulative": 172054171890.91,
+          "single_quarter": 41150282256.03,
+          "yoy_cum_pct": -1.2001,
+          "yoy_single_pct": -19.3472,
+          "qoq_single_pct": 3.3664,
+          "note": "",
+          "method": "单季度值 = 本期累计 - 上期累计；环比基于单季度值计算"
+        }
+      },
+      {
+        "step": 10,
+        "type": "tool",
+        "tool": "compute_growth",
+        "args": {
+          "code": "600519",
+          "indicator": "parent_net_profit",
+          "period": "2025Q4"
+        },
+        "ok": true,
+        "summary": {
+          "code": "600519.SH",
+          "indicator": "parent_net_profit",
+          "label": "归属于母公司股东的净利润",
+          "period": "2025Q4",
+          "cumulative": 82320067101.68,
+          "single_quarter": 17693320389.5,
+          "yoy_cum_pct": -4.5323,
+          "yoy_single_pct": -30.3429,
+          "qoq_single_pct": -7.9613,
+          "note": "",
+          "method": "单季度值 = 本期累计 - 上期累计；环比基于单季度值计算"
+        }
+      },
+      {
+        "step": 10,
+        "type": "tool",
+        "tool": "read_page",
+        "args": {
+          "doc_id": "600519_2026-08-15_semi",
+          "page": 6
+        },
+        "ok": true,
+        "summary": {
+          "doc_id": "600519_2026-08-15_semi",
+          "page": 6,
+          "title": "贵州茅台2026年半年度报告",
+          "date": "2026-08-15",
+          "text": "贵州茅台酒股份有限公司2026 年半年度报告\n6 / 110\n非经常性损益项目 金额 附注（如适用）\n确定的标准享有、对公司损益产生持续影响\n的政府补助除外\n除同公司正常经营业务相关的有效套期保值\n业务外，非金融企业持有金融资产和金融负\n债"
+        }
+      },
+      {
+        "step": 10,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "600519",
+          "indicator": "deduct_parent_net_profit",
+          "period": "2025Q4"
+        },
+        "ok": true,
+        "summary": {
+          "code": "600519.SH",
+          "indicator": "deduct_parent_net_profit",
+          "label": "扣除非经常性损益后归母净利润",
+          "formula": "报表原始科目（累计值）",
+          "period": "2025Q4",
+          "value": 82293107655.25,
+          "unit": "元",
+          "evidence_id": "EM-C0E7FD2A0D",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 10,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "600519",
+          "indicator": "total_assets",
+          "period": "2026Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "600519.SH",
+          "indicator": "total_assets",
+          "label": "资产总计",
+          "formula": "报表原始科目（累计值）",
+          "period": "2026Q2",
+          "value": 309050784569.31,
+          "unit": "元",
+          "evidence_id": "EM-AFDD656CC6",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 10,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "600519",
+          "indicator": "monetaryfunds",
+          "period": "2026Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "600519.SH",
+          "indicator": "monetaryfunds",
+          "label": "货币资金",
+          "formula": "报表原始科目（累计值）",
+          "period": "2026Q2",
+          "value": 53518798979.08,
+          "unit": "元",
+          "evidence_id": "EM-42A58B37B9",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 11,
+        "type": "tool",
+        "tool": "compare_companies",
+        "args": {
+          "codes": [
+            "600519",
+            "002714",
+            "000725"
+          ]
+        },
+        "ok": true,
+        "summary": {
+          "comparison": "3 项"
+        }
+      },
+      {
+        "step": 11,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "600519",
+          "indicator": "cash_conversion_adjusted",
+          "period": "2024Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "600519.SH",
+          "indicator": "cash_conversion_adjusted",
+          "label": "现金含量(调整后/EBITDA口径)",
+          "formula": "经营活动现金流量净额 / (净利润 + 折旧摊销 + 减值计提)",
+          "period": "2024Q2",
+          "value": 0.828961084445213,
+          "unit": "比率/倍数",
+          "evidence_id": "EM-14B9565DFA",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 11,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "600519",
+          "indicator": "cash_conversion_naive",
+          "period": "2024Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "600519.SH",
+          "indicator": "cash_conversion_naive",
+          "label": "现金含量(朴素)",
+          "formula": "经营活动现金流量净额 / 净利润(含少数股东)",
+          "period": "2024Q2",
+          "value": 0.8481808940746854,
+          "unit": "比率/倍数",
+          "evidence_id": "EM-AD5F1CA581",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 11,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "600519",
+          "indicator": "nonrecurring_ratio",
+          "period": "2025Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "600519.SH",
+          "indicator": "nonrecurring_ratio",
+          "label": "非经常性损益占归母净利比重",
+          "formula": "(归母净利润 - 扣非归母净利润) / 归母净利润",
+          "period": "2025Q2",
+          "value": 0.00028004063251465107,
+          "unit": "比率/倍数",
+          "evidence_id": "EM-2B2A0516A6",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 11,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "600519",
+          "indicator": "gross_margin",
+          "period": "2025Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "600519.SH",
+          "indicator": "gross_margin",
+          "label": "毛利率",
+          "formula": "(营业总收入 - 营业成本) / 营业总收入",
+          "period": "2025Q2",
+          "value": 0.9146210358879172,
+          "unit": "比率/倍数",
+          "evidence_id": "EM-67898700FD",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 11,
         "type": "tool",
         "tool": "get_indicator",
         "args": {
@@ -2006,216 +2463,156 @@
         }
       },
       {
-        "step": 11,
-        "type": "tool",
-        "tool": "get_indicator",
-        "args": {
-          "code": "600519",
-          "indicator": "collect_ratio",
-          "period": "2026Q2"
-        },
-        "ok": true,
-        "summary": {
-          "code": "600519.SH",
-          "indicator": "collect_ratio",
-          "label": "收现比",
-          "formula": "销售商品提供劳务收到的现金 / 营业总收入",
-          "period": "2026Q2",
-          "value": 1.0665773045912803,
-          "unit": "比率/倍数",
-          "evidence_id": "EM-93D04D9DCD",
-          "source": "定期报告（第三方接口核验）"
-        }
-      },
-      {
-        "step": 11,
-        "type": "tool",
-        "tool": "get_indicator",
-        "args": {
-          "code": "600519",
-          "indicator": "collect_ratio",
-          "period": "2025Q2"
-        },
-        "ok": true,
-        "summary": {
-          "code": "600519.SH",
-          "indicator": "collect_ratio",
-          "label": "收现比",
-          "formula": "销售商品提供劳务收到的现金 / 营业总收入",
-          "period": "2025Q2",
-          "value": 1.0438323359834254,
-          "unit": "比率/倍数",
-          "evidence_id": "EM-5862461C81",
-          "source": "定期报告（第三方接口核验）"
-        }
-      },
-      {
-        "step": 11,
-        "type": "tool",
-        "tool": "get_indicator",
-        "args": {
-          "code": "600519",
-          "indicator": "inventory_bs",
-          "period": "2026Q2"
-        },
-        "ok": true,
-        "summary": {
-          "code": "600519.SH",
-          "indicator": "inventory_bs",
-          "label": "存货",
-          "formula": "报表原始科目（累计值）",
-          "period": "2026Q2",
-          "value": 61317208371.3,
-          "unit": "元",
-          "evidence_id": "EM-71E0A94586",
-          "source": "定期报告（第三方接口核验）"
-        }
-      },
-      {
-        "step": 11,
-        "type": "tool",
-        "tool": "get_indicator",
-        "args": {
-          "code": "600519",
-          "indicator": "contract_liability",
-          "period": "2026Q2"
-        },
-        "ok": false,
-        "summary": {
-          "error": "未知指标 contract_liability",
-          "available": "62 项"
-        }
-      },
-      {
         "step": 12,
         "type": "final",
-        "content": "Evidence is sufficient. Compiling the final analysis.\n\n```json\n{\n  \"summary\": \"贵州茅台2026H1营业总收入922.78亿元（累计同比+1.30%），归母净利445.17亿元（累计同比-1.95%），但单季度已现拐点：2026Q2单季收入同比-5.23%、归母净利同比-6.90%。规则引擎唯一命中的异常信号（2025Q2调整后现金含量0.27）经原文核实为口径提示而非利润质量问题——公司合并了茅台集团财务有限公司，其「存放中央银行和同业款项净增加额」在2025H1为+254.11亿元（流出）、2026H1为-218.95亿元（流入），单此一项即解释了经营现金流的全部波动。折旧摊销仅占收入1.31%，不存在重资产结构性误判空间。减值、所得税、非经常性损益三项均无异常，利润质量良好。\",\n  \"findings\": [\n    {\n      \"title\": \"2025Q2「调整后现金含量0.27」系财务子公司银行类科目所致，属口径提示而非利润质量问题\",\n      \"period\": \"2025Q2\",\n      \"level\": \"高\",\n      \"category\": \"口径提示\",\n      \"fact\": \"2025Q2经营活动现金流量净额131.19亿元（EM-E22118B714），净利润469.87亿元（EM-26A28B73CA），朴素现金含量0.2792（EM-9A07F713F5），调整后0.2727（EM-FAF8B268D0），规则引擎R2b判定偏离[0.5,1.8]区间。折旧摊销占收入仅1.23%（EM-BEB2A6E436）。2025年半年报第32页合并现金流量表显示：经营活动现金流出小计848.83亿元中，「存放中央银行和同业款项净增加额」为+254.11亿元（2024H1为+71.97亿元），系流出项。\",\n      \"inference\": \"该科目源于控股子公司贵州茅台集团财务有限公司向央行缴存/存放同业资金，属银行类经营活动，与白酒销售无关。254.11亿元的单边流出即可覆盖净利润与经营现金流之间约338.7亿元的缺口。2026H1同一科目转为-218.95亿元（流入，2026年半年报第34页），经营现金流随之回升至706.91亿元（EM-0A89EEE6D4），调整后现金含量1.4964（EM-15915B3A52）。故该信号是合并报表口径下金融子公司科目波动，非收入未转化现金。\",\n      \"confidence\": \"高\",\n      \"evidence_refs\": [\"EM-E22118B714\", \"EM-26A28B73CA\", \"EM-9A07F713F5\", \"EM-FAF8B268D0\", \"EM-BEB2A6E436\", \"EM-0A89EEE6D4\", \"EM-15915B3A52\", \"600519_2025-08-13_semi 第32页\", \"600519_2026-08-15_semi 第34页\"],\n      \"verify_with\": \"财务有限公司单独财务报表及金融企业准备金计提明细；若需剔除金融子公司影响，应取母公司现金流量表口径（2025H1母公司经营现金流净额81.96亿元、2026H1为152.25亿元，见2026年半年报第35页）\"\n    },\n    {\n      \"title\": \"累计同比与单季度同比背离，2026Q2单季收入与利润双双转负，业绩拐点已现\",\n      \"period\": \"2026Q2\",\n      \"level\": \"高\",\n      \"category\": \"异常信号\",\n      \"fact\": \"2026Q2营业总收入累计922.78亿元，累计同比+1.30%；但还原后单季度收入375.75亿元，单季同比-5.23%，单季环比-31.31%。归母净利累计445.17亿元，累计同比-1.95%；单季度172.74亿元，单季同比-6.90%，单季环比-36.59%。同期毛利率由2025Q2的91.46%（EM-67898700FD）降至89.73%（EM-E851AEC057），归母净利率由49.84%（EM-A49C7C7247）降至48.24%（EM-8D7B040BAB）。营业成本由77.77亿元（EM-0A7C0DCA9D）升至94.74亿元（EM-86A8423D0F）。\",\n      \"inference\": \"累计口径仍为正增长掩盖了单季度已转负的事实，属技能库所述「累计同比为正而单季度同比为负」的拐点信号。成本增速快于收入是毛利率下滑的直接来源。2026年半年报第7页披露公司正推进「全"
+        "content": "I now have sufficient evidence. The cross-company comparison confirms Moutai's dep/revenue is only 1.3% (vs 13.7% for 牧原, 17.5% for 京东方) — so Moutai is NOT a heavy-asset structural case; its cash conversion swings are driven by the finance-company deposit line, which is a **口径提示**.\n\nLet me compile the final analysis.\n\nKey facts established:\n- **2026Q2**: revenue 922.78亿 (+1.30% cum, -5.23% single-Q), 归母净利 445.17亿 (-1.95% cum, -6.90% single-Q), 经营现金流 706.91亿 (+438.84% cum), naive 1.54, adjusted 1.50, dep/revenue 1.31%, nonrecurring 0.12%, gross margin 89.73%, net margin 48.24%, effective tax 25.07%\n- **2026Q1**: revenue 547.03亿 (+6.34%), 归母净利 272.43亿 (+1.47%), 经营现金流 269.10亿\n- **2025Q4**: revenue 1720.54亿 (-1.20% cum), 归母净利 823.20亿 (-4.53% cum), 经营现金流 615.22亿, adjusted 0.70\n- **2025Q2**: adjusted cash conversion 0.27 (flagged), driven by 存放中央银行和同业款项净增加额 +25.41bn\n- **2026H1**: same line -21.90bn (inflow), explaining the OCF surge\n\n```json\n{\n  \"summary\": \"贵州茅台2026H1营业总收入922.78亿元(+1.30%)、归母净利445.17亿元(-1.95%)，收入微增而利润转负，单季度看Q2收入-5.23%、归母净利-6.90%，业绩拐点已现。利润质量优异：毛利率89.73%、归母净利率48.24%、非经常性损益占比仅0.12%、有效税率25.07%稳定，无减值异常。规则引擎命中的2025Q2「调整后现金含量0.27」经原文核实，系控股子公司茅台集团财务公司『存放中央银行和同业款项净增加额』+25.41亿元所致，属合并口径提示而非利润质量问题；2026H1该科目转为-21.90亿元，经营现金流因此升至706.91亿元。\",\n  \"findings\": [\n    {\n      \"title\": \"定向追问：贵州茅台最近几期关键财务指标\",\n      \"period\": \"2024Q2-2026Q2\",\n      \"level\": \"高\",\n      \"category\": \"口径提示\",\n      \"fact\": \"2026Q2(累计)：营业总收入922.78亿元(EM-72282190CD)、归母净利445.17亿元(EM-650EDF6CEE)、扣非归母净利444.64亿元(EM-EA8820BA12)、经营现金流净额706.91亿元(EM-0A89EEE6D4)、毛利率89.73%(EM-E851AEC057)、归母净利率48.24%(EM-8D7B040BAB)、有效税率25.07%(EM-8C58120E62)、非经常性损益占比0.12%(EM-A40C71D251)、折旧摊销占收入1.31%(EM-269E8801AE)、现金含量朴素1.54(EM-5A4B385201)/调整后1.50(EM-15915B3A52)。2026Q1：收入547.03亿元(EM-CCBD43181D)、归母净利272.43亿元(EM-74EF4EAAEF)、经营现金流269.10亿元(EM-BA36EA74E4)。2025Q4：收入1720.54亿元(EM-647ACE38CB)、归母净利823.20亿元(EM-E9DE9639F0)、经营现金流615.22亿元(EM-A2F2009A83)、调整后现金含量0.70(EM-82A6EE6F98)。2025Q2：调整后现金含量0.27(EM-FAF8B268D0)、朴素0.28(EM-9A07F713F5)。\",\n      \"inf"
       }
     ],
     "final": {
-      "summary": "贵州茅台2026H1营业总收入922.78亿元（累计同比+1.30%），归母净利445.17亿元（累计同比-1.95%），但单季度已现拐点：2026Q2单季收入同比-5.23%、归母净利同比-6.90%。规则引擎唯一命中的异常信号（2025Q2调整后现金含量0.27）经原文核实为口径提示而非利润质量问题——公司合并了茅台集团财务有限公司，其「存放中央银行和同业款项净增加额」在2025H1为+254.11亿元（流出）、2026H1为-218.95亿元（流入），单此一项即解释了经营现金流的全部波动。折旧摊销仅占收入1.31%，不存在重资产结构性误判空间。减值、所得税、非经常性损益三项均无异常，利润质量良好。",
+      "summary": "贵州茅台2026H1营业总收入922.78亿元(+1.30%)、归母净利445.17亿元(-1.95%)，收入微增而利润转负，单季度看Q2收入-5.23%、归母净利-6.90%，业绩拐点已现。利润质量优异：毛利率89.73%、归母净利率48.24%、非经常性损益占比仅0.12%、有效税率25.07%稳定，无减值异常。规则引擎命中的2025Q2「调整后现金含量0.27」经原文核实，系控股子公司茅台集团财务公司『存放中央银行和同业款项净增加额』+25.41亿元所致，属合并口径提示而非利润质量问题；2026H1该科目转为-21.90亿元，经营现金流因此升至706.91亿元。",
       "findings": [
         {
-          "title": "2025Q2「调整后现金含量0.27」系财务子公司银行类科目所致，属口径提示而非利润质量问题",
-          "period": "2025Q2",
+          "title": "定向追问：贵州茅台最近几期关键财务指标",
+          "period": "2024Q2-2026Q2",
           "level": "高",
           "category": "口径提示",
-          "fact": "2025Q2经营活动现金流量净额131.19亿元（EM-E22118B714），净利润469.87亿元（EM-26A28B73CA），朴素现金含量0.2792（EM-9A07F713F5），调整后0.2727（EM-FAF8B268D0），规则引擎R2b判定偏离[0.5,1.8]区间。折旧摊销占收入仅1.23%（EM-BEB2A6E436）。2025年半年报第32页合并现金流量表显示：经营活动现金流出小计848.83亿元中，「存放中央银行和同业款项净增加额」为+254.11亿元（2024H1为+71.97亿元），系流出项。",
-          "inference": "该科目源于控股子公司贵州茅台集团财务有限公司向央行缴存/存放同业资金，属银行类经营活动，与白酒销售无关。254.11亿元的单边流出即可覆盖净利润与经营现金流之间约338.7亿元的缺口。2026H1同一科目转为-218.95亿元（流入，2026年半年报第34页），经营现金流随之回升至706.91亿元（EM-0A89EEE6D4），调整后现金含量1.4964（EM-15915B3A52）。故该信号是合并报表口径下金融子公司科目波动，非收入未转化现金。",
+          "fact": "2026Q2(累计)：营业总收入922.78亿元(EM-72282190CD)、归母净利445.17亿元(EM-650EDF6CEE)、扣非归母净利444.64亿元(EM-EA8820BA12)、经营现金流净额706.91亿元(EM-0A89EEE6D4)、毛利率89.73%(EM-E851AEC057)、归母净利率48.24%(EM-8D7B040BAB)、有效税率25.07%(EM-8C58120E62)、非经常性损益占比0.12%(EM-A40C71D251)、折旧摊销占收入1.31%(EM-269E8801AE)、现金含量朴素1.54(EM-5A4B385201)/调整后1.50(EM-15915B3A52)。2026Q1：收入547.03亿元(EM-CCBD43181D)、归母净利272.43亿元(EM-74EF4EAAEF)、经营现金流269.10亿元(EM-BA36EA74E4)。2025Q4：收入1720.54亿元(EM-647ACE38CB)、归母净利823.20亿元(EM-E9DE9639F0)、经营现金流615.22亿元(EM-A2F2009A83)、调整后现金含量0.70(EM-82A6EE6F98)。2025Q2：调整后现金含量0.27(EM-FAF8B268D0)、朴素0.28(EM-9A07F713F5)。",
+          "inference": "最近三期呈现『收入增速逐级回落、利润由正转负』的轨迹：2026Q1收入+6.34%/归母净利+1.47%，2026Q2累计收入+1.30%/归母净利-1.95%，单季度Q2收入-5.23%、归母净利-6.90%。盈利指标本身仍处高位且稳定（毛利率89.7%-91.3%、净利率48%左右、有效税率25%），未见减值或非经常项目扰动。",
           "confidence": "高",
           "evidence_refs": [
-            "EM-E22118B714",
-            "EM-26A28B73CA",
-            "EM-9A07F713F5",
-            "EM-FAF8B268D0",
-            "EM-BEB2A6E436",
-            "EM-0A89EEE6D4",
-            "EM-15915B3A52",
-            "600519_2025-08-13_semi 第32页",
-            "600519_2026-08-15_semi 第34页"
-          ],
-          "verify_with": "财务有限公司单独财务报表及金融企业准备金计提明细；若需剔除金融子公司影响，应取母公司现金流量表口径（2025H1母公司经营现金流净额81.96亿元、2026H1为152.25亿元，见2026年半年报第35页）"
-        },
-        {
-          "title": "累计同比与单季度同比背离，2026Q2单季收入与利润双双转负，业绩拐点已现",
-          "period": "2026Q2",
-          "level": "高",
-          "category": "异常信号",
-          "fact": "2026Q2营业总收入累计922.78亿元，累计同比+1.30%；但还原后单季度收入375.75亿元，单季同比-5.23%，单季环比-31.31%。归母净利累计445.17亿元，累计同比-1.95%；单季度172.74亿元，单季同比-6.90%，单季环比-36.59%。同期毛利率由2025Q2的91.46%（EM-67898700FD）降至89.73%（EM-E851AEC057），归母净利率由49.84%（EM-A49C7C7247）降至48.24%（EM-8D7B040BAB）。营业成本由77.77亿元（EM-0A7C0DCA9D）升至94.74亿元（EM-86A8423D0F）。",
-          "inference": "累计口径仍为正增长掩盖了单季度已转负的事实，属技能库所述「累计同比为正而单季度同比为负」的拐点信号。成本增速快于收入是毛利率下滑的直接来源。2026年半年报第7页披露公司正推进「全面向C」茅台酒营销市场化改革，构建「随行就市、相对平稳、供需适配、量价平衡」动态价格调整机制，并调整产品结构与投放节奏——价格机制与投放节奏变化可能是单季收入承压的原因，但报告未给出量价拆分数据，无法量化归因。",
-          "confidence": "中",
-          "evidence_refs": [
-            "EM-67898700FD",
-            "EM-E851AEC057",
-            "EM-A49C7C7247",
-            "EM-8D7B040BAB",
-            "EM-0A7C0DCA9D",
-            "EM-86A8423D0F",
-            "600519_2026-08-15_semi 第7页"
-          ],
-          "verify_with": "2026年半年报「销售情况」分产品/渠道/地区收入表（第8页已见茅台酒777.24亿元、系列酒129.34亿元、直销519.62亿元、批发代理386.97亿元）需与上年同期同口径对比；另需茅台酒与系列酒的销量、吨价数据以拆分量价驱动"
-        },
-        {
-          "title": "合同负债同比-60.31%，预收货款政策调整，需关注对后续收入确认节奏的影响",
-          "period": "2026Q2",
-          "level": "中",
-          "category": "异常信号",
-          "fact": "2026年半年报第9页披露：合同负债期末31.78亿元，较上年期末80.07亿元下降60.31%，原文说明为「主要是公司进行市场化改革，销售模式改变，预收货款政策相应调整」；其他流动负债由9.95亿元降至3.84亿元（-61.37%），说明为「经销商预付货款减少，待转销项税相应减少」。同期收现比1.0666（EM-93D04D9DCD），与2025Q2的1.0438（EM-5862461C81）相比未恶化。",
-          "inference": "合同负债大幅下降与销售模式改革（自售+经销+代售多维体系）方向一致，属主动政策调整而非渠道打款能力恶化——收现比未下降支持这一判断。但预收款蓄水池变薄意味着未来收入的「缓冲垫」减少，收入确认将更直接暴露于终端动销。",
-          "confidence": "中",
-          "evidence_refs": [
-            "600519_2026-08-15_semi 第9页",
-            "EM-93D04D9DCD",
-            "EM-5862461C81"
-          ],
-          "verify_with": "2026年三季报合同负债余额及环比变化；经销商数量变动明细（2026H1国内经销商净减46家，见第8页）与打款政策的进一步说明"
-        },
-        {
-          "title": "非经常性损益占比0.12%，利润质量良好，无政府补助或投资收益依赖",
-          "period": "2026Q2",
-          "level": "提示",
-          "category": "结构性特征",
-          "fact": "归母净利445.17亿元（EM-650EDF6CEE），扣非归母净利444.64亿元（EM-EA8820BA12），非经常性损益占比0.1183%（EM-A40C71D251），远低于10%阈值。其他收益（政府补助等）仅2355.45万元（EM-483EC52EB6），投资收益仅101.39万元（EM-61DE83EC7E）。2025H1非经常性损益合计1271.47万元（2025年半年报第6页）。",
-          "inference": "报表利润与扣非利润几乎无差异，利润全部来自主营业务，不存在对非经常项目的依赖。政府补助与投资收益绝对额极小，不构成利润来源。",
-          "confidence": "高",
-          "evidence_refs": [
+            "EM-72282190CD",
             "EM-650EDF6CEE",
             "EM-EA8820BA12",
-            "EM-A40C71D251",
-            "EM-483EC52EB6",
-            "EM-61DE83EC7E",
-            "600519_2025-08-13_semi 第6页"
-          ],
-          "verify_with": "无需进一步核实；如需完整构成可读2026年半年报非经常性损益明细表"
-        },
-        {
-          "title": "减值计提与所得税均无异常",
-          "period": "2026Q2",
-          "level": "提示",
-          "category": "结构性特征",
-          "fact": "2026Q2信用减值损失3247.38万元（EM-D30CC1B70A），资产减值损失为空值（EM-BA59D1E20A），impairment_provision为空值（EM-52BC48BDF7）。有效税率2026Q2为25.07%（EM-8C58120E62），2025Q2为25.15%（EM-9BDA57BE53）；所得税费用2026Q2为154.05亿元（EM-E67D50BD0E），2025Q2为157.91亿元（EM-F0A72B1FF0）。存货613.17亿元（EM-71E0A94586），较上年期末614.27亿元微降0.18%。",
-          "inference": "信用减值绝对额占归母净利不足0.1%，无资产减值计提，存货规模稳定，不存在通过减值调节利润的迹象。有效税率两期几乎持平于25%左右，与白酒行业25%法定税率一致，无所得税异常。",
-          "confidence": "高",
-          "evidence_refs": [
-            "EM-D30CC1B70A",
-            "EM-BA59D1E20A",
-            "EM-52BC48BDF7",
+            "EM-0A89EEE6D4",
+            "EM-E851AEC057",
+            "EM-8D7B040BAB",
             "EM-8C58120E62",
-            "EM-9BDA57BE53",
-            "EM-E67D50BD0E",
-            "EM-F0A72B1FF0",
-            "EM-71E0A94586"
-          ],
-          "verify_with": "如需确认递延所得税与纳税调整明细，可读2026年半年报所得税费用附注"
-        },
-        {
-          "title": "折旧摊销占收入仅1.31%，不适用重资产结构性口径，跨公司对照可证",
-          "period": "2026Q2",
-          "level": "提示",
-          "category": "结构性特征",
-          "fact": "贵州茅台2026Q2折旧摊销占收入1.31%（EM-269E8801AE），朴素现金含量1.5356（EM-5A4B385201），调整后1.4964（EM-15915B3A52），两者接近。同口径对照：京东方A（000725）折旧摊销占收入17.45%，朴素现金含量4.521，调整后0.9493；牧原股份（002714）折旧摊销占收入13.74%，调整后-0.9307。",
-          "inference": "京东方呈现典型的「朴素比值高、调整后接近1、折旧占收入>15%」重资产结构性特征；茅台折旧占比极低，其现金含量波动不可能由折旧摊销解释，进一步印证2025Q2异常来自金融子公司科目而非资产结构。",
-          "confidence": "高",
-          "evidence_refs": [
+            "EM-A40C71D251",
             "EM-269E8801AE",
             "EM-5A4B385201",
             "EM-15915B3A52",
-            "compare_companies 600519/002714/000725 2026Q2"
+            "EM-CCBD43181D",
+            "EM-74EF4EAAEF",
+            "EM-BA36EA74E4",
+            "EM-647ACE38CB",
+            "EM-E9DE9639F0",
+            "EM-A2F2009A83",
+            "EM-82A6EE6F98",
+            "EM-FAF8B268D0",
+            "EM-9A07F713F5"
           ],
-          "verify_with": "无需进一步核实"
+          "verify_with": "2026年三季报以确认单季度利润负增长是否延续；分产品/分渠道销量与吨价数据（半年报仅披露收入结构，未披露销量与吨价）"
+        },
+        {
+          "title": "2025Q2调整后现金含量0.27：系财务公司存款科目所致，非利润质量问题",
+          "period": "2025Q2",
+          "level": "中",
+          "category": "口径提示",
+          "fact": "规则引擎R2b命中：2025Q2经营活动现金流量净额/(净利润+折旧摊销+减值计提)=0.27(EM-FAF8B268D0)，朴素口径0.28(EM-9A07F713F5)，当期经营现金流仅131.19亿元(EM-E22118B714)而净利润469.87亿元(EM-26A28B73CA)。原文核实：2025年半年报合并现金流量表第32页显示『存放中央银行和同业款项净增加额』为25,410,788,169.25元（上年同期7,196,590,763.00元），构成经营活动现金流出。2026年半年报第34页同一科目为-21,895,452,284.18元（转为流入），经营现金流随之升至706.91亿元。2026年一季报第2页明确说明经营现金流变动205.48%『主要是公司控股子公司贵州茅台集团财务有限公司不可随时支取的同业存款净增加额减少』。",
+          "inference": "该比值偏离由合并报表范围内的茅台集团财务公司（金融子公司）存款/存放央行款项科目驱动，属合并口径下金融业务与白酒主业混列的结果，不代表白酒主业收入未转化为现金。折旧摊销占收入仅1.23%(EM-BEB2A6E436)，故不适用『重资产结构性特征』解释，应归为口径提示。",
+          "confidence": "高",
+          "evidence_refs": [
+            "EM-FAF8B268D0",
+            "EM-9A07F713F5",
+            "EM-E22118B714",
+            "EM-26A28B73CA",
+            "EM-BEB2A6E436",
+            "600519_2025-08-13_semi 第32页",
+            "600519_2026-08-15_semi 第34页",
+            "600519_2026-04-25_q1 第2页"
+          ],
+          "verify_with": "财务公司分部报告或母公司口径现金流量表（母公司2025H1经营现金流81.96亿元、2026H1为152.25亿元，可作剔除金融子公司后的对照）"
+        },
+        {
+          "title": "2026Q2单季度收入与利润同比转负，累计口径掩盖拐点",
+          "period": "2026Q2",
+          "level": "高",
+          "category": "异常信号",
+          "fact": "2026Q2累计营业总收入同比+1.30%，但单季度同比-5.23%、环比-31.31%；累计归母净利同比-1.95%，单季度同比-6.90%、环比-36.59%(compute_growth)。2025Q4单季度收入同比-19.35%、归母净利同比-30.34%。半年报第6页原文：『上半年，公司营业总收入922.78亿元，同比增长1.3%；归属于上市公司股东的净利润445.17亿元，同比下降1.95%』，并称行业『正经历着深刻的周期性与结构性调整』。",
+          "inference": "累计同比为正而单季度同比为负，表明业绩拐点已现，单季度口径比累计口径更具解释力。原文将背景归因于行业周期性与结构性调整及公司『全面向C』营销市场化改革（产品结构、价格机制、渠道布局调整），但未量化量价拆分。",
+          "confidence": "中",
+          "evidence_refs": [
+            "compute_growth:revenue@2026Q2",
+            "compute_growth:parent_net_profit@2026Q2",
+            "compute_growth:revenue@2025Q4",
+            "compute_growth:parent_net_profit@2025Q4",
+            "600519_2026-08-15_semi 第6页"
+          ],
+          "verify_with": "半年报分产品收入（茅台酒777.24亿元、系列酒129.34亿元，第8页）与上年同期对比、以及销量/吨价数据，以判定是量还是价驱动；三季报确认趋势"
+        },
+        {
+          "title": "利润质量优异：非经常性损益占比极低，无减值异常",
+          "period": "2026Q2",
+          "level": "提示",
+          "category": "结构性特征",
+          "fact": "2026Q2非经常性损益占归母净利0.12%(EM-A40C71D251)，归母净利445.17亿元与扣非444.64亿元差额仅0.53亿元。半年报第109页非经常性损益明细表：合计52,672,775.85元，其中政府补助20,012,654.88元、公允价值变动及处置损益22,537,102.09元、其他营业外收支29,131,392.76元。其他收益(政府补助等)仅2355.45万元(EM-483EC52EB6)、投资收益101.39万元(EM-61DE83EC7E)。资产减值损失为空值(EM-BA59D1E20A)、信用减值损失3247.38万元(EM-D30CC1B70A)。2025Q4非经常性损益占比0.03%(EM-0DDF97240C)。",
+          "inference": "利润几乎全部来自主营业务，对政府补助、资产处置、公允价值变动无依赖，扣非与报表利润口径基本一致，利润可持续性强。信用减值损失绝对额小，无大额减值计提迹象。",
+          "confidence": "高",
+          "evidence_refs": [
+            "EM-A40C71D251",
+            "EM-650EDF6CEE",
+            "EM-EA8820BA12",
+            "EM-483EC52EB6",
+            "EM-61DE83EC7E",
+            "EM-BA59D1E20A",
+            "EM-D30CC1B70A",
+            "EM-0DDF97240C",
+            "600519_2026-08-15_semi 第109页"
+          ],
+          "verify_with": "年报附注中应收账款账龄与坏账准备计提政策，确认信用减值损失来源"
+        },
+        {
+          "title": "有效税率稳定，无所得税异常",
+          "period": "2026Q2",
+          "level": "提示",
+          "category": "结构性特征",
+          "fact": "2026Q2有效税率25.07%(EM-8C58120E62)，2025Q2为25.15%(EM-9BDA57BE53)，两期基本持平，与白酒行业25%法定税率一致。",
+          "inference": "所得税费用与利润总额匹配，无税率异常波动，未见通过所得税调节利润的迹象。",
+          "confidence": "高",
+          "evidence_refs": [
+            "EM-8C58120E62",
+            "EM-9BDA57BE53"
+          ],
+          "verify_with": "年报附注所得税费用与会计利润调整表，确认无重大纳税调整项"
+        },
+        {
+          "title": "勾稽校验：资产负债表恒等式全部通过，间接法残差可控",
+          "period": "2023Q3-2026Q2",
+          "level": "提示",
+          "category": "口径提示",
+          "fact": "check_articulation显示资产负债表恒等式60个期间全部通过，最大相对偏差0.0%。间接法反推经营活动现金流量净额：2026Q2残差231,798,546.21元、残差率0.33%通过；2025Q2残差486,701,935.83元、残差率3.71%通过；2025Q4残差826,740,853.64元、残差率1.34%通过。历史期间2022Q2残差率6039.36%未通过。",
+          "inference": "本次分析所涉报告期（2025Q2-2026Q2）数据自洽，间接法残差率均在4%以内，解析数据可用于分析。2022Q2的异常残差属历史期间，不影响本期结论，但提示早期数据存在解析或口径问题。",
+          "confidence": "高",
+          "evidence_refs": [
+            "check_articulation:600519"
+          ],
+          "verify_with": "2022Q2原始现金流量表附注，确认残差异常原因（本次未展开）"
+        },
+        {
+          "title": "跨公司对照：茅台非重资产结构，现金含量波动不可套用重资产解释",
+          "period": "2026Q2",
+          "level": "提示",
+          "category": "结构性特征",
+          "fact": "compare_companies显示2026Q2折旧摊销占收入比重：贵州茅台1.31%、牧原股份13.74%、京东方A 17.45%。同期现金含量朴素/调整后：茅台1.54/1.50、京东方4.52/0.95、牧原归母净利为负(-60.78亿元)且经营现金流为负(-22.24亿元)。",
+          "inference": "京东方朴素现金含量4.52而调整后0.95，是典型重资产折旧摊销造成的结构性特征；茅台折旧占比仅1.31%，其现金含量波动不适用重资产解释，须归因于财务公司存款科目（见前述口径提示）。",
+          "confidence": "高",
+          "evidence_refs": [
+            "compare_companies:600519,002714,000725"
+          ],
+          "verify_with": "无需补充材料"
         }
       ],
       "unresolved": [
-        "2026Q2单季收入同比-5.23%的量价拆分：报告未披露茅台酒与系列酒的销量、吨价同比数据，无法判断是投放量收缩还是价格下行主导，需三季报或渠道调研数据补充。",
-        "合同负债-60.31%所对应的预收货款政策调整细节未量化：改革后新销售模式（自售+经销+代售）下收入确认时点是否变化，报告未说明，需查阅收入确认会计政策附注。",
-        "财务有限公司「存放中央银行和同业款项」科目的具体构成（法定准备金 vs 超额存放同业）未在半年报中拆分，无法判断该科目未来是否继续大幅波动。",
-        "勾稽校验中2022Q2间接法残差占比6039.36%（未通过），本次分析未追溯该历史期间，需确认是否为早期数据解析问题。"
+        "2026Q2单季度收入-5.23%、归母净利-6.90%的量价拆分：半年报仅披露分产品收入（茅台酒777.24亿元、系列酒129.34亿元）与分渠道收入，未披露销量与吨价，无法判定是量减还是价降驱动。",
+        "2026H1国内经销商净减少46家（增220减266，第8页），原文注明主要为系列酒经销商，但未说明对收入的影响程度。",
+        "2022Q2间接法残差率6039.36%的原因未核实，属历史期间数据问题。",
+        "资产减值损失科目在2026Q2返回空值，无法确认是零计提还是数据缺失。"
       ],
       "limitations": [
-        "本次分析仅使用本地已落盘公告与已校验数据库，未获取财务有限公司单独报表，金融子公司对合并现金流的完整影响无法精确剥离。",
-        "规则引擎在2025年及之后仅命中1条信号，未覆盖2026Q2单季拐点（该信号由compute_growth还原单季度值后识别），说明规则库对累计口径掩盖的拐点识别能力有限。",
-        "所有数值均取自工具返回值，未做任何自行计算；单季度值来自compute_growth的还原口径，与直接相减可能存在四舍五入差异。",
-        "2026Q2为最新报告期，尚无三季报验证单季拐点是否延续，业绩趋势判断存在不确定性。"
+        "本次分析基于本地已落盘的12份公告（2023Q3-2026Q2）与已校验财务数据库，未获取2026年三季报，无法确认单季度利润负增长是否延续。",
+        "合并报表包含控股子公司茅台集团财务有限公司，其存款、存放央行及同业款项科目与白酒主业混列于经营活动现金流，导致经营现金流指标波动性显著高于主业实际现金创造能力；本次未取得财务公司分部报告，无法完全剥离其影响。",
+        "半年报未披露销量与吨价，业绩变动的量价归因证据不足。",
+        "所有数值均来自工具返回值，未做任何自行计算或修正。"
       ]
     }
   },

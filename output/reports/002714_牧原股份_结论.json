@@ -1,5 +1,5 @@
 {
-  "run_id": "20261008T192025-dbf21c2b",
+  "run_id": "20261010T174018-4223db53",
   "company": {
     "code": "002714.SZ",
     "name": "牧原股份",
@@ -162,68 +162,71 @@
     }
   ],
   "attribution": {
-    "summary": "牧原股份（002714.SZ）共识别 7 条值得关注的结论，其中高优先级 2 条。以下归因由规则引擎依据既定口径生成，未经大模型推理，仅作为事实梳理。",
+    "summary": "牧原2026H1由盈转亏，归母净利-60.78亿元（上年同期+105.30亿元），核心驱动是生猪销售价格同比大幅下降导致收入-22.30%、毛利率转负至-1.58%，而非成本失控（养殖完全成本反降至11.7元/kg）。亏损期仍确认所得税费用4.20亿元，原文调整表显示主因是「非应税收入的影响」+18.13亿元——免税养殖主体的盈利与应税主体的亏损并存，使合并层面出现「利润总额为负、所得税为正」。经营现金流-22.24亿元与净利润-60.84亿元同向为负，差额主要来自77.72亿元折旧摊销等非付现成本，属重资产结构性特征，非利润质量问题。资产减值损失3.14亿元系消耗性生物资产及库存商品跌价，与猪价下行一致。",
     "items": [
       {
-        "rule": "R1",
-        "period": "2026Q1",
-        "fact": "2026Q1 资产减值损失 -322,208,836 元，上年同期 -4,861,348 元，按绝对额增幅 6,528.0%。",
-        "inference": "减值计提通常与资产可收回金额下修有关。需核对附注确认减值标的（存货跌价、商誉、长期资产等）及其计提依据，判断是一次性出清还是持续恶化的起点。",
+        "rule": "定向追问：2026H1由盈转亏的原因——价格驱动，非成本驱动",
+        "period": "2026Q2",
+        "fact": "2026H1营业总收入594.10亿元（EM-04A555E3F2），累计同比-22.30%；营业成本603.46亿元（EM-45536A357D），累计同比仅-0.70%；毛利率-1.58%（EM-4FD8E8561A）。归母净利润-60.78亿元（EM-1FE724E33C），上年同期+105.30亿元（EM-75B6B571AF）。单季度看，2026Q2归母净利-48.63亿元，单季同比-180.52%，单季环比-300.28%（EM-1FE724E33C）。原文第11页明确：『由于生猪销售价格同比出现较大幅度下降，上半年公司实现营业收入594.10亿元，较上年同期减少22.30%……公司经营业绩出现亏损，净利润为-60.84亿元』；同页披露『2026年6月生猪养殖完全成本在11.7元/kg左右』，低于2025年6月的『低于12.1元/kg』。",
+        "inference": "亏损是价格（收入端）驱动而非成本（成本端）驱动：收入降22.30%而成本仅降0.70%，量增价跌——销售商品猪3,861.5万头（原文第11页）而收入下滑，说明单价降幅超过销量增幅。成本端反而改善（完全成本11.7元/kg vs 上年同期12.1元/kg），排除『成本失控致亏』假设。置信度高。",
+        "confidence": "高",
+        "verify_with": "需查阅农业农村部/公司月度销售简报中的生猪销售均价与出栏量月度数据，量化『价』与『量』各自对收入-22.30%的贡献；并核对屠宰肉食板块220.61亿元收入（+14.04%）的内部抵销影响。"
+      },
+      {
+        "rule": "定向追问：亏损期确认所得税费用4.20亿元——主因是非应税收入调整项",
+        "period": "2026Q2",
+        "fact": "2026H1利润总额-56.64亿元（EM-5AD0C3B480），所得税费用+4.20亿元（EM-8BC7A04434），上年同期为-0.20亿元（EM-9899958D83）。原文第149页『会计利润与所得税费用调整过程』逐项列示：利润总额-5,664,332,696.94；按法定/适用税率计算的所得税费用-1,416,083,174.23；子公司适用不同税率的影响+3,590,662.72；非应税收入的影响+1,813,239,248.95；不可抵扣的成本、费用和损失的影响+19,365,470.56；所得税费用420,112,208.00。所得税费用表进一步拆分：当期所得税费用437,855,513.93，递延所得税费用-17,743,305.93。原文第114页披露企业所得税税率为『0%、15%、16.5%、17%、20%、25%』，并载明农业生产者销售自产农产品免征增值税等税收优惠。",
+        "inference": "亏损期仍确认所得税费用，机制是：合并层面利润总额为负，但集团内免税/低税率的养殖主体与应税主体（屠宰、肉食、贸易、境外子公司等）分别纳税，不能以合并亏损抵减应税主体的应纳税所得额。调整表中『非应税收入的影响』+18.13亿元是决定性项目——它把按法定税率算出的-14.16亿元『税收收益』大幅回拨，最终形成+4.20亿元费用。即：免税主体的盈利不产生所得税抵减，而应税主体的亏损又无法确认（或未确认）相应的递延所得税资产。置信度中高，机制方向由原文调整表直接支持，但各纳税主体的具体盈亏拆分未在半年报中披露。",
         "confidence": "中",
-        "verify_with": "半年报/年报附注「资产减值损失」明细及存货跌价准备计提说明"
+        "verify_with": "需查阅2026年年度报告附注中的『递延所得税资产』明细（可抵扣亏损确认的递延所得税资产金额及未确认部分）、以及分主体/分板块的所得税与盈亏数据，才能确认应税主体亏损是否未确认递延所得税资产；另需核对2026Q1同口径（利润总额-10.60亿元、所得税+1.62亿元，EM-F57223AA44/EM-FAC9CB2D89）以确认该模式在季度间一致。"
       },
       {
-        "rule": "R1",
+        "rule": "资产减值损失同比激增，系消耗性生物资产与库存商品跌价",
         "period": "2026Q2",
-        "fact": "2026Q2 资产减值损失 -313,531,318 元，上年同期 -2,029,602 元，按绝对额增幅 15,347.9%。",
-        "inference": "减值计提通常与资产可收回金额下修有关。需核对附注确认减值标的（存货跌价、商誉、长期资产等）及其计提依据，判断是一次性出清还是持续恶化的起点。",
+        "fact": "2026H1资产减值损失-3.14亿元（EM-09B2C930D1），上年同期-0.02亿元，绝对额增幅15,347.9%；2026Q1为-3.22亿元（EM-D5D0162274），上年同期-0.05亿元。原文第122-123页存货附注：存货跌价准备期初6,942.60万元，本期计提32,333.14万元，转回或转销39,275.74万元，期末为0；其中消耗性生物资产计提30,016.41万元、库存商品计提2,316.73万元。期末存货账面余额382.98亿元，存货跌价准备为0。",
+        "inference": "减值计提与猪价下行方向一致：消耗性生物资产（育肥猪等）按成本与可变现净值孰低计量，猪价下跌压低可变现净值，触发跌价计提。需注意本期同时发生3.93亿元转回或转销，且期末跌价准备归零——说明计提与转销在报告期内基本对冲，减值对利润的净影响远小于『同比增幅15,347.9%』这一数字给人的印象。置信度中高。",
         "confidence": "中",
-        "verify_with": "半年报/年报附注「资产减值损失」明细及存货跌价准备计提说明"
+        "verify_with": "需查阅年报附注中消耗性生物资产可变现净值的具体测算依据（预计售价、至完工尚需投入成本），以及期末跌价准备归零是否因生物资产已出栏转销，确认减值计提的充分性。"
       },
       {
-        "rule": "R3a",
-        "period": "2026Q1",
-        "fact": "2026Q1 利润总额 -1,060,188,790 元（亏损），同期所得税费用 161,961,222 元。",
-        "inference": "亏损且当期无应纳税所得额时，通常应确认递延所得税资产并形成所得税收益。仍确认费用，可能意味着：未确认递延所得税资产（对未来盈利预期审慎）、或母子公司盈亏结构差异导致集团层面无法弥补。该信号对判断管理层盈利预期具有参考价值。",
-        "confidence": "低",
-        "verify_with": "附注「所得税费用」中递延所得税与未确认递延所得税资产部分"
-      },
-      {
-        "rule": "R2b",
+        "rule": "经营现金流与净利润同向为负，差额来自折旧摊销——重资产结构性特征",
         "period": "2026Q2",
-        "fact": "2026Q2 经营活动现金流量净额 / (净利润 + 折旧摊销 + 减值计提) = -0.93，偏离正常区间 [0.5, 1.8]。",
-        "inference": "即使在 EBITDA 近似口径下仍不匹配，可能来自营运资本剧烈变动、收入确认与收现时点错配，或存在跨期确认问题，需要结合应收/应付与存货变动进一步定位。",
-        "confidence": "低",
-        "verify_with": "现金流量表补充资料中存货、经营性应收应付项目的变动额"
+        "fact": "2026H1经营活动现金流量净额-22.24亿元（EM-2C36B39846），上年同期+173.51亿元（EM-1E39CE123F）；净利润-60.84亿元（EM-49DC17B288）。调整后现金含量-0.93（EM-F5F911F7EF），朴素口径因净利润为负无法计算（EM-4EEAA3E6C5）。折旧摊销占收入比重13.74%（EM-BCF1684C22）。固定资产折旧、油气资产折耗、生产性生物资产折旧77.72亿元（EM-FD4BEAAACA），使用权资产摊销3.64亿元（EM-D6EB6258A5），无形资产摊销0.18亿元（EM-B2FDDE8882），长期待摊费用摊销0.06亿元（EM-6C372F695C）。原文第67页现金流量表：经营活动现金流入643.29亿元，流出665.52亿元；其中购买商品、接受劳务支付现金553.92亿元，支付给职工81.66亿元，支付各项税费6.02亿元（上年同期1.55亿元）。",
+        "inference": "经营现金流为负与净利润为负方向一致，不存在『利润为负而现金流为正』的背离。净利润-60.84亿元与经营现金流-22.24亿元之间约38.6亿元的差额，主要由77.72亿元折旧摊销等非付现成本贡献（部分被营运资本占用抵消）。折旧摊销占收入13.74%，接近但未达15%的重资产阈值，属生猪养殖重资产经营的结构性特征，不应解读为利润质量问题。需注意支付各项税费由1.55亿元升至6.02亿元，与所得税费用上升方向一致。置信度中高。",
+        "confidence": "中",
+        "verify_with": "需查阅现金流量表补充资料（间接法）中存货、经营性应收应付项目的具体变动金额，量化营运资本对经营现金流的占用；并核对2026Q2间接法残差24.58%（勾稽未通过）的具体成因。"
       },
       {
-        "rule": "R3a",
+        "rule": "非经常性损益为负，亏损并非由非经常项目造成",
         "period": "2026Q2",
-        "fact": "2026Q2 利润总额 -5,664,332,697 元（亏损），同期所得税费用 420,112,208 元。",
-        "inference": "亏损且当期无应纳税所得额时，通常应确认递延所得税资产并形成所得税收益。仍确认费用，可能意味着：未确认递延所得税资产（对未来盈利预期审慎）、或母子公司盈亏结构差异导致集团层面无法弥补。该信号对判断管理层盈利预期具有参考价值。",
-        "confidence": "低",
-        "verify_with": "附注「所得税费用」中递延所得税与未确认递延所得税资产部分"
+        "fact": "2026H1归母净利润-60.78亿元（EM-1FE724E33C），扣非归母净利润-58.95亿元（EM-C2B6819985），非经常性损益合计-1.82亿元。原文第195页非经常性损益明细表：非流动性资产处置损益-1.39亿元；计入当期损益的政府补助+0.55亿元；金融资产公允价值变动及处置损益+0.40亿元；除上述之外的其他营业外收支-1.37亿元；其他符合非经常性损益定义的损益项目+0.03亿元；减所得税影响额0.02亿元；少数股东权益影响额（税后）0.02亿元。其他收益（政府补助等）2.10亿元（EM-67093EC8BF），投资收益0.40亿元（EM-38902EE489）。",
+        "inference": "归母净利润为负，非经常性损益占比指标不适用（工具返回null，EM-272A2D97BF），不得机械套用阈值。从绝对额看，非经常性损益为-1.82亿元，扣非亏损（-58.95亿元）略小于报表亏损（-60.78亿元），说明亏损完全来自经常性经营，不存在『靠非经常项目粉饰』或『非经常项目致亏』的情形。政府补助0.55亿元相对60亿元级亏损规模微不足道。置信度中高。",
+        "confidence": "中",
+        "verify_with": "需确认政府补助0.55亿元中与日常经营相关、具备持续性的部分占比，判断其是否应视为经常性；并核对『其他营业外收支-1.37亿元』的具体构成（原文第149页显示营业外支出中『其他』2.03亿元，较上年0.18亿元大幅增加）。"
       },
       {
-        "rule": "R5",
+        "rule": "2026Q2间接法勾稽残差24.58%，数据自洽性存疑",
         "period": "2026Q2",
-        "fact": "2026Q2 单季度归母净利润 -4,862,811,975 元，环比 -300.28%。",
-        "inference": "环比大幅波动需结合季节性因素判断。周期性行业（如生猪养殖）的季节性规律会主导环比变化，此时同比比环比更具解释力。",
-        "confidence": "低",
-        "verify_with": "季度经营数据公告、行业价格走势"
-      },
-      {
-        "rule": "R5",
-        "period": "2025Q4",
-        "fact": "2025Q4 单季度归母净利润 707,986,297 元，环比 -83.34%。",
-        "inference": "环比大幅波动需结合季节性因素判断。周期性行业（如生猪养殖）的季节性规律会主导环比变化，此时同比比环比更具解释力。",
-        "confidence": "低",
-        "verify_with": "季度经营数据公告、行业价格走势"
+        "fact": "勾稽校验显示资产负债表恒等式57个期间全部通过（最大相对偏差0.0%）；但间接法反推经营活动现金流量净额在2026Q2残差546,496,550元，残差率24.58%，判定为未通过。历史期间亦存在未通过情形（2015Q2 -18.67%、2018Q2 11.34%、2022Q2 301.2%、2023Q2 38.07%），且多集中在中报期间。",
+        "inference": "残差集中于中报且历史上反复出现，更可能源于半年报附注披露颗粒度不足（间接法调节表项目未完整披露）或解析口径差异，而非报表本身错误——资产负债表恒等式全部通过支持这一判断。但24.58%的残差不可忽略，在引用经营现金流数据时需保留该不确定性。置信度中。",
+        "confidence": "中",
+        "verify_with": "需查阅2026年半年度报告现金流量表补充资料（间接法调节表）原文，逐项核对将净利润调节为经营活动现金流量的各项目，定位残差来源。"
       }
     ],
     "cross_company": "",
     "limitations": [
-      "离线模式未启用大模型推理，归因深度受限。"
+      "本次分析全部数值来自工具返回值，未做任何自行计算；部分指标（如非经常性损益占比、朴素现金含量）因分母为负而返回null，已按技能要求改用绝对额方向判读。",
+      "所得税费用异常的解释基于半年报第149页调整表的方向性证据，属推论而非原文直接结论——原文未就『亏损期确认所得税费用』给出文字说明，需年报附注进一步证实。",
+      "折旧摊销占收入13.74%接近但未达15%的重资产阈值，故现金流特征归类为『结构性特征』时置信度定为中，而非高。",
+      "跨公司对照（京东方A 000725）显示其调整后现金含量0.95、折旧占收入17.45%，与牧原口径可比；但两者行业属性不同，该对照仅用于验证指标公式一致性，不构成经营质量优劣判断。",
+      "本次未获取2026年三季度及以后数据，无法判断亏损是否为单期现象或趋势延续。"
+    ],
+    "unresolved": [
+      "各纳税主体（免税养殖主体 vs 应税屠宰/贸易/境外主体）的分主体盈亏与所得税数据未在半年报披露，无法精确量化『非应税收入的影响』18.13亿元的内部构成。",
+      "2026Q2间接法勾稽残差24.58%（约5.46亿元）的具体成因未定位，需核对现金流量表补充资料原文。",
+      "消耗性生物资产可变现净值的具体测算参数（预计售价、尚需投入成本）未在半年报披露，减值计提充分性无法独立验证。",
+      "生猪销售均价与出栏量的月度明细未在半年报中给出，『价』与『量』对收入-22.30%的贡献拆分需依赖月度销售简报。",
+      "2026Q1与2026Q2所得税费用分别为1.62亿元与4.20亿元（累计），单季度所得税费用上升的原因未在原文中单独说明。"
     ]
   },
   "articulation": [
@@ -1109,12 +1112,12 @@
     }
   ],
   "agent": {
-    "mode": "offline",
-    "stop_reason": "deterministic_plan",
-    "llm_calls": 0,
+    "mode": "llm",
+    "stop_reason": "model_finished",
+    "llm_calls": 12,
     "llm_usage": {
-      "prompt_tokens": 0,
-      "completion_tokens": 0
+      "prompt_tokens": 297291,
+      "completion_tokens": 8543
     },
     "prompt_hashes": {
       "attribution": "22f71f7586fa",
@@ -1125,7 +1128,9 @@
         "step": 1,
         "type": "tool",
         "tool": "list_corpus",
-        "args": {},
+        "args": {
+          "code": "002714"
+        },
         "ok": true,
         "summary": {
           "documents": 12,
@@ -1133,11 +1138,11 @@
         }
       },
       {
-        "step": 2,
+        "step": 1,
         "type": "tool",
         "tool": "list_periods",
         "args": {
-          "code": "002714.SZ"
+          "code": "002714"
         },
         "ok": true,
         "summary": {
@@ -1147,35 +1152,61 @@
         }
       },
       {
-        "step": 3,
+        "step": 1,
         "type": "tool",
-        "tool": "compare_companies",
+        "tool": "list_skills",
         "args": {},
         "ok": true,
         "summary": {
-          "comparison": "2 项"
+          "skills": "4 项"
         }
       },
       {
-        "step": 4,
+        "step": 2,
         "type": "tool",
-        "tool": "check_articulation",
+        "tool": "load_skill",
         "args": {
-          "code": "002714.SZ"
+          "name": "earnings_attribution"
         },
         "ok": true,
         "summary": {
-          "code": "002714.SZ",
-          "balance_identity": "…",
-          "indirect_method": "31 项"
+          "name": "earnings_attribution",
+          "content": "# 业绩变动归因\n\n## 适用场景\n\n收入或利润出现显著同比、环比变动时启用。\n\n## 执行步骤\n\n1. 用 `compute_growth` 分别取收入与归母净利润的累计同比、单季度同比、单季度环比。\n2. 判断变动是**量**还是**价"
         }
       },
       {
-        "step": 5,
+        "step": 2,
+        "type": "tool",
+        "tool": "load_skill",
+        "args": {
+          "name": "cash_flow_quality"
+        },
+        "ok": true,
+        "summary": {
+          "name": "cash_flow_quality",
+          "content": "# 现金流质量分析\n\n## 适用场景\n\n净利润与经营活动现金流量净额出现明显差距时启用。\n\n## 执行步骤\n\n1. 用 `get_indicator` 取当期 `net_profit`、`netcash_operate`、`depr_fa`"
+        }
+      },
+      {
+        "step": 2,
+        "type": "tool",
+        "tool": "load_skill",
+        "args": {
+          "name": "nonrecurring_items"
+        },
+        "ok": true,
+        "summary": {
+          "name": "nonrecurring_items",
+          "content": "# 非经常性损益与利润质量识别\n\n## 适用场景\n\n评估报表利润的可持续性，判断业绩对非经常项目的依赖程度。\n\n## 执行步骤\n\n1. 用 `get_indicator` 取 `parent_net_profit` 与 `deduct_pa"
+        }
+      },
+      {
+        "step": 2,
         "type": "tool",
         "tool": "run_anomaly_rules",
         "args": {
-          "code": "002714.SZ"
+          "code": "002714",
+          "since_year": 2025
         },
         "ok": true,
         "summary": {
@@ -1185,17 +1216,610 @@
         }
       },
       {
-        "step": 6,
+        "step": 2,
         "type": "tool",
-        "tool": "run_anomaly_rules",
+        "tool": "check_articulation",
         "args": {
-          "code": "000725.SZ"
+          "code": "002714"
         },
         "ok": true,
         "summary": {
-          "code": "000725.SZ",
-          "count": 14,
-          "findings": "14 项"
+          "code": "002714.SZ",
+          "balance_identity": "…",
+          "indirect_method": "31 项"
+        }
+      },
+      {
+        "step": 3,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "002714",
+          "indicator": "parent_net_profit",
+          "period": "2026Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "002714.SZ",
+          "indicator": "parent_net_profit",
+          "label": "归属于母公司股东的净利润",
+          "formula": "报表原始科目（累计值）",
+          "period": "2026Q2",
+          "value": -6077653278.94,
+          "unit": "元",
+          "evidence_id": "EM-1FE724E33C",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 3,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "002714",
+          "indicator": "net_profit",
+          "period": "2026Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "002714.SZ",
+          "indicator": "net_profit",
+          "label": "净利润(含少数股东)",
+          "formula": "报表原始科目（累计值）",
+          "period": "2026Q2",
+          "value": -6084444904.94,
+          "unit": "元",
+          "evidence_id": "EM-49DC17B288",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 3,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "002714",
+          "indicator": "netcash_operate",
+          "period": "2026Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "002714.SZ",
+          "indicator": "netcash_operate",
+          "label": "经营活动产生的现金流量净额",
+          "formula": "报表原始科目（累计值）",
+          "period": "2026Q2",
+          "value": -2223668382.68,
+          "unit": "元",
+          "evidence_id": "EM-2C36B39846",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 3,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "002714",
+          "indicator": "income_tax",
+          "period": "2026Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "002714.SZ",
+          "indicator": "income_tax",
+          "label": "所得税费用",
+          "formula": "报表原始科目（累计值）",
+          "period": "2026Q2",
+          "value": 420112208.0,
+          "unit": "元",
+          "evidence_id": "EM-8BC7A04434",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 3,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "002714",
+          "indicator": "total_profit",
+          "period": "2026Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "002714.SZ",
+          "indicator": "total_profit",
+          "label": "利润总额",
+          "formula": "报表原始科目（累计值）",
+          "period": "2026Q2",
+          "value": -5664332696.94,
+          "unit": "元",
+          "evidence_id": "EM-5AD0C3B480",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 3,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "002714",
+          "indicator": "asset_impairment",
+          "period": "2026Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "002714.SZ",
+          "indicator": "asset_impairment",
+          "label": "资产减值损失",
+          "formula": "报表原始科目（累计值）",
+          "period": "2026Q2",
+          "value": -313531318.38,
+          "unit": "元",
+          "evidence_id": "EM-09B2C930D1",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 3,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "002714",
+          "indicator": "cash_conversion_naive",
+          "period": "2026Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "002714.SZ",
+          "indicator": "cash_conversion_naive",
+          "label": "现金含量(朴素)",
+          "formula": "经营活动现金流量净额 / 净利润(含少数股东)",
+          "period": "2026Q2",
+          "value": null,
+          "unit": "比率/倍数",
+          "evidence_id": "EM-4EEAA3E6C5",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 3,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "002714",
+          "indicator": "cash_conversion_adjusted",
+          "period": "2026Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "002714.SZ",
+          "indicator": "cash_conversion_adjusted",
+          "label": "现金含量(调整后/EBITDA口径)",
+          "formula": "经营活动现金流量净额 / (净利润 + 折旧摊销 + 减值计提)",
+          "period": "2026Q2",
+          "value": -0.9307140233456505,
+          "unit": "比率/倍数",
+          "evidence_id": "EM-F5F911F7EF",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 3,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "002714",
+          "indicator": "dep_to_revenue",
+          "period": "2026Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "002714.SZ",
+          "indicator": "dep_to_revenue",
+          "label": "折旧摊销占收入比重",
+          "formula": "(折旧+摊销) / 营业总收入",
+          "period": "2026Q2",
+          "value": 0.13735193437845314,
+          "unit": "比率/倍数",
+          "evidence_id": "EM-BCF1684C22",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 3,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "002714",
+          "indicator": "deduct_parent_net_profit",
+          "period": "2026Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "002714.SZ",
+          "indicator": "deduct_parent_net_profit",
+          "label": "扣除非经常性损益后归母净利润",
+          "formula": "报表原始科目（累计值）",
+          "period": "2026Q2",
+          "value": -5895303071.49,
+          "unit": "元",
+          "evidence_id": "EM-C2B6819985",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 4,
+        "type": "tool",
+        "tool": "compute_growth",
+        "args": {
+          "code": "002714",
+          "indicator": "parent_net_profit",
+          "period": "2026Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "002714.SZ",
+          "indicator": "parent_net_profit",
+          "label": "归属于母公司股东的净利润",
+          "period": "2026Q2",
+          "cumulative": -6077653278.94,
+          "single_quarter": -4862811974.59,
+          "yoy_cum_pct": -157.7172,
+          "yoy_single_pct": -180.5241,
+          "qoq_single_pct": -300.2837,
+          "note": "基数为负，比率仅供参考",
+          "method": "单季度值 = 本期累计 - 上期累计；环比基于单季度值计算"
+        }
+      },
+      {
+        "step": 4,
+        "type": "tool",
+        "tool": "compute_growth",
+        "args": {
+          "code": "002714",
+          "indicator": "revenue",
+          "period": "2026Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "002714.SZ",
+          "indicator": "revenue",
+          "label": "营业总收入",
+          "period": "2026Q2",
+          "cumulative": 59410306384.59,
+          "single_quarter": 29516637693.16,
+          "yoy_cum_pct": -22.3016,
+          "yoy_single_pct": -26.9418,
+          "qoq_single_pct": -1.2612,
+          "note": "",
+          "method": "单季度值 = 本期累计 - 上期累计；环比基于单季度值计算"
+        }
+      },
+      {
+        "step": 4,
+        "type": "tool",
+        "tool": "compute_growth",
+        "args": {
+          "code": "002714",
+          "indicator": "operating_cost",
+          "period": "2026Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "002714.SZ",
+          "indicator": "operating_cost",
+          "label": "营业成本",
+          "period": "2026Q2",
+          "cumulative": 60346397370.48,
+          "single_quarter": 31998805911.81,
+          "yoy_cum_pct": -0.7036,
+          "yoy_single_pct": 0.4595,
+          "qoq_single_pct": 12.8802,
+          "note": "",
+          "method": "单季度值 = 本期累计 - 上期累计；环比基于单季度值计算"
+        }
+      },
+      {
+        "step": 4,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "002714",
+          "indicator": "revenue",
+          "period": "2026Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "002714.SZ",
+          "indicator": "revenue",
+          "label": "营业总收入",
+          "formula": "报表原始科目（累计值）",
+          "period": "2026Q2",
+          "value": 59410306384.59,
+          "unit": "元",
+          "evidence_id": "EM-04A555E3F2",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 4,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "002714",
+          "indicator": "operating_cost",
+          "period": "2026Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "002714.SZ",
+          "indicator": "operating_cost",
+          "label": "营业成本",
+          "formula": "报表原始科目（累计值）",
+          "period": "2026Q2",
+          "value": 60346397370.48,
+          "unit": "元",
+          "evidence_id": "EM-45536A357D",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 4,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "002714",
+          "indicator": "gross_margin",
+          "period": "2026Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "002714.SZ",
+          "indicator": "gross_margin",
+          "label": "毛利率",
+          "formula": "(营业总收入 - 营业成本) / 营业总收入",
+          "period": "2026Q2",
+          "value": -0.015756373647196217,
+          "unit": "比率/倍数",
+          "evidence_id": "EM-4FD8E8561A",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 4,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "002714",
+          "indicator": "parent_net_profit",
+          "period": "2025Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "002714.SZ",
+          "indicator": "parent_net_profit",
+          "label": "归属于母公司股东的净利润",
+          "formula": "报表原始科目（累计值）",
+          "period": "2025Q2",
+          "value": 10530051098.42,
+          "unit": "元",
+          "evidence_id": "EM-75B6B571AF",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 4,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "002714",
+          "indicator": "income_tax",
+          "period": "2025Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "002714.SZ",
+          "indicator": "income_tax",
+          "label": "所得税费用",
+          "formula": "报表原始科目（累计值）",
+          "period": "2025Q2",
+          "value": -20198971.13,
+          "unit": "元",
+          "evidence_id": "EM-9899958D83",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 4,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "002714",
+          "indicator": "total_profit",
+          "period": "2025Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "002714.SZ",
+          "indicator": "total_profit",
+          "label": "利润总额",
+          "formula": "报表原始科目（累计值）",
+          "period": "2025Q2",
+          "value": 10770067649.21,
+          "unit": "元",
+          "evidence_id": "EM-FF2B78F5ED",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 4,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "002714",
+          "indicator": "netcash_operate",
+          "period": "2025Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "002714.SZ",
+          "indicator": "netcash_operate",
+          "label": "经营活动产生的现金流量净额",
+          "formula": "报表原始科目（累计值）",
+          "period": "2025Q2",
+          "value": 17350809939.4,
+          "unit": "元",
+          "evidence_id": "EM-1E39CE123F",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 5,
+        "type": "tool",
+        "tool": "search_disclosure",
+        "args": {
+          "query": "所得税费用",
+          "code": "002714",
+          "kind": "semi",
+          "topk": 8
+        },
+        "ok": true,
+        "summary": {
+          "query": "所得税费用",
+          "results": "8 项"
+        }
+      },
+      {
+        "step": 5,
+        "type": "tool",
+        "tool": "search_disclosure",
+        "args": {
+          "query": "亏损",
+          "code": "002714",
+          "kind": "semi",
+          "topk": 8
+        },
+        "ok": true,
+        "summary": {
+          "query": "亏损",
+          "results": "8 项"
+        }
+      },
+      {
+        "step": 5,
+        "type": "tool",
+        "tool": "search_disclosure",
+        "args": {
+          "query": "生猪销售价格",
+          "code": "002714",
+          "kind": "semi",
+          "topk": 8
+        },
+        "ok": true,
+        "summary": {
+          "query": "生猪销售价格",
+          "results": "8 项"
+        }
+      },
+      {
+        "step": 5,
+        "type": "tool",
+        "tool": "search_disclosure",
+        "args": {
+          "query": "递延所得税",
+          "code": "002714",
+          "kind": "semi",
+          "topk": 8
+        },
+        "ok": true,
+        "summary": {
+          "query": "递延所得税",
+          "results": "8 项"
+        }
+      },
+      {
+        "step": 6,
+        "type": "tool",
+        "tool": "read_page",
+        "args": {
+          "doc_id": "002714_2026-08-21_semi",
+          "page": 149
+        },
+        "ok": true,
+        "summary": {
+          "doc_id": "002714_2026-08-21_semi",
+          "page": 149,
+          "title": "2026年半年度报告",
+          "date": "2026-08-21",
+          "text": "牧原食品集团股份有限公司 2026 年半年度报告全文 \n149 \n其他 74,242,382.65 50,329,068.30 74,242,382.65 \n合计 75,289,275.62 51,205,423.96 75,289,275"
+        }
+      },
+      {
+        "step": 6,
+        "type": "tool",
+        "tool": "read_page",
+        "args": {
+          "doc_id": "002714_2026-08-21_semi",
+          "page": 11
+        },
+        "ok": true,
+        "summary": {
+          "doc_id": "002714_2026-08-21_semi",
+          "page": 11,
+          "title": "2026年半年度报告",
+          "date": "2026-08-21",
+          "text": "牧原食品集团股份有限公司 2026 年半年度报告全文 \n11 \n加 19.3%。随着消费者对肉类产品的标准提高及需求增加，我国生猪屠宰行业将向着规模\n化、自动化和智能化发展。 \n（二）公司经营情况概述 \n2026 年上半年，公司销售商品猪 "
+        }
+      },
+      {
+        "step": 6,
+        "type": "tool",
+        "tool": "search_disclosure",
+        "args": {
+          "query": "经营情况概述 销售生猪 万头",
+          "code": "002714",
+          "kind": "semi",
+          "topk": 5
+        },
+        "ok": true,
+        "summary": {
+          "query": "经营情况概述 销售生猪 万头",
+          "results": "5 项"
+        }
+      },
+      {
+        "step": 6,
+        "type": "tool",
+        "tool": "search_disclosure",
+        "args": {
+          "query": "存货跌价准备",
+          "code": "002714",
+          "kind": "semi",
+          "topk": 6
+        },
+        "ok": true,
+        "summary": {
+          "query": "存货跌价准备",
+          "results": "6 项"
+        }
+      },
+      {
+        "step": 7,
+        "type": "tool",
+        "tool": "read_page",
+        "args": {
+          "doc_id": "002714_2026-08-21_semi",
+          "page": 123
+        },
+        "ok": true,
+        "summary": {
+          "doc_id": "002714_2026-08-21_semi",
+          "page": 123,
+          "title": "2026年半年度报告",
+          "date": "2026-08-21",
+          "text": "牧原食品集团股份有限公司 2026 年半年度报告全文 \n123 \n合计 69,425,981.47 323,331,429.93  392,757,411.40   \n按组合计提存货跌价准备 \n单位：元 \n组合名称 \n期末 期初 \n期末余额"
         }
       },
       {
@@ -1203,25 +1827,312 @@
         "type": "tool",
         "tool": "search_disclosure",
         "args": {
-          "query": "资产减值损失 存货跌价准备"
+          "query": "非经常性损益明细表",
+          "code": "002714",
+          "kind": "semi",
+          "topk": 5
         },
         "ok": true,
         "summary": {
-          "query": "资产减值损失 存货跌价准备",
-          "results": "2 项"
+          "query": "非经常性损益明细表",
+          "results": "5 项"
+        }
+      },
+      {
+        "step": 7,
+        "type": "tool",
+        "tool": "search_disclosure",
+        "args": {
+          "query": "资产减值损失 消耗性生物资产",
+          "code": "002714",
+          "kind": "semi",
+          "topk": 6
+        },
+        "ok": true,
+        "summary": {
+          "query": "资产减值损失 消耗性生物资产",
+          "results": "6 项"
+        }
+      },
+      {
+        "step": 7,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "002714",
+          "indicator": "nonrecurring_ratio",
+          "period": "2026Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "002714.SZ",
+          "indicator": "nonrecurring_ratio",
+          "label": "非经常性损益占归母净利比重",
+          "formula": "(归母净利润 - 扣非归母净利润) / 归母净利润",
+          "period": "2026Q2",
+          "value": null,
+          "unit": "比率/倍数",
+          "evidence_id": "EM-272A2D97BF",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 7,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "002714",
+          "indicator": "other_income",
+          "period": "2026Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "002714.SZ",
+          "indicator": "other_income",
+          "label": "其他收益(政府补助等)",
+          "formula": "报表原始科目（累计值）",
+          "period": "2026Q2",
+          "value": 209910684.04,
+          "unit": "元",
+          "evidence_id": "EM-67093EC8BF",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 7,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "002714",
+          "indicator": "invest_income",
+          "period": "2026Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "002714.SZ",
+          "indicator": "invest_income",
+          "label": "投资收益",
+          "formula": "报表原始科目（累计值）",
+          "period": "2026Q2",
+          "value": 40112719.94,
+          "unit": "元",
+          "evidence_id": "EM-38902EE489",
+          "source": "定期报告（第三方接口核验）"
         }
       },
       {
         "step": 8,
         "type": "tool",
-        "tool": "search_disclosure",
+        "tool": "read_page",
         "args": {
-          "query": "所得税费用 递延所得税资产"
+          "doc_id": "002714_2026-08-21_semi",
+          "page": 122
         },
         "ok": true,
         "summary": {
-          "query": "所得税费用 递延所得税资产",
-          "results": "2 项"
+          "doc_id": "002714_2026-08-21_semi",
+          "page": 122,
+          "title": "2026年半年度报告",
+          "date": "2026-08-21",
+          "text": "牧原食品集团股份有限公司 2026 年半年度报告全文 \n122 \n6、预付款项 \n（1） 预付款项按账龄列示 \n单位：元 \n账龄 \n期末余额 期初余额 \n金额 比例 金额 比例 \n1 年以内 942,677,077.33 96.22% 66"
+        }
+      },
+      {
+        "step": 8,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "002714",
+          "indicator": "depr_fa",
+          "period": "2026Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "002714.SZ",
+          "indicator": "depr_fa",
+          "label": "固定资产折旧、油气资产折耗、生产性生物资产折旧",
+          "formula": "报表原始科目（累计值）",
+          "period": "2026Q2",
+          "value": 7771526052.76,
+          "unit": "元",
+          "evidence_id": "EM-FD4BEAAACA",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 8,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "002714",
+          "indicator": "impairment_provision",
+          "period": "2026Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "002714.SZ",
+          "indicator": "impairment_provision",
+          "label": "资产减值准备(计提额)",
+          "formula": "报表原始科目（累计值）",
+          "period": "2026Q2",
+          "value": 313531318.38,
+          "unit": "元",
+          "evidence_id": "EM-24F044D84F",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 8,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "002714",
+          "indicator": "amort_ia",
+          "period": "2026Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "002714.SZ",
+          "indicator": "amort_ia",
+          "label": "无形资产摊销",
+          "formula": "报表原始科目（累计值）",
+          "period": "2026Q2",
+          "value": 18422984.49,
+          "unit": "元",
+          "evidence_id": "EM-B2FDDE8882",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 8,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "002714",
+          "indicator": "amort_lpe",
+          "period": "2026Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "002714.SZ",
+          "indicator": "amort_lpe",
+          "label": "长期待摊费用摊销",
+          "formula": "报表原始科目（累计值）",
+          "period": "2026Q2",
+          "value": 5792093.98,
+          "unit": "元",
+          "evidence_id": "EM-6C372F695C",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 8,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "002714",
+          "indicator": "amort_rou",
+          "period": "2026Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "002714.SZ",
+          "indicator": "amort_rou",
+          "label": "使用权资产摊销",
+          "formula": "报表原始科目（累计值）",
+          "period": "2026Q2",
+          "value": 364379372.71,
+          "unit": "元",
+          "evidence_id": "EM-D6EB6258A5",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 8,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "002714",
+          "indicator": "finance_expense",
+          "period": "2026Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "002714.SZ",
+          "indicator": "finance_expense",
+          "label": "财务费用",
+          "formula": "报表原始科目（累计值）",
+          "period": "2026Q2",
+          "value": 1119551582.0,
+          "unit": "元",
+          "evidence_id": "EM-2A3C83F16F",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 8,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "002714",
+          "indicator": "sale_expense",
+          "period": "2026Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "002714.SZ",
+          "indicator": "sale_expense",
+          "label": "销售费用",
+          "formula": "报表原始科目（累计值）",
+          "period": "2026Q2",
+          "value": 660361293.28,
+          "unit": "元",
+          "evidence_id": "EM-457509BF20",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 8,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "002714",
+          "indicator": "manage_expense",
+          "period": "2026Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "002714.SZ",
+          "indicator": "manage_expense",
+          "label": "管理费用",
+          "formula": "报表原始科目（累计值）",
+          "period": "2026Q2",
+          "value": 1761203529.95,
+          "unit": "元",
+          "evidence_id": "EM-680A3D7012",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 8,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "002714",
+          "indicator": "research_expense",
+          "period": "2026Q2"
+        },
+        "ok": true,
+        "summary": {
+          "code": "002714.SZ",
+          "indicator": "research_expense",
+          "label": "研发费用",
+          "formula": "报表原始科目（累计值）",
+          "period": "2026Q2",
+          "value": 708527070.24,
+          "unit": "元",
+          "evidence_id": "EM-AF5E40A990",
+          "source": "定期报告（第三方接口核验）"
         }
       },
       {
@@ -1229,27 +2140,373 @@
         "type": "tool",
         "tool": "search_disclosure",
         "args": {
-          "query": "合并财务报表 主要会计政策"
+          "query": "免税 农产品 企业所得税 优惠",
+          "code": "002714",
+          "kind": "semi",
+          "topk": 6
         },
         "ok": true,
         "summary": {
-          "query": "合并财务报表 主要会计政策",
-          "results": "2 项"
+          "query": "免税 农产品 企业所得税 优惠",
+          "results": "6 项"
         }
+      },
+      {
+        "step": 9,
+        "type": "tool",
+        "tool": "search_disclosure",
+        "args": {
+          "query": "经营活动产生的现金流量净额 销售商品提供劳务收到的现金",
+          "code": "002714",
+          "kind": "semi",
+          "topk": 5
+        },
+        "ok": true,
+        "summary": {
+          "query": "经营活动产生的现金流量净额 销售商品提供劳务收到的现金",
+          "results": "5 项"
+        }
+      },
+      {
+        "step": 9,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "002714",
+          "indicator": "income_tax",
+          "period": "2026Q1"
+        },
+        "ok": true,
+        "summary": {
+          "code": "002714.SZ",
+          "indicator": "income_tax",
+          "label": "所得税费用",
+          "formula": "报表原始科目（累计值）",
+          "period": "2026Q1",
+          "value": 161961222.03,
+          "unit": "元",
+          "evidence_id": "EM-FAC9CB2D89",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 9,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "002714",
+          "indicator": "total_profit",
+          "period": "2026Q1"
+        },
+        "ok": true,
+        "summary": {
+          "code": "002714.SZ",
+          "indicator": "total_profit",
+          "label": "利润总额",
+          "formula": "报表原始科目（累计值）",
+          "period": "2026Q1",
+          "value": -1060188790.22,
+          "unit": "元",
+          "evidence_id": "EM-F57223AA44",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 9,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "002714",
+          "indicator": "parent_net_profit",
+          "period": "2026Q1"
+        },
+        "ok": true,
+        "summary": {
+          "code": "002714.SZ",
+          "indicator": "parent_net_profit",
+          "label": "归属于母公司股东的净利润",
+          "formula": "报表原始科目（累计值）",
+          "period": "2026Q1",
+          "value": -1214841304.35,
+          "unit": "元",
+          "evidence_id": "EM-338FDC9A96",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 9,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "002714",
+          "indicator": "netcash_operate",
+          "period": "2026Q1"
+        },
+        "ok": true,
+        "summary": {
+          "code": "002714.SZ",
+          "indicator": "netcash_operate",
+          "label": "经营活动产生的现金流量净额",
+          "formula": "报表原始科目（累计值）",
+          "period": "2026Q1",
+          "value": -919971284.57,
+          "unit": "元",
+          "evidence_id": "EM-3A7904AC23",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 9,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "002714",
+          "indicator": "asset_impairment",
+          "period": "2026Q1"
+        },
+        "ok": true,
+        "summary": {
+          "code": "002714.SZ",
+          "indicator": "asset_impairment",
+          "label": "资产减值损失",
+          "formula": "报表原始科目（累计值）",
+          "period": "2026Q1",
+          "value": -322208835.56,
+          "unit": "元",
+          "evidence_id": "EM-D5D0162274",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 9,
+        "type": "tool",
+        "tool": "get_indicator",
+        "args": {
+          "code": "002714",
+          "indicator": "revenue",
+          "period": "2026Q1"
+        },
+        "ok": true,
+        "summary": {
+          "code": "002714.SZ",
+          "indicator": "revenue",
+          "label": "营业总收入",
+          "formula": "报表原始科目（累计值）",
+          "period": "2026Q1",
+          "value": 29893668691.43,
+          "unit": "元",
+          "evidence_id": "EM-CB778964B2",
+          "source": "定期报告（第三方接口核验）"
+        }
+      },
+      {
+        "step": 10,
+        "type": "tool",
+        "tool": "read_page",
+        "args": {
+          "doc_id": "002714_2026-08-21_semi",
+          "page": 114
+        },
+        "ok": true,
+        "summary": {
+          "doc_id": "002714_2026-08-21_semi",
+          "page": 114,
+          "title": "2026年半年度报告",
+          "date": "2026-08-21",
+          "text": "牧原食品集团股份有限公司 2026 年半年度报告全文 \n114 \n六、税项 \n1、主要税种及税率 \n税种 计税依据 税率 \n增值税 应税收入 13%、9%、6%、5%、3%、1% \n城市维护建设税 实际缴纳的增值税 7%、5%、1% \n企业"
+        }
+      },
+      {
+        "step": 10,
+        "type": "tool",
+        "tool": "read_page",
+        "args": {
+          "doc_id": "002714_2026-08-21_semi",
+          "page": 67
+        },
+        "ok": true,
+        "summary": {
+          "doc_id": "002714_2026-08-21_semi",
+          "page": 67,
+          "title": "2026年半年度报告",
+          "date": "2026-08-21",
+          "text": "牧原食品集团股份有限公司 2026 年半年度报告全文 \n67 \n项目 2026 年半年度 2025 年半年度 \n回购业务资金净增加额   \n代理买卖证券收到的现金净额   \n收到的税费返还   \n收到其他与经营活动有关的现金 2,478,3"
+        }
+      },
+      {
+        "step": 10,
+        "type": "tool",
+        "tool": "compare_companies",
+        "args": {
+          "codes": [
+            "002714",
+            "000725"
+          ]
+        },
+        "ok": true,
+        "summary": {
+          "comparison": "2 项"
+        }
+      },
+      {
+        "step": 11,
+        "type": "tool",
+        "tool": "search_disclosure",
+        "args": {
+          "query": "所得税费用",
+          "code": "002714",
+          "kind": "q1",
+          "topk": 4
+        },
+        "ok": true,
+        "summary": {
+          "query": "所得税费用",
+          "results": "4 项"
+        }
+      },
+      {
+        "step": 11,
+        "type": "tool",
+        "tool": "search_disclosure",
+        "args": {
+          "query": "生猪销售均价 同比下降",
+          "code": "002714",
+          "kind": "semi",
+          "topk": 5
+        },
+        "ok": true,
+        "summary": {
+          "query": "生猪销售均价 同比下降",
+          "results": "5 项"
+        }
+      },
+      {
+        "step": 12,
+        "type": "final",
+        "content": "I have sufficient evidence to answer both the routine review and the directed question. Let me compile the final analysis.\n\nKey evidence gathered:\n- **Loss cause**: 2026H1 revenue 594.10亿 (-22.30% YoY), gross margin -1.58%, net loss -60.84亿; original text (p.11) explicitly attributes to \"生猪销售价格同比出现较大幅度下降\"\n- **Income tax**: p.149 reconciliation table shows 非应税收入的影响 +1,813,239,248.95 — the decisive item\n- **Impairment**: p.122-123 shows 消耗性生物资产跌价准备计提 300,164,149.89 + 库存商品 23,167,280.04\n- **Cash flow**: 经营现金流 -22.24亿 vs 净利润 -60.84亿; depreciation 77.72亿\n\n```json\n{\n  \"summary\": \"牧原2026H1由盈转亏，归母净利-60.78亿元（上年同期+105.30亿元），核心驱动是生猪销售价格同比大幅下降导致收入-22.30%、毛利率转负至-1.58%，而非成本失控（养殖完全成本反降至11.7元/kg）。亏损期仍确认所得税费用4.20亿元，原文调整表显示主因是「非应税收入的影响」+18.13亿元——免税养殖主体的盈利与应税主体的亏损并存，使合并层面出现「利润总额为负、所得税为正」。经营现金流-22.24亿元与净利润-60.84亿元同向为负，差额主要来自77.72亿元折旧摊销等非付现成本，属重资产结构性特征，非利润质量问题。资产减值损失3.14亿元系消耗性生物资产及库存商品跌价，与猪价下行一致。\",\n  \"findings\": [\n    {\n      \"title\": \"定向追问：2026H1由盈转亏的原因——价格驱动，非成本驱动\",\n      \"period\": \"2026Q2\",\n      \"level\": \"高\",\n      \"category\": \"异常信号\",\n      \"fact\": \"2026H1营业总收入594.10亿元（EM-04A555E3F2），累计同比-22.30%；营业成本603.46亿元（EM-45536A357D），累计同比仅-0.70%；毛利率-1.58%（EM-4FD8E8561A）。归母净利润-60.78亿元（EM-1FE724E33C），上年同期+105.30亿元（EM-75B6B571AF）。单季度看，2026Q2归母净利-48.63亿元，单季同比-180.52%，单季环比-300.28%（EM-1FE724E33C）。原文第11页明确：『由于生猪销售价格同比出现较大幅度下降，上半年公司实现营业收入594.10亿元，较上年同期减少22.30%……公司经营业绩出现亏损，净利润为-60.84亿元』；同页披露『2026年6月生猪养殖完全成本在11.7元/kg左右』，低于2025年6月的『低于12.1元/kg』。\",\n      \"inference\": \"亏损是价格（收入端）驱动而非成本（成本端）驱动：收入降22.30%而成本仅降0.70%，量增价跌——销售商品猪3,861.5万头（原文第11页）而收入下滑，说明单价降幅超过销量增幅。成本端反而改善（完全成本11.7元/kg vs 上年同期12.1元/kg），排除『成本失控致亏』假设。置信度高。\",\n      \"confidence\": \"高\",\n      \"evidence_refs\": [\"EM-04A555E3F2\", \"EM-45536A357D\", \"EM-4FD8E8561A\", \"EM-1FE724E33C\", \"EM-75B6B571AF\", \"002714_2026-08-21_semi 第11页\"],\n      \"verify_with\": \"需查阅农业农村部/公司月度销售简报中的生猪销售均价与出栏量月度数据，量化『价』与『量』各自对收入-22.30%的贡献；并核对屠宰肉食板块220.61亿元收入（+14.04%）的内部抵销影响。\"\n    },\n    {\n      \"title\": \"定向追问：亏损期确认所得税费用4.20亿元——主因是非应税收入调整项\",\n      \"period\": \"2026Q2\",\n      \"level\": \"高\",\n "
       }
     ],
     "final": {
-      "summary": "离线模式：未配置大语言模型，已按确定性计划完成数据提取、勾稽校验、规则判定与原文核验，产出事实层结论。归因推理需接入模型后方可生成。",
-      "findings": [],
+      "summary": "牧原2026H1由盈转亏，归母净利-60.78亿元（上年同期+105.30亿元），核心驱动是生猪销售价格同比大幅下降导致收入-22.30%、毛利率转负至-1.58%，而非成本失控（养殖完全成本反降至11.7元/kg）。亏损期仍确认所得税费用4.20亿元，原文调整表显示主因是「非应税收入的影响」+18.13亿元——免税养殖主体的盈利与应税主体的亏损并存，使合并层面出现「利润总额为负、所得税为正」。经营现金流-22.24亿元与净利润-60.84亿元同向为负，差额主要来自77.72亿元折旧摊销等非付现成本，属重资产结构性特征，非利润质量问题。资产减值损失3.14亿元系消耗性生物资产及库存商品跌价，与猪价下行一致。",
+      "findings": [
+        {
+          "title": "定向追问：2026H1由盈转亏的原因——价格驱动，非成本驱动",
+          "period": "2026Q2",
+          "level": "高",
+          "category": "异常信号",
+          "fact": "2026H1营业总收入594.10亿元（EM-04A555E3F2），累计同比-22.30%；营业成本603.46亿元（EM-45536A357D），累计同比仅-0.70%；毛利率-1.58%（EM-4FD8E8561A）。归母净利润-60.78亿元（EM-1FE724E33C），上年同期+105.30亿元（EM-75B6B571AF）。单季度看，2026Q2归母净利-48.63亿元，单季同比-180.52%，单季环比-300.28%（EM-1FE724E33C）。原文第11页明确：『由于生猪销售价格同比出现较大幅度下降，上半年公司实现营业收入594.10亿元，较上年同期减少22.30%……公司经营业绩出现亏损，净利润为-60.84亿元』；同页披露『2026年6月生猪养殖完全成本在11.7元/kg左右』，低于2025年6月的『低于12.1元/kg』。",
+          "inference": "亏损是价格（收入端）驱动而非成本（成本端）驱动：收入降22.30%而成本仅降0.70%，量增价跌——销售商品猪3,861.5万头（原文第11页）而收入下滑，说明单价降幅超过销量增幅。成本端反而改善（完全成本11.7元/kg vs 上年同期12.1元/kg），排除『成本失控致亏』假设。置信度高。",
+          "confidence": "高",
+          "evidence_refs": [
+            "EM-04A555E3F2",
+            "EM-45536A357D",
+            "EM-4FD8E8561A",
+            "EM-1FE724E33C",
+            "EM-75B6B571AF",
+            "002714_2026-08-21_semi 第11页"
+          ],
+          "verify_with": "需查阅农业农村部/公司月度销售简报中的生猪销售均价与出栏量月度数据，量化『价』与『量』各自对收入-22.30%的贡献；并核对屠宰肉食板块220.61亿元收入（+14.04%）的内部抵销影响。"
+        },
+        {
+          "title": "定向追问：亏损期确认所得税费用4.20亿元——主因是非应税收入调整项",
+          "period": "2026Q2",
+          "level": "高",
+          "category": "异常信号",
+          "fact": "2026H1利润总额-56.64亿元（EM-5AD0C3B480），所得税费用+4.20亿元（EM-8BC7A04434），上年同期为-0.20亿元（EM-9899958D83）。原文第149页『会计利润与所得税费用调整过程』逐项列示：利润总额-5,664,332,696.94；按法定/适用税率计算的所得税费用-1,416,083,174.23；子公司适用不同税率的影响+3,590,662.72；非应税收入的影响+1,813,239,248.95；不可抵扣的成本、费用和损失的影响+19,365,470.56；所得税费用420,112,208.00。所得税费用表进一步拆分：当期所得税费用437,855,513.93，递延所得税费用-17,743,305.93。原文第114页披露企业所得税税率为『0%、15%、16.5%、17%、20%、25%』，并载明农业生产者销售自产农产品免征增值税等税收优惠。",
+          "inference": "亏损期仍确认所得税费用，机制是：合并层面利润总额为负，但集团内免税/低税率的养殖主体与应税主体（屠宰、肉食、贸易、境外子公司等）分别纳税，不能以合并亏损抵减应税主体的应纳税所得额。调整表中『非应税收入的影响』+18.13亿元是决定性项目——它把按法定税率算出的-14.16亿元『税收收益』大幅回拨，最终形成+4.20亿元费用。即：免税主体的盈利不产生所得税抵减，而应税主体的亏损又无法确认（或未确认）相应的递延所得税资产。置信度中高，机制方向由原文调整表直接支持，但各纳税主体的具体盈亏拆分未在半年报中披露。",
+          "confidence": "中",
+          "evidence_refs": [
+            "EM-5AD0C3B480",
+            "EM-8BC7A04434",
+            "EM-9899958D83",
+            "002714_2026-08-21_semi 第149页",
+            "002714_2026-08-21_semi 第114页"
+          ],
+          "verify_with": "需查阅2026年年度报告附注中的『递延所得税资产』明细（可抵扣亏损确认的递延所得税资产金额及未确认部分）、以及分主体/分板块的所得税与盈亏数据，才能确认应税主体亏损是否未确认递延所得税资产；另需核对2026Q1同口径（利润总额-10.60亿元、所得税+1.62亿元，EM-F57223AA44/EM-FAC9CB2D89）以确认该模式在季度间一致。"
+        },
+        {
+          "title": "资产减值损失同比激增，系消耗性生物资产与库存商品跌价",
+          "period": "2026Q2",
+          "level": "高",
+          "category": "异常信号",
+          "fact": "2026H1资产减值损失-3.14亿元（EM-09B2C930D1），上年同期-0.02亿元，绝对额增幅15,347.9%；2026Q1为-3.22亿元（EM-D5D0162274），上年同期-0.05亿元。原文第122-123页存货附注：存货跌价准备期初6,942.60万元，本期计提32,333.14万元，转回或转销39,275.74万元，期末为0；其中消耗性生物资产计提30,016.41万元、库存商品计提2,316.73万元。期末存货账面余额382.98亿元，存货跌价准备为0。",
+          "inference": "减值计提与猪价下行方向一致：消耗性生物资产（育肥猪等）按成本与可变现净值孰低计量，猪价下跌压低可变现净值，触发跌价计提。需注意本期同时发生3.93亿元转回或转销，且期末跌价准备归零——说明计提与转销在报告期内基本对冲，减值对利润的净影响远小于『同比增幅15,347.9%』这一数字给人的印象。置信度中高。",
+          "confidence": "中",
+          "evidence_refs": [
+            "EM-09B2C930D1",
+            "EM-D5D0162274",
+            "002714_2026-08-21_semi 第122页",
+            "002714_2026-08-21_semi 第123页"
+          ],
+          "verify_with": "需查阅年报附注中消耗性生物资产可变现净值的具体测算依据（预计售价、至完工尚需投入成本），以及期末跌价准备归零是否因生物资产已出栏转销，确认减值计提的充分性。"
+        },
+        {
+          "title": "经营现金流与净利润同向为负，差额来自折旧摊销——重资产结构性特征",
+          "period": "2026Q2",
+          "level": "中",
+          "category": "结构性特征",
+          "fact": "2026H1经营活动现金流量净额-22.24亿元（EM-2C36B39846），上年同期+173.51亿元（EM-1E39CE123F）；净利润-60.84亿元（EM-49DC17B288）。调整后现金含量-0.93（EM-F5F911F7EF），朴素口径因净利润为负无法计算（EM-4EEAA3E6C5）。折旧摊销占收入比重13.74%（EM-BCF1684C22）。固定资产折旧、油气资产折耗、生产性生物资产折旧77.72亿元（EM-FD4BEAAACA），使用权资产摊销3.64亿元（EM-D6EB6258A5），无形资产摊销0.18亿元（EM-B2FDDE8882），长期待摊费用摊销0.06亿元（EM-6C372F695C）。原文第67页现金流量表：经营活动现金流入643.29亿元，流出665.52亿元；其中购买商品、接受劳务支付现金553.92亿元，支付给职工81.66亿元，支付各项税费6.02亿元（上年同期1.55亿元）。",
+          "inference": "经营现金流为负与净利润为负方向一致，不存在『利润为负而现金流为正』的背离。净利润-60.84亿元与经营现金流-22.24亿元之间约38.6亿元的差额，主要由77.72亿元折旧摊销等非付现成本贡献（部分被营运资本占用抵消）。折旧摊销占收入13.74%，接近但未达15%的重资产阈值，属生猪养殖重资产经营的结构性特征，不应解读为利润质量问题。需注意支付各项税费由1.55亿元升至6.02亿元，与所得税费用上升方向一致。置信度中高。",
+          "confidence": "中",
+          "evidence_refs": [
+            "EM-2C36B39846",
+            "EM-1E39CE123F",
+            "EM-49DC17B288",
+            "EM-F5F911F7EF",
+            "EM-BCF1684C22",
+            "EM-FD4BEAAACA",
+            "EM-D6EB6258A5",
+            "002714_2026-08-21_semi 第67页"
+          ],
+          "verify_with": "需查阅现金流量表补充资料（间接法）中存货、经营性应收应付项目的具体变动金额，量化营运资本对经营现金流的占用；并核对2026Q2间接法残差24.58%（勾稽未通过）的具体成因。"
+        },
+        {
+          "title": "非经常性损益为负，亏损并非由非经常项目造成",
+          "period": "2026Q2",
+          "level": "中",
+          "category": "口径提示",
+          "fact": "2026H1归母净利润-60.78亿元（EM-1FE724E33C），扣非归母净利润-58.95亿元（EM-C2B6819985），非经常性损益合计-1.82亿元。原文第195页非经常性损益明细表：非流动性资产处置损益-1.39亿元；计入当期损益的政府补助+0.55亿元；金融资产公允价值变动及处置损益+0.40亿元；除上述之外的其他营业外收支-1.37亿元；其他符合非经常性损益定义的损益项目+0.03亿元；减所得税影响额0.02亿元；少数股东权益影响额（税后）0.02亿元。其他收益（政府补助等）2.10亿元（EM-67093EC8BF），投资收益0.40亿元（EM-38902EE489）。",
+          "inference": "归母净利润为负，非经常性损益占比指标不适用（工具返回null，EM-272A2D97BF），不得机械套用阈值。从绝对额看，非经常性损益为-1.82亿元，扣非亏损（-58.95亿元）略小于报表亏损（-60.78亿元），说明亏损完全来自经常性经营，不存在『靠非经常项目粉饰』或『非经常项目致亏』的情形。政府补助0.55亿元相对60亿元级亏损规模微不足道。置信度中高。",
+          "confidence": "中",
+          "evidence_refs": [
+            "EM-1FE724E33C",
+            "EM-C2B6819985",
+            "EM-272A2D97BF",
+            "EM-67093EC8BF",
+            "EM-38902EE489",
+            "002714_2026-08-21_semi 第195页"
+          ],
+          "verify_with": "需确认政府补助0.55亿元中与日常经营相关、具备持续性的部分占比，判断其是否应视为经常性；并核对『其他营业外收支-1.37亿元』的具体构成（原文第149页显示营业外支出中『其他』2.03亿元，较上年0.18亿元大幅增加）。"
+        },
+        {
+          "title": "2026Q2间接法勾稽残差24.58%，数据自洽性存疑",
+          "period": "2026Q2",
+          "level": "中",
+          "category": "口径提示",
+          "fact": "勾稽校验显示资产负债表恒等式57个期间全部通过（最大相对偏差0.0%）；但间接法反推经营活动现金流量净额在2026Q2残差546,496,550元，残差率24.58%，判定为未通过。历史期间亦存在未通过情形（2015Q2 -18.67%、2018Q2 11.34%、2022Q2 301.2%、2023Q2 38.07%），且多集中在中报期间。",
+          "inference": "残差集中于中报且历史上反复出现，更可能源于半年报附注披露颗粒度不足（间接法调节表项目未完整披露）或解析口径差异，而非报表本身错误——资产负债表恒等式全部通过支持这一判断。但24.58%的残差不可忽略，在引用经营现金流数据时需保留该不确定性。置信度中。",
+          "confidence": "中",
+          "evidence_refs": [
+            "check_articulation 2026Q2",
+            "check_articulation 2022Q2",
+            "check_articulation 2023Q2"
+          ],
+          "verify_with": "需查阅2026年半年度报告现金流量表补充资料（间接法调节表）原文，逐项核对将净利润调节为经营活动现金流量的各项目，定位残差来源。"
+        }
+      ],
       "unresolved": [
-        "归因推理未启用，需配置 FINAGENT_API_KEY 后重新运行"
+        "各纳税主体（免税养殖主体 vs 应税屠宰/贸易/境外主体）的分主体盈亏与所得税数据未在半年报披露，无法精确量化『非应税收入的影响』18.13亿元的内部构成。",
+        "2026Q2间接法勾稽残差24.58%（约5.46亿元）的具体成因未定位，需核对现金流量表补充资料原文。",
+        "消耗性生物资产可变现净值的具体测算参数（预计售价、尚需投入成本）未在半年报披露，减值计提充分性无法独立验证。",
+        "生猪销售均价与出栏量的月度明细未在半年报中给出，『价』与『量』对收入-22.30%的贡献拆分需依赖月度销售简报。",
+        "2026Q1与2026Q2所得税费用分别为1.62亿元与4.20亿元（累计），单季度所得税费用上升的原因未在原文中单独说明。"
       ],
       "limitations": [
-        "离线模式不产生推论，仅输出事实与证据。"
-      ],
-      "companies": [
-        "002714.SZ",
-        "000725.SZ"
+        "本次分析全部数值来自工具返回值，未做任何自行计算；部分指标（如非经常性损益占比、朴素现金含量）因分母为负而返回null，已按技能要求改用绝对额方向判读。",
+        "所得税费用异常的解释基于半年报第149页调整表的方向性证据，属推论而非原文直接结论——原文未就『亏损期确认所得税费用』给出文字说明，需年报附注进一步证实。",
+        "折旧摊销占收入13.74%接近但未达15%的重资产阈值，故现金流特征归类为『结构性特征』时置信度定为中，而非高。",
+        "跨公司对照（京东方A 000725）显示其调整后现金含量0.95、折旧占收入17.45%，与牧原口径可比；但两者行业属性不同，该对照仅用于验证指标公式一致性，不构成经营质量优劣判断。",
+        "本次未获取2026年三季度及以后数据，无法判断亏损是否为单期现象或趋势延续。"
       ]
     }
   },

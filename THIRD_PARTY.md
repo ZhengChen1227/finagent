@@ -88,6 +88,7 @@
 | Codex（OpenAI） | 代码编写与重构辅助 | 仅作为开发辅助工具，运行期不依赖 |
 | Playwright / Microsoft Edge 无头模式 | 界面版式的截图核对 | 仅用于开发期视觉检查，不在交付代码中调用 |
 | openai/skills 的 `skill-installer` | 安装上述设计规范 | 开发期工具链，不进入交付物 |
+| Cloudflare Pages | 托管只读展示站 | 仅在发布静态展示站时使用，运行期不依赖 |
 
 ## 四、未使用的第三方内容
 
@@ -98,6 +99,8 @@
 - 任何第三方智能体框架（LangChain、AutoGen、LlamaIndex 等）——编排循环为自主实现
 - 任何第三方财务分析指标库——全部指标公式在 `finagent/metrics/` 中自主实现并在报告中公开口径
 - 任何 Web 框架或前端库（Flask、Streamlit、React、Vue 等）——图形界面只用标准库与原生 JavaScript
+- 任何内网穿透客户端（cloudflared / Cloudflare Tunnel、ngrok、frp 等）——公网展示走
+  纯静态托管，不需要常驻隧道进程，也不把本地服务暴露到公网
 
 ---
 

@@ -201,7 +201,29 @@ def main() -> int:
                 ok, detail = False, str(exc)
             check(f"命令构造放行：{good}", ok, detail)
 
-        # ---- 路径穿越防护
+        # ---- 自然语言识别分析对象
+        # 这是对话式界面的入口能力：用户在句子里写公司名，系统要认出来。
+        # 全部离线（读本地全市场名录），因此可以严格断言。
+        for text, expect_codes in (
+            ("分析牧原股份 2026 年中报的亏损原因", ["002714"]),
+            ("帮我看看京东方今年为什么现金流这么好", ["000725"]),
+            ("工商银行的不良率", ["601398"]),
+            ("工行和建行哪个资产质量好", ["601398", "601939"]),
+            ("600519 的毛利率", ["600519"]),
+            ("建一下索引", []),
+        ):
+            code, body = get(base, "/api/resolve?text=" + urllib.parse.quote(text))
+            got = [item["code"] for item in body.get("items", [])]
+            check(f"识别公司：{text}", code == 200 and got == expect_codes, " -> ".join(got) or "(无)")
+
+        # 「京东方A」「京东方B」是同一家公司的两个股份类别，只保留 A 股，
+        # 否则一次提问会凭空变成两次分析。
+        code, body = get(base, "/api/resolve?text=" + urllib.parse.quote("对比 000725 和 200725"))
+        codes = [item["code"] for item in body.get("items", [])]
+        check("A/B 股不重复计入", codes.count("000725") == 1 and codes.count("200725") == 1,
+              " ".join(codes))
+
+        # 路径穿越防护
         for bad in ("../../../Windows/win.ini", "..%2f..%2fconfig.yaml"):
             code, _ = get(base, "/api/report?path=" + bad)
             check("越权路径被拒绝", code in (400, 404), f"HTTP {code}")
@@ -224,6 +246,63 @@ def main() -> int:
         check("命令构造：多公司", cmd.count("--code") == 2, " ".join(cmd[-8:]))
         cmd = build_command("fetch", {"code": "002714", "limit": 5})
         check("命令构造：抓取参数", "--limit" in cmd and "5" in cmd)
+
+        # ---- 用户自由提问要原样传到命令行
+        # 这是"对话式"的实质：用户问什么就带什么，服务端不改写、不解释。
+        q = "为什么二季度毛利率下降了"
+        cmd = build_command("analyze", {"codes": ["002714.SZ"], "question": q})
+        ok = "--question" in cmd and cmd[cmd.index("--question") + 1] == q
+        check("命令构造：用户追问透传", ok)
+        cmd = build_command("analyze", {"codes": ["002714.SZ"], "question": "  "})
+        check("命令构造：空追问不产生参数", "--question" not in cmd)
+        try:
+            build_command("analyze", {"codes": ["002714.SZ"], "question": "x" * 501})
+            check("命令构造：超长追问被拒绝", False)
+        except ValueError as exc:
+            check("命令构造：超长追问被拒绝", "500" in str(exc))
+
+        # ---- API Key 校验接口的本地分支（不发起外部请求）
+        req = urllib.request.Request(
+            base + "/api/key/verify",
+            data=json.dumps({"api_key": ""}).encode("utf-8"),
+            headers={"Content-Type": "application/json"}, method="POST")
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            body = json.loads(resp.read().decode("utf-8"))
+        check("密钥校验：空密钥被拒绝", body.get("ok") is False and "API Key" in body.get("error", ""))
+
+        # ---- PDF 导出
+        # 浏览器不可用时接口会退化成可打印的 HTML，两种情况都算通过，
+        # 但返回内容必须自洽：要么是 PDF 文件头，要么是一份完整 HTML 文档。
+        if reports:
+            rep = max(reports, key=lambda r: r.get("bytes", 0))
+            url = base + "/api/report.pdf?path=" + urllib.parse.quote(rep["path"])
+            with urllib.request.urlopen(url, timeout=300) as resp:
+                ctype = resp.headers.get("Content-Type", "")
+                blob = resp.read()
+            if "pdf" in ctype:
+                check("PDF 导出", blob[:4] == b"%PDF" and len(blob) > 20000,
+                      f"{len(blob)} 字节")
+                check("PDF 文件名带中文原名",
+                      "filename*=UTF-8" in (resp.headers.get("Content-Disposition") or ""))
+            else:
+                check("PDF 导出（无浏览器时退化为打印页）",
+                      "text/html" in ctype and b"<!DOCTYPE html>" in blob[:64],
+                      ctype)
+        else:
+            skip("PDF 导出", "尚无报告可导出")
+
+        # ---- Markdown -> 打印 HTML 的转换（纯函数，离线）
+        from app import pdfexport
+        title, body_md, meta = pdfexport.split_report(
+            "# 示例公司（000001.SZ）财务分析\n\n> 所属行业：测试　|　运行编号：`r1`\n\n## 一、结论\n\n正文")
+        check("报告拆分：标题提取", title == "示例公司（000001.SZ）财务分析", title)
+        check("报告拆分：元信息提到封面", meta and "运行编号" in meta[0], str(meta))
+        check("报告拆分：正文不含重复标题", body_md.startswith("## 一、结论"), body_md[:20])
+        check("元信息渲染", pdfexport.format_meta(meta)[0].startswith("<b>所属行业</b>"),
+              pdfexport.format_meta(meta)[0][:40])
+        html = pdfexport.markdown_to_html("| 项目 | 数值 |\n|---|---:|\n| 营收 | 1 |\n")
+        check("表格渲染为 HTML", "<table>" in html and "text-align:right" in html)
+        check("转义防注入", "&lt;img" in pdfexport.markdown_to_html("<img src=x onerror=1>"))
     finally:
         proc.terminate()
         try:
